@@ -1,0 +1,110 @@
+{
+  "scrm-store-customer-first-allocation-time": {
+    "requirementNo": "SC-01-01",
+    "requirementName": "首次分配时间",
+    "status": "待确认",
+    "definition": "展示客户首次分配时间的字段；首次分配的正式业务口径尚待确认。",
+    "dataSource": null,
+    "rule": null,
+    "remark": "本轮不得根据模拟数据反推正式取值规则。"
+  },
+  "scrm-store-customer-latest-allocation-time": {
+    "requirementNo": "SC-01-02",
+    "requirementName": "最新分配时间",
+    "status": "待确认",
+    "definition": "展示客户最新分配时间的字段；最新分配的正式业务口径尚待确认。",
+    "dataSource": null,
+    "rule": null,
+    "remark": "本轮不得根据模拟数据反推正式取值规则。"
+  },
+  "scrm-store-customer-is-arrived": {
+    "requirementNo": "SC-01-03",
+    "requirementName": "是否到店",
+    "status": "部分确认",
+    "definition": "用于展示客户是否到店的状态字段。",
+    "dataSource": null,
+    "rule": null,
+    "remark": "正式判断条件、状态来源和空值规则待确认。"
+  },
+  "scrm-store-customer-is-deal": {
+    "requirementNo": "SC-01-04",
+    "requirementName": "是否成交",
+    "status": "部分确认",
+    "definition": "用于展示客户是否成交的状态字段。",
+    "dataSource": null,
+    "rule": null,
+    "remark": "正式判断条件、状态来源和已成交样式待确认。"
+  },
+  "scrm-store-customer-appointment-arrival-time": {
+    "requirementNo": "SC-01-05",
+    "requirementName": "预约到店时间",
+    "status": "部分确认",
+    "definition": "用于展示客户预约到店时间的字段。",
+    "dataSource": null,
+    "rule": "原型体验模式保留0003本地升降序；需求查看模式点击对应表头只打开需求说明，不触发排序。",
+    "remark": "真实时间来源、空值和时区规则待确认。"
+  },
+  "scrm-store-customer-actual-arrival-status": {
+    "requirementNo": "SC-01-06",
+    "requirementName": "实际到店状态",
+    "status": "待确认",
+    "definition": "用于展示客户实际到店状态的字段。",
+    "dataSource": null,
+    "rule": null,
+    "remark": "正式状态枚举、来源和变化规则待确认。"
+  },
+  "scrm-store-customer-actual-deal-status": {
+    "requirementNo": "SC-01-07",
+    "requirementName": "实际成交状态",
+    "status": "待确认",
+    "definition": "用于展示客户实际成交状态的字段。",
+    "dataSource": null,
+    "rule": null,
+    "remark": "正式状态枚举、来源和变化规则待确认。"
+  },
+  "scrm-store-customer-invalid-lead-status": {
+    "requirementNo": "SC-01-08",
+    "requirementName": "无效客资状态",
+    "status": "待确认",
+    "definition": "用于展示客户无效客资状态的字段。",
+    "dataSource": null,
+    "rule": null,
+    "remark": "正式状态枚举、来源和权限规则待确认。"
+  },
+  "scrm-store-customer-invalid-lead-approval": {
+    "requirementNo": "SC-02",
+    "requirementName": "审批无效客资",
+    "status": "待确认",
+    "definition": "用于说明标注或审批无效客资入口的需求。",
+    "dataSource": null,
+    "rule": "本轮只展示只读需求说明，不实现真实审批、保存或提交。",
+    "remark": "0003菜单当前显示「标注无效客资」；最终业务命名和审批流程待确认。"
+  },
+  "scrm-store-customer-invalid-lead-detail": {
+    "requirementNo": "SC-03",
+    "requirementName": "无效客资状态详情",
+    "status": "部分确认",
+    "definition": "用于说明列表中无效客资状态区域对应的状态详情需求。",
+    "dataSource": null,
+    "rule": "需求查看模式只打开需求说明；原型体验模式不被需求查看层拦截。",
+    "remark": "本轮不实现真实状态详情业务抽屉。"
+  },
+  "scrm-store-customer-invalid-lead-filter": {
+    "requirementNo": "SC-04",
+    "requirementName": "无效客资状态筛选",
+    "status": "部分确认",
+    "definition": "用于说明筛选区「标注客资无效」条件对应的无效客资状态筛选需求。",
+    "dataSource": null,
+    "rule": "需求查看模式点击编号点只打开需求说明，不改变筛选值；原型体验模式保留0003筛选行为。",
+    "remark": "正式筛选口径与状态枚举待确认。"
+  },
+  "scrm-store-customer-requirement-view-mode": {
+    "requirementNo": "WB-01",
+    "requirementName": "需求查看模式与需求说明联动",
+    "status": "已确认",
+    "definition": "在同一门店客户原型中提供原型体验和需求查看两种模式，并通过稳定需求点打开右侧只读说明。",
+    "dataSource": "页面独立需求说明JSON与稳定需求点配置。",
+    "rule": "页面默认进入原型体验模式；需求查看模式点击需求点打开或切换抽屉内容；关闭抽屉仍停留在需求查看模式；返回原型体验会关闭抽屉并退出需求查看模式。",
+    "remark": "V1不支持页面内编辑、保存、后端、版本历史、多人协作或权限体系。"
+  }
+}

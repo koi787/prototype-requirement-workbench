@@ -1,0 +1,43 @@
+:root {
+  color: #1f2329;
+  background: #f4f6f8;
+  font-family:
+    Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 32px;
+}
+
+.intro-card {
+  width: min(680px, 100%);
+  box-shadow: 0 12px 36px rgb(15 23 42 / 8%);
+}
+
+.intro-card .ant-typography {
+  margin: 0;
+}
+

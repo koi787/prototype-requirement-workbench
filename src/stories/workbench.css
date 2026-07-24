@@ -1,0 +1,39 @@
+.workbench-overview {
+  min-height: 100vh;
+  padding: 40px;
+  background:
+    radial-gradient(circle at top right, rgb(22 119 255 / 10%), transparent 32%),
+    #f6f8fb;
+}
+
+.workbench-stack {
+  width: min(1040px, 100%);
+}
+
+.workbench-overview h1.ant-typography {
+  margin: 14px 0 8px;
+}
+
+.workbench-lead {
+  max-width: 760px;
+  color: #667085;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.boundary-card {
+  height: 100%;
+  border: 1px solid #e8edf3;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 5%);
+}
+
+.boundary-card h3.ant-typography {
+  margin: 8px 0 0;
+}
+
+@media (max-width: 600px) {
+  .workbench-overview {
+    padding: 24px 16px;
+  }
+}
+
