@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { StoreCustomerList } from '../products/scrm/modules/prospect-management/pages/StoreCustomerList';
 
 const meta = {
-  title: '示例 SCRM/潜客管理/门店客户',
+  title: 'SCRM/潜客管理/门店客户',
   component: StoreCustomerList,
   parameters: {
     layout: 'fullscreen',

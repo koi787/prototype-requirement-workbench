@@ -80,10 +80,15 @@ export function RequirementMarker({
   };
 
   if (mode !== 'requirement') {
-    // 原型体验模式：不显示编号点，透传原始点击
+    // 原型体验模式：不显示编号点，透传原始点击。
+    // 使用中性原型包裹层，不将编号点视觉类（如 requirement-marker--header）
+    // 泄漏到业务文字容器，避免业务文字继承 10px 等编号样式。
     if (children) {
       return (
-        <span className={className} onClick={onOriginalClick}>
+        <span
+          className="requirement-marker-prototype-target"
+          onClick={onOriginalClick}
+        >
           {children}
         </span>
       );

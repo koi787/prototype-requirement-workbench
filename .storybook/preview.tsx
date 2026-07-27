@@ -16,7 +16,7 @@ const preview: Preview = {
     layout: 'fullscreen',
     options: {
       storySort: {
-        order: ['工作台能力演示', '示例 SCRM', '需求批次'],
+        order: ['工作台能力演示', 'SCRM', '需求批次'],
       },
     },
   },

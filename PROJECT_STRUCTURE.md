@@ -21,7 +21,7 @@
 src/products/scrm/
 ├── modules/                  # 按业务模块组织页面
 ├── pages/                    # 跨模块或产品级页面入口
-├── shared/                   # 仅供示例 SCRM 复用的代码
+├── shared/                   # 仅供 SCRM 复用的代码
 └── assets/                   # 产品内图片和静态资源
 ```
 
@@ -58,7 +58,7 @@ src/requirements/
 
 Story title 组织两套浏览维度：
 
-- `示例 SCRM/当前产品/...`
+- `SCRM/潜客管理/门店客户`
 - `需求批次/批次名称/...`
 - `工作台能力演示/...`
 

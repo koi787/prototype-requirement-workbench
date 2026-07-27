@@ -138,6 +138,11 @@
   opacity: 1;
 }
 
+/* 原型模式包裹层：中性容器，不设置字号/字重/行高，保证业务文字继承父级样式 */
+.requirement-marker-prototype-target {
+  display: inline;
+}
+
 /* 标记目标区域 */
 .requirement-marker-target {
   display: inline-flex;

@@ -1319,4 +1319,128 @@ describe('StoreCustomerList', () => {
       });
     });
   });
+
+  // ==========================================================================
+  // 0007 样式隔离与品牌名称统一
+  // ==========================================================================
+
+  describe('0007 文字样式隔离', () => {
+    it('原型模式表头 children 包裹在 prototype-target 中，不含 marker 视觉类', () => {
+      render(<StoreCustomerList initialState="normal" />);
+
+      // 原型模式下表头文字存在
+      const headerTexts = screen.getAllByText('首次分配时间');
+      expect(headerTexts.length).toBeGreaterThan(0);
+
+      // 至少有一个被 prototype-target 包裹
+      const wrappedTexts = headerTexts.filter(
+        (el) => el.closest('.requirement-marker-prototype-target') !== null,
+      );
+      expect(wrappedTexts.length).toBeGreaterThan(0);
+
+      // 所有 prototype-target 不含 marker 视觉类
+      const protoWrappers = document.querySelectorAll(
+        '.requirement-marker-prototype-target',
+      );
+      expect(protoWrappers.length).toBeGreaterThan(0);
+      protoWrappers.forEach((wrapper) => {
+        expect(wrapper.classList.contains('requirement-marker--header')).toBe(false);
+        expect(wrapper.classList.contains('requirement-marker--inline')).toBe(false);
+      });
+    });
+
+    it('需求模式表头 children 在 marker-target 中而非 marker 内部', () => {
+      render(
+        <StoreCustomerList
+          initialState="normal"
+          initialRequirementMode="requirement"
+        />,
+      );
+
+      // 编号点存在
+      const markers = document.querySelectorAll('[data-requirement-number]');
+      expect(markers.length).toBeGreaterThan(0);
+
+      // 每个 marker 的 parentElement 是 requirement-marker-target
+      markers.forEach((marker) => {
+        const parent = marker.parentElement;
+        // 强制断言父元素存在：parentElement 为 null 时测试必须失败
+        expect(parent).not.toBeNull();
+        const parentEl = parent as HTMLElement;
+        expect(
+          parentEl.classList.contains('requirement-marker-target') ||
+            parentEl.classList.contains('requirement-mode-control--expanded'),
+        ).toBe(true);
+      });
+    });
+
+    it('两种模式下同一列名文字的包裹层不含 marker 视觉类', () => {
+      // 原型模式
+      const { unmount: unmountProto } = render(
+        <StoreCustomerList initialState="normal" />,
+      );
+      const protoWrappers = document.querySelectorAll(
+        '.requirement-marker-prototype-target',
+      );
+      expect(protoWrappers.length).toBeGreaterThan(0);
+      protoWrappers.forEach((wrapper) => {
+        expect(wrapper.classList.contains('requirement-marker--header')).toBe(false);
+      });
+      unmountProto();
+
+      // 需求模式
+      render(
+        <StoreCustomerList
+          initialState="normal"
+          initialRequirementMode="requirement"
+        />,
+      );
+      // marker-target 不包含 header 视觉类
+      const targets = document.querySelectorAll('.requirement-marker-target');
+      expect(targets.length).toBeGreaterThan(0);
+      targets.forEach((target) => {
+        expect(target.classList.contains('requirement-marker--header')).toBe(false);
+      });
+
+      // 列名文字出现在 target 的 children 中（而非 marker 内）
+      const headerTexts = screen.getAllByText('首次分配时间');
+      const inTarget = headerTexts.filter(
+        (el) => el.closest('.requirement-marker-target') !== null,
+      );
+      expect(inTarget.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('0007 SCRM 品牌名称统一', () => {
+    it('左侧导航品牌区显示"SCRM系统"', () => {
+      render(<StoreCustomerList initialState="normal" />);
+      expect(screen.getByText('SCRM系统')).toBeTruthy();
+    });
+
+    it('主体顶部系统标题显示"SCRM管理系统"', () => {
+      render(<StoreCustomerList initialState="normal" />);
+      expect(screen.getByText('SCRM管理系统')).toBeTruthy();
+    });
+
+    it('页面壳不再显示"示例 SCRM"品牌名', () => {
+      render(<StoreCustomerList initialState="normal" />);
+      expect(screen.queryByText('示例 SCRM')).toBeNull();
+    });
+
+    it('页面壳不再显示"示例 SCRM 管理系统"标题', () => {
+      render(<StoreCustomerList initialState="normal" />);
+      expect(screen.queryByText('示例 SCRM 管理系统')).toBeNull();
+    });
+
+    it('需求查看模式下品牌名称同样正确', () => {
+      render(
+        <StoreCustomerList
+          initialState="normal"
+          initialRequirementMode="requirement"
+        />,
+      );
+      expect(screen.getByText('SCRM系统')).toBeTruthy();
+      expect(screen.getByText('SCRM管理系统')).toBeTruthy();
+    });
+  });
 });

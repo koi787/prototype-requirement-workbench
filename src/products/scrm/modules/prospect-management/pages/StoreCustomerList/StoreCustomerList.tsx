@@ -472,7 +472,7 @@ function StoreCustomerListInner({
         <span className="store-customer-nav-toggle-icon">
           <MenuIcon size={16} style={{ color: '#333' }} />
         </span>
-        <span className="store-customer-system-name">示例 SCRM 管理系统</span>
+        <span className="store-customer-system-name">SCRM管理系统</span>
       </div>
       <div className="store-customer-topbar-right">
         <Space size="middle">
@@ -1109,7 +1109,7 @@ function StoreCustomerListInner({
         {!navCollapsed && (
           <span className="store-customer-nav-title">
             <span className="store-customer-nav-logo-dot" />
-            <span className="store-customer-nav-brand-text">示例 SCRM</span>
+            <span className="store-customer-nav-brand-text">SCRM系统</span>
           </span>
         )}
         <span
