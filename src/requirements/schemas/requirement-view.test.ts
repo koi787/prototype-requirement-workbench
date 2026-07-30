@@ -204,11 +204,11 @@ describe('requirementViewEntrySchema', () => {
 });
 
 // ============================================================================
-// requirementViewMapSchema 与 key 交叉校验
+// requirementViewMapSchema 与 key 交叉校验（0008 闭环二：15 条）
 // ============================================================================
 
 describe('validateRequirementKeys', () => {
-  it('恰好 12 个预期 key 通过', () => {
+  it('恰好 15 个预期 key 通过', () => {
     const data = Object.fromEntries(
       EXPECTED_REQUIREMENT_KEYS.map((k) => [
         k,
@@ -221,7 +221,7 @@ describe('validateRequirementKeys', () => {
 
   it('缺少 key 失败', () => {
     const data = Object.fromEntries(
-      EXPECTED_REQUIREMENT_KEYS.slice(0, 11).map((k) => [
+      EXPECTED_REQUIREMENT_KEYS.slice(0, 14).map((k) => [
         k,
         { requirementNo: 'SC-TEST', requirementName: '测试' },
       ]),
@@ -245,12 +245,12 @@ describe('validateRequirementKeys', () => {
 });
 
 // ============================================================================
-// EXPECTED_REQUIREMENT_KEYS 完整性
+// EXPECTED_REQUIREMENT_KEYS 完整性（0008 闭环二：15 条）
 // ============================================================================
 
 describe('EXPECTED_REQUIREMENT_KEYS', () => {
-  it('恰好 12 个 key', () => {
-    expect(EXPECTED_REQUIREMENT_KEYS).toHaveLength(12);
+  it('恰好 15 个 key', () => {
+    expect(EXPECTED_REQUIREMENT_KEYS).toHaveLength(15);
   });
 
   it('所有 key 使用合法 stable ID 格式', () => {
@@ -260,8 +260,8 @@ describe('EXPECTED_REQUIREMENT_KEYS', () => {
     });
   });
 
-  it('12 个 key 不重复', () => {
+  it('15 个 key 不重复', () => {
     const unique = new Set(EXPECTED_REQUIREMENT_KEYS);
-    expect(unique.size).toBe(12);
+    expect(unique.size).toBe(15);
   });
 });

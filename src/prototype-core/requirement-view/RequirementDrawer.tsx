@@ -42,7 +42,9 @@ function FieldSection({ title, value }: { title: string; value: unknown }) {
   return (
     <div className="requirement-drawer-field">
       <h4 className="requirement-drawer-field-title">{title}</h4>
-      <p className="requirement-drawer-field-content">{value as string}</p>
+      <p className="requirement-drawer-field-content requirement-drawer-field-content--multiline">
+        {value as string}
+      </p>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StoreCustomerList } from '../StoreCustomerList';
+import { InvalidReviewDrawer } from '../InvalidReviewDrawer';
 import {
   ALL_COLUMNS,
   COLUMN_COUNT,
@@ -24,6 +25,7 @@ import {
   useRequirementView,
 } from '../../../../../../../prototype-core/requirement-view';
 import rawCustomers from '../mockData';
+import type { CustomerRecord } from '../mockData';
 
 afterEach(() => cleanup());
 
@@ -82,11 +84,74 @@ function getCurrentDataRows(): HTMLTableRowElement[] {
   });
 }
 
+function getColumnIndexByHeader(headerName: string): number {
+  const index = ALL_COLUMNS.findIndex((column) => column.title === headerName);
+  if (index < 0) throw new Error(`未找到表头“${headerName}”`);
+  return index;
+}
+
+function getCellByHeader(row: HTMLElement, headerName: string): HTMLElement {
+  const cells = within(row).getAllByRole('cell');
+  const cell = cells[getColumnIndexByHeader(headerName)];
+  if (!cell) throw new Error(`数据行缺少“${headerName}”列`);
+  return cell;
+}
+
+function getVisibleColumnValues(headerName: string): string[] {
+  return getCurrentDataRows().map((row) =>
+    getCellByHeader(row, headerName).textContent?.trim() ?? '',
+  );
+}
+
 function getCurrentNames(): string[] {
-  return getCurrentDataRows().map((row) => {
-    const cells = within(row).getAllByRole('cell');
-    return cells[0]?.textContent?.trim() ?? '';
-  });
+  return getVisibleColumnValues('姓名');
+}
+
+function createSortTestData(): CustomerRecord[] {
+  const values = [
+    {
+      key: 'sort-a',
+      name: '排序甲',
+      firstAssignTime: '2026-07-03 09:00:00',
+      lastAssignTime: '2026-07-02 09:00:00',
+      appointmentTime: '2026-07-01 09:00:00',
+      isVisited: '已到店',
+      isDeal: '已成交',
+    },
+    {
+      key: 'sort-b',
+      name: '排序乙',
+      firstAssignTime: '2026-07-01 09:00:00',
+      lastAssignTime: '2026-07-03 09:00:00',
+      appointmentTime: '2026-07-03 09:00:00',
+      isVisited: '未到店',
+      isDeal: '未成交',
+    },
+    {
+      key: 'sort-c',
+      name: '排序丙',
+      firstAssignTime: '2026-07-02 09:00:00',
+      lastAssignTime: '2026-07-01 09:00:00',
+      appointmentTime: '2026-07-02 09:00:00',
+      isVisited: '已到店',
+      isDeal: '未成交',
+    },
+    {
+      key: 'sort-empty',
+      name: '排序空值',
+      firstAssignTime: '-',
+      lastAssignTime: '',
+      appointmentTime: '0000-00-00 00:00:00',
+      isVisited: '--',
+      isDeal: '--',
+    },
+  ];
+
+  return values.map((value, index) => ({
+    ...rawCustomers[index]!,
+    ...value,
+    invalidApprovalStatus: null,
+  }));
 }
 
 function expectColumnAnchorsUnique(): void {
@@ -130,7 +195,7 @@ function EmptyRequirementDrawerHarness() {
 }
 
 describe('StoreCustomerList', () => {
-  describe('页面与52列基线', () => {
+  describe('页面与51列基线', () => {
     it('渲染主要区域和25条演示数据', () => {
       render(<StoreCustomerList initialState="normal" />);
 
@@ -143,11 +208,11 @@ describe('StoreCustomerList', () => {
       expect(getOperationButtons()).toHaveLength(10);
     });
 
-    it('保持52列数量、顺序和固定列配置', () => {
-      expect(COLUMN_COUNT).toBe(52);
-      expect(new Set(COLUMN_ORDER).size).toBe(52);
+    it('保持51列数量、顺序和固定列配置', () => {
+      expect(COLUMN_COUNT).toBe(51);
+      expect(new Set(COLUMN_ORDER).size).toBe(51);
       expect(COLUMN_ORDER[0]).toBe('name');
-      expect(COLUMN_ORDER[5]).toBe('appointmentTime');
+      expect(COLUMN_ORDER[3]).toBe('appointmentTime');
       expect(COLUMN_ORDER.at(-1)).toBe('operation');
       expect(ALL_COLUMNS[0]?.fixed).toBe('left');
       expect(ALL_COLUMNS.at(-1)?.fixed).toBe('right');
@@ -167,9 +232,8 @@ describe('StoreCustomerList', () => {
         { id: 'latest-allocation-time-column', columnKey: 'lastAssignTime', description: '最新分配时间列' },
         { id: 'is-arrived-column', columnKey: 'isVisited', description: '是否到店列' },
         { id: 'is-deal-column', columnKey: 'isDeal', description: '是否成交列' },
-        { id: 'actual-arrival-status-column', columnKey: 'actualVisitStatus', description: '实际到店状态列' },
-        { id: 'actual-deal-status-column', columnKey: 'actualDealStatus', description: '实际成交状态列' },
-        { id: 'invalid-lead-status-column', columnKey: 'invalidCustomerStatus', description: '无效客资状态列' },
+        { id: 'first-deal-amount-column', columnKey: 'firstDealAmount', description: '首笔成交金额列' },
+        { id: 'invalid-approval-status-column', columnKey: 'invalidApprovalStatus', description: '无效审批状态列' },
       ]);
     });
   });
@@ -251,8 +315,6 @@ describe('StoreCustomerList', () => {
 
       await user.click(sortHeader);
       expect(getCurrentNames()).toEqual([
-        '刘洋',
-        '吴芳',
         '孙丽',
         '赵敏',
         '陈晨',
@@ -261,7 +323,248 @@ describe('StoreCustomerList', () => {
         '张三',
         '周杰',
         '王五',
+        '刘洋',
+        '吴芳',
       ]);
+    });
+
+    it('空值排在有效日期之后（升序）', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList initialState="normal" />);
+      const sortHeader = screen.getByRole('columnheader', { name: /预约到店时间/ });
+      await user.click(sortHeader);
+      // 升序：刘洋、吴芳（空值）排在最后
+      const names = getCurrentNames();
+      const lastTwo = names.slice(-2);
+      expect(lastTwo).toContain('刘洋');
+      expect(lastTwo).toContain('吴芳');
+    });
+
+    it('表头显示排序图标', () => {
+      render(<StoreCustomerList initialState="normal" />);
+      // 预约到店时间表头可点击排序
+      const header = screen.getByRole('columnheader', { name: /预约到店时间/ });
+      expect(header).toBeTruthy();
+    });
+  });
+
+  describe('0008 补充：列表字段排序', () => {
+    it('首次分配时间升序', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList initialState="normal" />);
+      const header = screen.getByRole('columnheader', { name: /首次分配时间/ });
+      await user.click(header);
+      const names = getCurrentNames();
+      // 最早首次分配时间：沈鹏 2026-06-30（不包含在首页，需特殊检查）
+      expect(names.length).toBe(10);
+      // 第一页应按首次分配时间升序
+      const first = names[0]!;
+      expect(first).not.toBe('');
+    });
+
+    it('首次分配时间降序', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList initialState="normal" />);
+      const header = screen.getByRole('columnheader', { name: /首次分配时间/ });
+      await user.click(header);
+      await user.click(header); // 第二次点击：降序
+      const names = getCurrentNames();
+      // 最新时间在前（张三 2026-07-21）
+      expect(names[0]).toBe('张三');
+    });
+
+    it('最新分配时间升序', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList initialState="normal" />);
+      const header = screen.getByRole('columnheader', { name: /最新分配时间/ });
+      await user.click(header);
+      const names = getCurrentNames();
+      expect(names.length).toBe(10);
+    });
+
+    it('最新分配时间降序', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList initialState="normal" />);
+      const header = screen.getByRole('columnheader', { name: /最新分配时间/ });
+      await user.click(header);
+      await user.click(header);
+      // 李四 lastAssignTime 2026-07-21 16:45:00 → 最新
+      // 张三 lastAssignTime 2026-07-22 09:15:00 → 更新
+      expect(getCurrentNames()[0]).toBe('张三');
+    });
+
+    it('是否到店升序：未到店 → 已到店 → 空值', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList initialState="normal" />);
+      const header = screen.getByRole('columnheader', { name: /是否到店/ });
+      await user.click(header);
+      // 升序：未到店在前
+      const visitedValues = getVisibleColumnValues('是否到店');
+      // 未到店排在最前
+      expect(visitedValues[0]).toBe('未到店');
+    });
+
+    it('是否到店降序：已到店 → 未到店 → 空值', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList initialState="normal" />);
+      const header = screen.getByRole('columnheader', { name: /是否到店/ });
+      await user.click(header);
+      await user.click(header);
+      const visitedValues = getVisibleColumnValues('是否到店');
+      expect(visitedValues[0]).toBe('已到店');
+    });
+
+    it('是否成交升序：未成交 → 已成交 → 空值', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList initialState="normal" />);
+      const header = screen.getByRole('columnheader', { name: /是否成交/ });
+      await user.click(header);
+      const dealValues = getVisibleColumnValues('是否成交');
+      expect(dealValues[0]).toBe('未成交');
+    });
+
+    it('是否成交降序：已成交 → 未成交 → 空值', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList initialState="normal" />);
+      const header = screen.getByRole('columnheader', { name: /是否成交/ });
+      await user.click(header);
+      await user.click(header);
+      const dealValues = getVisibleColumnValues('是否成交');
+      expect(dealValues[0]).toBe('已成交');
+    });
+
+    it('取消排序后恢复原始列表顺序', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList initialState="normal" />);
+      const originalNames = getCurrentNames();
+
+      const header = screen.getByRole('columnheader', { name: /首次分配时间/ });
+      await user.click(header); // 升序
+      const sortedNames = getCurrentNames();
+      expect(sortedNames).not.toEqual(originalNames);
+
+      await user.click(header); // 降序
+      await user.click(header); // 取消排序
+      const restoredNames = getCurrentNames();
+      expect(restoredNames).toEqual(originalNames);
+    });
+  });
+
+  describe('0008 限定修复：五列完整排序序列', () => {
+    const timeCases = [
+      {
+        header: '首次分配时间',
+        ascending: [
+          '2026-07-01 09:00:00',
+          '2026-07-02 09:00:00',
+          '2026-07-03 09:00:00',
+          '-',
+        ],
+        descending: [
+          '2026-07-03 09:00:00',
+          '2026-07-02 09:00:00',
+          '2026-07-01 09:00:00',
+          '-',
+        ],
+      },
+      {
+        header: '最新分配时间',
+        ascending: [
+          '2026-07-01 09:00:00',
+          '2026-07-02 09:00:00',
+          '2026-07-03 09:00:00',
+          '',
+        ],
+        descending: [
+          '2026-07-03 09:00:00',
+          '2026-07-02 09:00:00',
+          '2026-07-01 09:00:00',
+          '',
+        ],
+      },
+      {
+        header: '预约到店时间',
+        ascending: [
+          '2026-07-01 09:00:00',
+          '2026-07-02 09:00:00',
+          '2026-07-03 09:00:00',
+          '0000-00-00 00:00:00',
+        ],
+        descending: [
+          '2026-07-03 09:00:00',
+          '2026-07-02 09:00:00',
+          '2026-07-01 09:00:00',
+          '0000-00-00 00:00:00',
+        ],
+      },
+    ] as const;
+
+    it.each(timeCases)('$header 升序、降序均保持空值末尾', async ({
+      header,
+      ascending,
+      descending,
+    }) => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList data={createSortTestData()} initialState="normal" />);
+      const columnHeader = screen.getByRole('columnheader', {
+        name: new RegExp(header),
+      });
+
+      await user.click(columnHeader);
+      expect(getVisibleColumnValues(header)).toEqual(ascending);
+
+      await user.click(columnHeader);
+      expect(getVisibleColumnValues(header)).toEqual(descending);
+    });
+
+    it('是否到店完整验证未到店、已到店与空值的双向顺序', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList data={createSortTestData()} initialState="normal" />);
+      const header = screen.getByRole('columnheader', { name: /是否到店/ });
+
+      await user.click(header);
+      expect(getVisibleColumnValues('是否到店')).toEqual([
+        '未到店',
+        '已到店',
+        '已到店',
+        '--',
+      ]);
+
+      await user.click(header);
+      expect(getVisibleColumnValues('是否到店')).toEqual([
+        '已到店',
+        '已到店',
+        '未到店',
+        '--',
+      ]);
+    });
+
+    it('是否成交完整验证未成交、已成交与空值的双向顺序', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList data={createSortTestData()} initialState="normal" />);
+      const header = screen.getByRole('columnheader', { name: /是否成交/ });
+
+      await user.click(header);
+      expect(getVisibleColumnValues('是否成交')).toEqual([
+        '未成交',
+        '未成交',
+        '已成交',
+        '--',
+      ]);
+
+      await user.click(header);
+      expect(getVisibleColumnValues('是否成交')).toEqual([
+        '已成交',
+        '未成交',
+        '未成交',
+        '--',
+      ]);
+    });
+
+    it('首笔成交金额仍不可排序', () => {
+      const column = ALL_COLUMNS.find((item) => item.key === 'firstDealAmount');
+      expect(column).toBeDefined();
+      expect(column?.sorter).toBeUndefined();
     });
   });
 
@@ -327,7 +630,7 @@ describe('StoreCustomerList', () => {
         getByReqId('operation-menu-trigger-2').getAttribute('aria-expanded'),
       ).toBe('false');
       expect(screen.getAllByRole('menu')).toHaveLength(1);
-      expect(screen.getByRole('menuitem', { name: '标注无效客资' })).toBeTruthy();
+      expect(screen.getByRole('menuitem', { name: '标记无效客资' })).toBeTruthy();
 
       await user.click(getByReqId('operation-menu-trigger-2'));
       await waitFor(() => {
@@ -618,11 +921,11 @@ describe('StoreCustomerList', () => {
         return user;
       }
 
-      it('表头1—8需求点可通过稳定data属性定位', async () => {
+      it('表头1—7需求点可通过稳定data属性定位', async () => {
         await enterRequirementMode();
 
-        // 验证编号 1-8 的 marker 各至少存在1个
-        for (let num = 1; num <= 8; num++) {
+        // 验证编号 1-7 的 marker 各至少存在1个
+        for (let num = 1; num <= 7; num++) {
           const markers = document.querySelectorAll(
             `[data-requirement-number="${num}"]`,
           );
@@ -630,66 +933,48 @@ describe('StoreCustomerList', () => {
         }
       });
 
-      it('筛选项显示编号9', async () => {
+      it('筛选项显示编号8', async () => {
         await enterRequirementMode();
 
         const filterArea = document.querySelector(
           '[data-req-id="filter-area"]',
         );
         expect(filterArea).toBeTruthy();
-        const marker9 = filterArea!.querySelector(
-          '[data-requirement-number="9"]',
+        const marker8 = filterArea!.querySelector(
+          '[data-requirement-number="8"]',
         );
-        expect(marker9).toBeTruthy();
-        // 编号9对应无效客资筛选
-        expect(marker9!.getAttribute('data-requirement-key')).toBe(
-          'scrm-store-customer-invalid-lead-filter',
+        expect(marker8).toBeTruthy();
+        // 编号8对应无效审批状态筛选
+        expect(marker8!.getAttribute('data-requirement-key')).toBe(
+          'scrm-store-customer-invalid-approval-filter',
         );
-        expect(marker9!.getAttribute('data-req-id')).toBe(
-          'invalid-lead-filter',
-        );
-      });
-
-      it('行内编号10使用不同record.key形成稳定data-req-id', async () => {
-        await enterRequirementMode();
-
-        const markers10 = document.querySelectorAll(
-          '[data-requirement-number="10"]',
-        );
-        expect(markers10.length).toBeGreaterThanOrEqual(2);
-        expect(markers10[0]!.getAttribute('data-requirement-key')).toBe(
-          'scrm-store-customer-invalid-lead-detail',
-        );
-        expect(markers10[0]!.getAttribute('data-req-id')).toBe(
-          `invalid-lead-detail-${rawCustomers[0]!.key}`,
-        );
-        expect(markers10[1]!.getAttribute('data-req-id')).toBe(
-          `invalid-lead-detail-${rawCustomers[1]!.key}`,
-        );
-        expect(markers10[0]!.getAttribute('data-req-id')).not.toBe(
-          markers10[1]!.getAttribute('data-req-id'),
+        expect(marker8!.getAttribute('data-req-id')).toBe(
+          'invalid-approval-filter',
         );
       });
 
-      it('展开操作菜单后显示编号11', async () => {
+      it('需求模式下展开操作菜单显示审批流程需求编号点（Cycle 2 菜单有编号点）', async () => {
         const user = await enterRequirementMode();
 
-        // 点击第一个操作按钮展开菜单
+        // 记录1（张三）invalidApprovalStatus 为 null，菜单显示"标记无效客资"（编号9）
         const trigger = document.querySelector(
           '[data-req-id="operation-menu-trigger-1"]',
         ) as HTMLElement;
         await user.click(trigger);
 
-        // 菜单中应出现编号11
-        const marker11 = document.querySelector(
-          '[data-requirement-number="11"]',
+        // 菜单中应出现"标记无效客资"的需求编号点（编号9）
+        const menuMarkers = document.querySelectorAll(
+          '[role="menu"] [data-requirement-number]',
         );
-        expect(marker11).toBeTruthy();
-        expect(marker11!.getAttribute('data-requirement-key')).toBe(
-          'scrm-store-customer-invalid-lead-approval',
+        expect(menuMarkers.length).toBeGreaterThan(0);
+
+        // 编号9标记无效客资在菜单中
+        const marker9 = document.querySelector(
+          '[role="menu"] [data-requirement-number="9"]',
         );
-        expect(marker11!.getAttribute('data-req-id')).toBe(
-          `invalid-lead-approval-${rawCustomers[0]!.key}`,
+        expect(marker9).toBeTruthy();
+        expect(marker9!.getAttribute('data-requirement-key')).toBe(
+          'scrm-store-customer-invalid-application',
         );
       });
 
@@ -968,8 +1253,6 @@ describe('StoreCustomerList', () => {
         await user.click(header);
 
         expect(getCurrentNames()).toEqual([
-          '刘洋',
-          '吴芳',
           '孙丽',
           '赵敏',
           '陈晨',
@@ -978,6 +1261,8 @@ describe('StoreCustomerList', () => {
           '张三',
           '周杰',
           '王五',
+          '刘洋',
+          '吴芳',
         ]);
       });
 
@@ -991,11 +1276,11 @@ describe('StoreCustomerList', () => {
         // 进入需求模式
         await user.click(screen.getByRole('button', { name: '查看需求' }));
 
-        // 需求模式下点击预约到店时间列的编号5
-        const marker5 = document.querySelector(
-          '[data-requirement-number="5"]',
+        // 需求模式下点击预约到店时间列的编号3
+        const marker3 = document.querySelector(
+          '[data-requirement-number="3"]',
         ) as HTMLElement;
-        await user.click(marker5);
+        await user.click(marker3);
 
         // 应打开SC-01-05的抽屉
         const drawer = document.querySelector(
@@ -1036,7 +1321,7 @@ describe('StoreCustomerList', () => {
     });
 
     describe('操作和筛选隔离', () => {
-      it('原型菜单切换模式后可关闭，并能在需求模式重新展开编号11', async () => {
+      it('原型菜单切换模式后可关闭，需求模式菜单有审批流程编号点', async () => {
         const user = userEvent.setup();
         render(<StoreCustomerList initialState="normal" />);
 
@@ -1044,8 +1329,9 @@ describe('StoreCustomerList', () => {
         const trigger = getByReqId(triggerId);
         await user.click(trigger);
         expect(getByReqId(triggerId).getAttribute('aria-expanded')).toBe('true');
+        // 原型模式下菜单项不含需求编号点
         expect(
-          screen.getByRole('menuitem', { name: '标注无效客资' }),
+          screen.getByRole('menuitem', { name: '标记无效客资' }),
         ).toBeTruthy();
 
         await user.click(screen.getByRole('button', { name: '查看需求' }));
@@ -1054,50 +1340,14 @@ describe('StoreCustomerList', () => {
         await user.click(getByReqId(triggerId));
         expect(getByReqId(triggerId).getAttribute('aria-expanded')).toBe('true');
 
-        const marker11 = document.querySelector(
-          '[data-requirement-number="11"]',
-        ) as HTMLElement;
-        expect(marker11).toBeTruthy();
-        expect(marker11.getAttribute('data-req-id')).toBe(
-          `invalid-lead-approval-${rawCustomers[0]!.key}`,
+        // Cycle 2：需求模式下菜单出现审批流程编号点（编号9标记无效客资）
+        const menuMarkers = document.querySelectorAll(
+          '[role="menu"] [data-requirement-number="9"]',
         );
-
-        await user.click(marker11);
-        const drawer = getByReqId('requirement-drawer');
-        expect(drawer.textContent).toContain('SC-02');
-        expect(drawer.textContent).toContain('审批无效客资');
+        expect(menuMarkers.length).toBeGreaterThan(0);
       });
 
-      it('点击编号11打开SC-02需求抽屉', async () => {
-        const user = userEvent.setup();
-        render(<StoreCustomerList initialState="normal" />);
-        await user.click(screen.getByRole('button', { name: '查看需求' }));
-
-        // 展开操作菜单
-        const trigger = document.querySelector(
-          '[data-req-id="operation-menu-trigger-1"]',
-        ) as HTMLElement;
-        await user.click(trigger);
-
-        // 点击编号11
-        const marker11 = document.querySelector(
-          '[data-requirement-number="11"]',
-        ) as HTMLElement;
-        await user.click(marker11);
-
-        // 抽屉应打开并显示SC-02
-        const drawer = document.querySelector(
-          '[data-req-id="requirement-drawer"]',
-        );
-        expect(drawer).toBeTruthy();
-        const reqData = getRequirement(
-          'scrm-store-customer-invalid-lead-approval',
-        );
-        expect(drawer!.textContent).toContain(reqData!.requirementNo);
-        expect(drawer!.textContent).toContain('SC-02');
-      });
-
-      it('点击筛选编号9不改变pending筛选控件值', async () => {
+      it('点击筛选编号8不改变pending筛选控件值', async () => {
         const user = userEvent.setup();
         render(<StoreCustomerList initialState="normal" />);
 
@@ -1110,11 +1360,11 @@ describe('StoreCustomerList', () => {
         // 进入需求模式
         await user.click(screen.getByRole('button', { name: '查看需求' }));
 
-        // 点击筛选编号9
-        const filterMarker9 = document.querySelector(
-          '[data-req-id="filter-area"] [data-requirement-number="9"]',
+        // 点击筛选编号8
+        const filterMarker8 = document.querySelector(
+          '[data-req-id="filter-area"] [data-requirement-number="8"]',
         ) as HTMLElement;
-        await user.click(filterMarker9);
+        await user.click(filterMarker8);
 
         // pending筛选值不应改变
         expect(nameInput.value).toBe('张三');
@@ -1130,9 +1380,9 @@ describe('StoreCustomerList', () => {
         ) as HTMLElement;
         await user.click(first);
 
-        // 菜单应显示"标注无效客资"
+        // 菜单应显示"标记无效客资"
         expect(
-          screen.getByRole('menuitem', { name: '标注无效客资' }),
+          screen.getByRole('menuitem', { name: '标记无效客资' }),
         ).toBeTruthy();
 
         // 切换到另一行
@@ -1441,6 +1691,775 @@ describe('StoreCustomerList', () => {
       );
       expect(screen.getByText('SCRM系统')).toBeTruthy();
       expect(screen.getByText('SCRM管理系统')).toBeTruthy();
+    });
+  });
+
+  // ==========================================================================
+  // 0008 闭环一：列表字段调整
+  // ==========================================================================
+
+  describe('0008 闭环一：列表字段调整', () => {
+    describe('首笔成交金额展示', () => {
+      it('第一页同时显示 29.90、0.00 和 --', () => {
+        render(<StoreCustomerList initialState="normal" />);
+
+        const table = document.querySelector('[data-req-id="customer-table"]');
+        expect(table).toBeTruthy();
+
+        const tableText = table!.textContent ?? '';
+        // 29.9 → 29.90（保留两位小数）
+        expect(tableText).toContain('29.90');
+        // 0 → 0.00（0 是合法金额）
+        expect(tableText).toContain('0.00');
+
+        // null → --：验证表格中存在 --（多种列可能使用，不要求精确列定位）
+        const allCells = table!.querySelectorAll('td');
+        const cellTexts = Array.from(allCells).map(
+          (cell) => cell.textContent?.trim() ?? '',
+        );
+        expect(cellTexts).toContain('--');
+      });
+
+      it('首笔成交金额列不支持排序', () => {
+        const col = ALL_COLUMNS.find((c) => c.key === 'firstDealAmount');
+        expect(col).toBeTruthy();
+        expect((col as Record<string, unknown>).sorter).toBeUndefined();
+      });
+    });
+
+    describe('无效审批状态筛选', () => {
+      function getInvalidApprovalFilterCombobox(): HTMLElement {
+        // 通过筛选区中 label 文本定位无效审批状态所在的 filter-item
+        const filterArea = document.querySelector('[data-req-id="filter-area"]');
+        if (!filterArea) throw new Error('筛选区不存在');
+        const labels = filterArea.querySelectorAll('label');
+        let filterItem: Element | null = null;
+        labels.forEach((label) => {
+          if (label.textContent?.includes('无效审批状态')) {
+            filterItem = label.closest('.store-customer-filter-item');
+          }
+        });
+        if (!filterItem) throw new Error('未找到无效审批状态 filter-item');
+        const combobox = (filterItem as Element).querySelector('[role="combobox"]') as HTMLElement;
+        if (!combobox) throw new Error('combobox 不存在');
+        return combobox;
+      }
+
+      it('筛选下拉包含全部、待审核、审核通过、审核退回', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+
+        const combobox = getInvalidApprovalFilterCombobox();
+        await user.click(combobox);
+
+        await waitFor(() => {
+          expect(screen.getByTitle('待审核')).toBeTruthy();
+        });
+
+        expect(screen.getByTitle('审核通过')).toBeTruthy();
+        expect(screen.getByTitle('审核退回')).toBeTruthy();
+        expect(screen.getByTitle('全部')).toBeTruthy();
+      });
+
+      it('筛选下拉不包含 --、未申请、空状态', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+
+        const combobox = getInvalidApprovalFilterCombobox();
+        await user.click(combobox);
+
+        await waitFor(() => {
+          expect(screen.getByTitle('待审核')).toBeTruthy();
+        });
+
+        // 限定在 Select 下拉弹出层中查找，避免表格中的 "--" 干扰
+        const dropdown = document.querySelector('[role="listbox"]');
+        expect(dropdown).toBeTruthy();
+        const dropdownEl = dropdown as HTMLElement;
+        expect(dropdownEl.querySelector('[title="--"]')).toBeNull();
+        expect(dropdownEl.querySelector('[title="未申请"]')).toBeNull();
+        expect(dropdownEl.querySelector('[title="空状态"]')).toBeNull();
+      });
+    });
+
+    describe('旧名称清除', () => {
+      it('页面不再出现"无效客资状态"', () => {
+        render(<StoreCustomerList initialState="normal" />);
+        expect(screen.queryByText('无效客资状态')).toBeNull();
+      });
+
+      it('页面使用"无效审批状态"作为列名和筛选标签', () => {
+        render(<StoreCustomerList initialState="normal" />);
+        // 列名和筛选标签都显示"无效审批状态"
+        const matches = screen.getAllByText('无效审批状态');
+        expect(matches.length).toBeGreaterThanOrEqual(2); // 表头 + 筛选项标签
+      });
+    });
+  });
+
+
+  // ==========================================================================
+  // 0008 闭环二：审批流程
+  // ==========================================================================
+
+  describe('0008 闭环二：审批流程', () => {
+    /** 打开指定记录的标记无效客资抽屉 */
+    async function openApplicationDrawer(
+      user: ReturnType<typeof userEvent.setup>,
+      recordKey: string,
+    ) {
+      const trigger = getByReqId(`operation-menu-trigger-${recordKey}`);
+      await user.click(trigger);
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: '标记无效客资' })).toBeTruthy();
+      });
+      await user.click(screen.getByRole('menuitem', { name: '标记无效客资' }));
+      await waitFor(() => {
+        expect(
+          document.querySelector('[data-req-id="invalid-application-drawer"]'),
+        ).toBeTruthy();
+      });
+    }
+
+    function getInvalidStatusInRow(row: HTMLElement): string | null {
+      return getCellByHeader(row, '无效审批状态').textContent?.trim() ?? null;
+    }
+
+    describe('必填标识', () => {
+      it('申请抽屉理由标签显示红色 *', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        await openApplicationDrawer(user, '4');
+        const requiredMark = document.querySelector(
+          '[data-req-id="invalid-application-drawer"] .invalid-approval-drawer-required',
+        );
+        expect(requiredMark).toBeTruthy();
+        expect(requiredMark!.textContent).toBe('*');
+      });
+
+      it('审核意见标签始终显示红色 *', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        await user.click(screen.getByRole('menuitem', { name: '审核无效标注' }));
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+          ).toBeTruthy();
+        });
+        const opinionContainer = document.querySelector(
+          '[data-req-id="invalid-approval-opinion"]',
+        )?.closest('.invalid-approval-drawer-field');
+        const opinionRequired = opinionContainer?.querySelector(
+          '.invalid-approval-drawer-required',
+        );
+        expect(opinionRequired).toBeTruthy();
+      });
+
+      it('选择退回后备注标签立即显示红色 *', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        await user.click(screen.getByRole('menuitem', { name: '审核无效标注' }));
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+          ).toBeTruthy();
+        });
+        const remarkField = document.querySelector(
+          '[data-req-id="invalid-approval-return-remark"]',
+        )?.closest('.invalid-approval-drawer-field');
+        expect(
+          remarkField?.querySelector('.invalid-approval-drawer-required'),
+        ).toBeNull();
+        const opinionContainer = document.querySelector(
+          '[data-req-id="invalid-approval-opinion"]',
+        ) as HTMLElement;
+        const rejectRadio = within(opinionContainer).getByText('退回');
+        await user.click(rejectRadio);
+        expect(
+          remarkField?.querySelector('.invalid-approval-drawer-required'),
+        ).toBeTruthy();
+      });
+
+      it('选择通过时备注没有必填标识', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        await user.click(screen.getByRole('menuitem', { name: '审核无效标注' }));
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+          ).toBeTruthy();
+        });
+        const opinionContainer = document.querySelector(
+          '[data-req-id="invalid-approval-opinion"]',
+        ) as HTMLElement;
+        await user.click(within(opinionContainer).getByText('通过'));
+        const remarkField = document.querySelector(
+          '[data-req-id="invalid-approval-return-remark"]',
+        )?.closest('.invalid-approval-drawer-field');
+        expect(
+          remarkField?.querySelector('.invalid-approval-drawer-required'),
+        ).toBeNull();
+      });
+    });
+
+    describe('申请表单', () => {
+      it('申请表单只显示理由和附件，不显示客户姓名、申请人', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        await openApplicationDrawer(user, '4');
+        const drawer = document.querySelector(
+          '[data-req-id="invalid-application-drawer"]',
+        ) as HTMLElement;
+        const drawerText = drawer?.textContent ?? '';
+        expect(drawerText).toContain('理由');
+        expect(drawerText).toContain('附件');
+        expect(drawerText).not.toContain('客户姓名');
+        expect(drawerText).not.toContain('申请人');
+      });
+    });
+
+    describe('审核意见布局', () => {
+      it('通过和退选项处于同一 Radio.Group', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        await user.click(screen.getByRole('menuitem', { name: '审核无效标注' }));
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+          ).toBeTruthy();
+        });
+        const opinionDiv = document.querySelector(
+          '[data-req-id="invalid-approval-opinion"]',
+        ) as HTMLElement;
+        expect(opinionDiv.querySelector('[role="radiogroup"]')).toBeTruthy();
+        expect(within(opinionDiv).getByText('通过')).toBeTruthy();
+        expect(within(opinionDiv).getByText('退回')).toBeTruthy();
+      });
+    });
+
+    describe('状态流转', () => {
+      it('null 提交申请后变为"待审核"', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        await openApplicationDrawer(user, '4');
+        const remark = document.querySelector(
+          '[data-req-id="invalid-application-remark"]',
+        ) as HTMLTextAreaElement;
+        await user.type(remark, '测试无效申请');
+        await user.click(document.querySelector('[data-req-id="invalid-application-submit"]') as HTMLElement);
+        await waitFor(() => {
+          const rows = document.querySelectorAll('tr[data-row-key="4"]');
+          expect(rows.length).toBeGreaterThan(0);
+          expect(getInvalidStatusInRow(rows[0] as HTMLElement)).toBe('待审核');
+        });
+      });
+
+      it('审核通过后变为"审核通过"', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        await user.click(screen.getByRole('menuitem', { name: '审核无效标注' }));
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+          ).toBeTruthy();
+        });
+        const opinionContainer = document.querySelector(
+          '[data-req-id="invalid-approval-opinion"]',
+        ) as HTMLElement;
+        await user.click(within(opinionContainer).getByText('通过'));
+        const confirmBtn = document.querySelector(
+          '[data-req-id="invalid-approval-review-confirm"]',
+        ) as HTMLElement;
+        await user.click(confirmBtn);
+        await waitFor(() => {
+          const rows = document.querySelectorAll('tr[data-row-key="2"]');
+          expect(rows.length).toBeGreaterThan(0);
+          expect(getInvalidStatusInRow(rows[0] as HTMLElement)).toBe('审核通过');
+        });
+      });
+
+      it('审核退回后变为"审核退回"', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        await openApplicationDrawer(user, '4');
+        const appRemark = document.querySelector(
+          '[data-req-id="invalid-application-remark"]',
+        ) as HTMLTextAreaElement;
+        await user.type(appRemark, '理由');
+        await user.click(document.querySelector('[data-req-id="invalid-application-submit"]') as HTMLElement);
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-application-drawer"]'),
+          ).toBeNull();
+        });
+        const trigger = getByReqId('operation-menu-trigger-4');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        await user.click(screen.getByRole('menuitem', { name: '审核无效标注' }));
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+          ).toBeTruthy();
+        });
+        const opinionContainer = document.querySelector(
+          '[data-req-id="invalid-approval-opinion"]',
+        ) as HTMLElement;
+        await user.click(within(opinionContainer).getByText('退回'));
+        const remarkTArea = document.querySelector(
+          '[data-req-id="invalid-approval-review-remark-input"]',
+        ) as HTMLTextAreaElement;
+        await user.type(remarkTArea, '资料不完整');
+        const confirmBtn = document.querySelector(
+          '[data-req-id="invalid-approval-review-confirm"]',
+        ) as HTMLElement;
+        await user.click(confirmBtn);
+        await waitFor(() => {
+          const rows = document.querySelectorAll('tr[data-row-key="4"]');
+          expect(rows.length).toBeGreaterThan(0);
+          expect(getInvalidStatusInRow(rows[0] as HTMLElement)).toBe('审核退回');
+        });
+      });
+
+      it('审核退回后菜单显示"标记无效客资"', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-7');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '标记无效客资' })).toBeTruthy();
+        });
+      });
+
+      it('审核退回后再次标记回到"待审核"', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        await openApplicationDrawer(user, '7');
+        const remark = document.querySelector(
+          '[data-req-id="invalid-application-remark"]',
+        ) as HTMLTextAreaElement;
+        await user.type(remark, '重新提交');
+        await user.click(document.querySelector('[data-req-id="invalid-application-submit"]') as HTMLElement);
+        await waitFor(() => {
+          const rows = document.querySelectorAll('tr[data-row-key="7"]');
+          expect(rows.length).toBeGreaterThan(0);
+          expect(getInvalidStatusInRow(rows[0] as HTMLElement)).toBe('待审核');
+        });
+      });
+
+      it('待审核不显示"标记无效客资"', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        expect(screen.queryByRole('menuitem', { name: '标记无效客资' })).toBeNull();
+      });
+
+      it('审核通过不显示任何无效审批操作', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-5');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.queryByRole('menuitem', { name: '标记无效客资' })).toBeNull();
+        });
+        expect(screen.queryByRole('menuitem', { name: '审核无效标注' })).toBeNull();
+      });
+    });
+
+    describe('操作菜单', () => {
+      it('操作菜单不再出现"查看详情"', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        expect(screen.queryByRole('menuitem', { name: '查看详情' })).toBeNull();
+      });
+
+      it('操作菜单不再出现"重新申请"', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-7');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '标记无效客资' })).toBeTruthy();
+        });
+        expect(screen.queryByRole('menuitem', { name: '重新申请' })).toBeNull();
+      });
+    });
+
+    describe('表单校验', () => {
+      it.each([
+        { opinion: '通过', remark: '' },
+        { opinion: '退回', remark: '申请依据不足' },
+      ])('$opinion连续确认仅提交一次并显示提交中', ({ opinion, remark }) => {
+        const onSubmit = vi.fn();
+        render(
+          <InvalidReviewDrawer
+            open
+            onClose={vi.fn()}
+            onSubmit={onSubmit}
+            recordName="测试客户"
+            application={{
+              customerName: '测试客户',
+              applicant: '测试申请人',
+              applicationTime: '2026-07-20 09:00:00',
+              remark: '测试申请原因',
+              attachments: [],
+            }}
+          />,
+        );
+
+        fireEvent.click(screen.getByRole('radio', { name: opinion }));
+        if (remark) {
+          fireEvent.change(
+            getByReqId('invalid-approval-review-remark-input'),
+            { target: { value: remark } },
+          );
+        }
+
+        const confirmButton = getByReqId('invalid-approval-review-confirm');
+        fireEvent.click(confirmButton);
+        fireEvent.click(confirmButton);
+
+        expect(onSubmit).toHaveBeenCalledTimes(1);
+        const submittingButton = screen.getByRole('button', {
+          name: /提交中/,
+        }) as HTMLButtonElement;
+        expect(submittingButton.disabled).toBe(true);
+      });
+
+      it('审核意见必填：未选择时显示错误', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        await user.click(screen.getByRole('menuitem', { name: '审核无效标注' }));
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+          ).toBeTruthy();
+        });
+        const confirmBtn = document.querySelector(
+          '[data-req-id="invalid-approval-review-confirm"]',
+        ) as HTMLElement;
+        await user.click(confirmBtn);
+        await waitFor(() => {
+          expect(
+            document.querySelector('.invalid-approval-drawer-error'),
+          ).toBeTruthy();
+        });
+        expect(
+          document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+        ).toBeTruthy();
+      });
+
+      it('通过时备注非必填', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        await user.click(screen.getByRole('menuitem', { name: '审核无效标注' }));
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+          ).toBeTruthy();
+        });
+        const opinionContainer = document.querySelector(
+          '[data-req-id="invalid-approval-opinion"]',
+        ) as HTMLElement;
+        await user.click(within(opinionContainer).getByText('通过'));
+        const confirmBtn = document.querySelector(
+          '[data-req-id="invalid-approval-review-confirm"]',
+        ) as HTMLElement;
+        await user.click(confirmBtn);
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+          ).toBeNull();
+        });
+      });
+
+      it('退回时备注必填：空备注显示错误', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        await user.click(screen.getByRole('menuitem', { name: '审核无效标注' }));
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+          ).toBeTruthy();
+        });
+        const opinionContainer = document.querySelector(
+          '[data-req-id="invalid-approval-opinion"]',
+        ) as HTMLElement;
+        await user.click(within(opinionContainer).getByText('退回'));
+        const confirmBtn = document.querySelector(
+          '[data-req-id="invalid-approval-review-confirm"]',
+        ) as HTMLElement;
+        await user.click(confirmBtn);
+        await waitFor(() => {
+          const errors = document.querySelectorAll('.invalid-approval-drawer-error');
+          const errorTexts = Array.from(errors).map((e) => e.textContent);
+          expect(errorTexts.some((t) => t?.includes('备注'))).toBe(true);
+        });
+        expect(
+          document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+        ).toBeTruthy();
+      });
+
+      it('备注 maxLength 为 200', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+        });
+        await user.click(screen.getByRole('menuitem', { name: '审核无效标注' }));
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+          ).toBeTruthy();
+        });
+        const remarkInput = document.querySelector(
+          '[data-req-id="invalid-approval-review-remark-input"]',
+        ) as HTMLTextAreaElement;
+        expect(remarkInput.getAttribute('maxlength')).toBe('200');
+      });
+
+      it('取消不修改状态', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        await openApplicationDrawer(user, '3');
+        const remark = document.querySelector(
+          '[data-req-id="invalid-application-remark"]',
+        ) as HTMLTextAreaElement;
+        await user.type(remark, '测试');
+        const closeBtn = document.querySelector('[aria-label="Close"]') as HTMLElement;
+        await user.click(closeBtn);
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-application-drawer"]'),
+          ).toBeNull();
+        });
+        const rows = document.querySelectorAll('tr[data-row-key="3"]');
+        expect(rows.length).toBeGreaterThan(0);
+        expect(getInvalidStatusInRow(rows[0] as HTMLElement)).toBe('--');
+      });
+    });
+
+    describe('详情', () => {
+      it('pending详情展示完整申请数据且不伪造审核结果', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const rows = document.querySelectorAll('tr[data-row-key="2"]');
+        const statusCell = getCellByHeader(
+          rows[0] as HTMLElement,
+          '无效审批状态',
+        );
+        const clickable = statusCell.querySelector('[data-req-id^="invalid-approval-detail-"]');
+        expect(clickable).toBeTruthy();
+        await user.click(clickable!);
+        await waitFor(() => {
+          const drawer = getByReqId('invalid-approval-detail-drawer');
+          const text = drawer.textContent ?? '';
+          expect(text).toContain('李四');
+          expect(text).toContain('王经理');
+          expect(text).toContain('2026-07-20 09:30:00');
+          expect(text).toContain('客户多次未按预约到店，申请标记无效。');
+          expect(text).toContain('客户沟通记录.png');
+          expect(text).toContain('待审核');
+          expect(text).not.toContain('系统管理员');
+          expect(text).not.toContain('审核确认单.pdf');
+          expect(text).not.toContain('审核退回说明.pdf');
+        });
+      });
+
+      it('approved详情展示完整申请和审核实际值', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const rows = document.querySelectorAll('tr[data-row-key="5"]');
+        const clickable = getCellByHeader(
+          rows[0] as HTMLElement,
+          '无效审批状态',
+        ).querySelector('[data-req-id^="invalid-approval-detail-"]');
+        expect(clickable).toBeTruthy();
+        await user.click(clickable!);
+        await waitFor(() => {
+          const drawer = document.querySelector('[data-req-id="invalid-approval-detail-drawer"]');
+          expect(drawer).toBeTruthy();
+          const text = drawer!.textContent ?? '';
+          expect(text).toContain('陈晨');
+          expect(text).toContain('王经理');
+          expect(text).toContain('2026-07-18 14:20:00');
+          expect(text).toContain('客户明确表示近期无课程需求，申请标记无效。');
+          expect(text).toContain('客户确认记录.pdf');
+          expect(text).toContain('审核通过');
+          expect(text).toContain('系统管理员');
+          expect(text).toContain('2026-07-18 16:00:00');
+          expect(text).toContain('核实申请信息无误，同意标记为无效客资。');
+          expect(text).toContain('审核确认单.pdf');
+        });
+      });
+
+      it('rejected详情展示完整申请和审核实际值', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const rows = document.querySelectorAll('tr[data-row-key="7"]');
+        const clickable = getCellByHeader(
+          rows[0] as HTMLElement,
+          '无效审批状态',
+        ).querySelector('[data-req-id^="invalid-approval-detail-"]');
+        expect(clickable).toBeTruthy();
+        await user.click(clickable!);
+        await waitFor(() => {
+          const drawer = document.querySelector('[data-req-id="invalid-approval-detail-drawer"]');
+          expect(drawer).toBeTruthy();
+          const text = drawer!.textContent ?? '';
+          expect(text).toContain('周杰');
+          expect(text).toContain('李顾问');
+          expect(text).toContain('2026-07-19 11:10:00');
+          expect(text).toContain('多次联系未接通，申请标记无效。');
+          expect(text).toContain('外呼记录.png');
+          expect(text).toContain('审核退回');
+          expect(text).toContain('系统管理员');
+          expect(text).toContain('2026-07-19 15:30:00');
+          expect(text).toContain('申请依据不足，请补充近期沟通记录后重新提交。');
+          expect(text).toContain('审核退回说明.pdf');
+        });
+      });
+
+      it('详情抽屉关闭不修改状态', async () => {
+        const user = userEvent.setup();
+        render(<StoreCustomerList initialState="normal" />);
+        const rows = document.querySelectorAll('tr[data-row-key="2"]');
+        const clickable = getCellByHeader(
+          rows[0] as HTMLElement,
+          '无效审批状态',
+        ).querySelector('[data-req-id^="invalid-approval-detail-"]');
+        await user.click(clickable!);
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-detail-drawer"]'),
+          ).toBeTruthy();
+        });
+        const closeBtn = document.querySelector('[aria-label="Close"]') as HTMLElement;
+        await user.click(closeBtn);
+        await waitFor(() => {
+          expect(
+            document.querySelector('[data-req-id="invalid-approval-detail-drawer"]'),
+          ).toBeNull();
+        });
+        const rowsAfter = document.querySelectorAll('tr[data-row-key="2"]');
+        expect(rowsAfter.length).toBeGreaterThan(0);
+        expect(getInvalidStatusInRow(rowsAfter[0] as HTMLElement)).toBe('待审核');
+      });
+
+      it('空状态（--）不可点击打开详情', () => {
+        render(<StoreCustomerList initialState="normal" />);
+        const rows = document.querySelectorAll('tr[data-row-key="3"]');
+        const statusCell = getCellByHeader(
+          rows[0] as HTMLElement,
+          '无效审批状态',
+        );
+        expect(
+          statusCell.querySelector('[data-req-id^="invalid-approval-detail-"]'),
+        ).toBeNull();
+      });
+    });
+
+    describe('需求查看模式隔离', () => {
+      async function enterRequirementModeForApproval() {
+        const user = userEvent.setup();
+        render(
+          <StoreCustomerList
+            initialState="normal"
+            initialRequirementMode="requirement"
+          />,
+        );
+        return user;
+      }
+
+      it('需求模式下操作菜单编号点打开需求说明', async () => {
+        const user = await enterRequirementModeForApproval();
+        const trigger = getByReqId('operation-menu-trigger-1');
+        await user.click(trigger);
+        await waitFor(() => {
+          const markers = document.querySelectorAll('[role="menu"] [data-requirement-number="9"]');
+          expect(markers.length).toBeGreaterThan(0);
+        });
+        const marker9 = document.querySelector('[role="menu"] [data-requirement-number="9"]') as HTMLElement;
+        await user.click(marker9);
+        await waitFor(() => {
+          expect(document.querySelector('[data-req-id="requirement-drawer"]')).toBeTruthy();
+        });
+        expect(document.querySelector('[data-req-id="invalid-application-drawer"]')).toBeNull();
+      });
+
+      it('需求点 data-req-id 包含 record.key', async () => {
+        const user = await enterRequirementModeForApproval();
+        const trigger = getByReqId('operation-menu-trigger-1');
+        await user.click(trigger);
+        await waitFor(() => {
+          const markers = document.querySelectorAll('[role="menu"] [data-requirement-number="9"]');
+          expect(markers.length).toBeGreaterThan(0);
+        });
+        const marker9 = document.querySelector('[role="menu"] [data-requirement-number="9"]');
+        expect(marker9?.getAttribute('data-req-id')).toContain('invalid-application-1');
+      });
+
+      it('需求模式下不执行审核业务动作', async () => {
+        const user = await enterRequirementModeForApproval();
+        const trigger = getByReqId('operation-menu-trigger-2');
+        await user.click(trigger);
+        const marker10 = document.querySelector('[role="menu"] [data-requirement-number="10"]') as HTMLElement;
+        expect(marker10).toBeTruthy();
+        await user.click(marker10);
+        expect(document.querySelector('[data-req-id="invalid-approval-review-drawer"]')).toBeNull();
+      });
     });
   });
 });

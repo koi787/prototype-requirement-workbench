@@ -1,10 +1,11 @@
 /**
- * 门店客户列表 - 52列定义
- * 顺序严格按照任务单第12节
+ * 门店客户列表 - 51列定义
+ * 顺序严格按照任务单第5.5节
  */
 import type { ColumnsType } from 'antd/es/table';
 import type { CustomerRecord } from './mockData';
-import { VisitedTag, DealTag } from './StatusTags';
+import { VisitedTag, DealTag, InvalidApprovalStatusTag } from './StatusTags';
+import type { InvalidApprovalStatus } from './approvalTypes';
 
 /**
  * 列级需求锚点注册信息。
@@ -24,9 +25,8 @@ export const COLUMN_REQUIREMENT_ANCHORS = [
   { id: 'latest-allocation-time-column', columnKey: 'lastAssignTime', description: '最新分配时间列' },
   { id: 'is-arrived-column', columnKey: 'isVisited', description: '是否到店列' },
   { id: 'is-deal-column', columnKey: 'isDeal', description: '是否成交列' },
-  { id: 'actual-arrival-status-column', columnKey: 'actualVisitStatus', description: '实际到店状态列' },
-  { id: 'actual-deal-status-column', columnKey: 'actualDealStatus', description: '实际成交状态列' },
-  { id: 'invalid-lead-status-column', columnKey: 'invalidCustomerStatus', description: '无效客资状态列' },
+  { id: 'first-deal-amount-column', columnKey: 'firstDealAmount', description: '首笔成交金额列' },
+  { id: 'invalid-approval-status-column', columnKey: 'invalidApprovalStatus', description: '无效审批状态列' },
 ] as const;
 
 export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
@@ -42,18 +42,71 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     dataIndex: 'firstAssignTime',
     key: 'firstAssignTime',
     width: 150,
+    sorter: {
+      compare: (a, b, sortOrder) => {
+        const isInvalid = (v: string) => v === '-' || v.trim() === '' || v === '0000-00-00 00:00:00';
+        const aInv = isInvalid(a.firstAssignTime);
+        const bInv = isInvalid(b.firstAssignTime);
+        if (aInv && bInv) return 0;
+        if (aInv) return sortOrder === 'descend' ? -1 : 1;
+        if (bInv) return sortOrder === 'descend' ? 1 : -1;
+        return a.firstAssignTime.localeCompare(b.firstAssignTime);
+      },
+    },
   },
   {
     title: '最新分配时间',
     dataIndex: 'lastAssignTime',
     key: 'lastAssignTime',
     width: 150,
+    sorter: {
+      compare: (a, b, sortOrder) => {
+        const isInvalid = (v: string) => v === '-' || v.trim() === '' || v === '0000-00-00 00:00:00';
+        const aInv = isInvalid(a.lastAssignTime);
+        const bInv = isInvalid(b.lastAssignTime);
+        if (aInv && bInv) return 0;
+        if (aInv) return sortOrder === 'descend' ? -1 : 1;
+        if (bInv) return sortOrder === 'descend' ? 1 : -1;
+        return a.lastAssignTime.localeCompare(b.lastAssignTime);
+      },
+    },
+  },
+  {
+    title: '预约到店时间',
+    dataIndex: 'appointmentTime',
+    key: 'appointmentTime',
+    width: 160,
+    sorter: {
+      compare: (a, b, sortOrder) => {
+        const isInvalid = (v: string) => v === '-' || v.trim() === '' || v === '0000-00-00 00:00:00';
+        const aInv = isInvalid(a.appointmentTime);
+        const bInv = isInvalid(b.appointmentTime);
+        if (aInv && bInv) return 0;
+        if (aInv) return sortOrder === 'descend' ? -1 : 1;
+        if (bInv) return sortOrder === 'descend' ? 1 : -1;
+        return a.appointmentTime.localeCompare(b.appointmentTime);
+      },
+    },
   },
   {
     title: '是否到店',
     dataIndex: 'isVisited',
     key: 'isVisited',
     width: 100,
+    sorter: {
+      compare: (a, b, sortOrder) => {
+        const isDesc = sortOrder === 'descend';
+        const order: Record<string, number> = { '未到店': 0, '已到店': 1 };
+        const va = order[a.isVisited] ?? 2;
+        const vb = order[b.isVisited] ?? 2;
+        if (va === 2 && vb === 2) return 0;
+        // antd 在 compare 调用后会再次对 descend 取反，因此空值
+        // 方向需预补偿：descend 时返回与 ascend 相反的结果。
+        if (va === 2) return isDesc ? -1 : 1;
+        if (vb === 2) return isDesc ? 1 : -1;
+        return va - vb;
+      },
+    },
     render: (v: string) => <VisitedTag value={v} />,
   },
   {
@@ -61,31 +114,29 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     dataIndex: 'isDeal',
     key: 'isDeal',
     width: 100,
+    sorter: {
+      compare: (a, b, sortOrder) => {
+        const isDesc = sortOrder === 'descend';
+        const order: Record<string, number> = { '未成交': 0, '已成交': 1 };
+        const va = order[a.isDeal] ?? 2;
+        const vb = order[b.isDeal] ?? 2;
+        if (va === 2 && vb === 2) return 0;
+        if (va === 2) return isDesc ? -1 : 1;
+        if (vb === 2) return isDesc ? 1 : -1;
+        return va - vb;
+      },
+    },
     render: (v: string) => <DealTag value={v} />,
   },
   {
-    title: '预约到店时间',
-    dataIndex: 'appointmentTime',
-    key: 'appointmentTime',
-    width: 160,
-    sorter: (a, b) => {
-      if (a.appointmentTime === '-' && b.appointmentTime === '-') return 0;
-      if (a.appointmentTime === '-') return 1;
-      if (b.appointmentTime === '-') return -1;
-      return a.appointmentTime.localeCompare(b.appointmentTime);
+    title: '首笔成交金额',
+    dataIndex: 'firstDealAmount',
+    key: 'firstDealAmount',
+    width: 130,
+    render: (v: number | null) => {
+      if (v === null) return '--';
+      return v.toFixed(2);
     },
-  },
-  {
-    title: '实际到店状态',
-    dataIndex: 'actualVisitStatus',
-    key: 'actualVisitStatus',
-    width: 130,
-  },
-  {
-    title: '实际成交状态',
-    dataIndex: 'actualDealStatus',
-    key: 'actualDealStatus',
-    width: 130,
   },
   {
     title: 'ID',
@@ -338,10 +389,11 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     width: 150,
   },
   {
-    title: '无效客资状态',
-    dataIndex: 'invalidCustomerStatus',
-    key: 'invalidCustomerStatus',
+    title: '无效审批状态',
+    dataIndex: 'invalidApprovalStatus',
+    key: 'invalidApprovalStatus',
     width: 120,
+    render: (v: InvalidApprovalStatus) => <InvalidApprovalStatusTag value={v} />,
   },
   {
     title: '创建时间',
@@ -357,6 +409,6 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
   },
 ];
 
-/** 验证52列顺序 */
+/** 验证51列顺序 */
 export const COLUMN_COUNT = ALL_COLUMNS.length;
 export const COLUMN_ORDER = ALL_COLUMNS.map((c) => c.key);

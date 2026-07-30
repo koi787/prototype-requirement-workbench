@@ -78,26 +78,31 @@ export const requirementViewMapSchema = z.record(stableIdSchema, requirementView
 // ============================================================================
 
 /**
- * 预期 requirement key 集合（任务单第18节固定12条）。
- * 用于交叉校验 JSON 恰好包含这 12 个 key。
+ * 0008 预期 requirement key 集合（15 条：闭环一 9 条 + 闭环二 6 条）。
+ * 用于交叉校验 JSON 恰好包含这 15 个 key。
  */
 export const EXPECTED_REQUIREMENT_KEYS = [
+  // 闭环一：列与筛选（9 条）
   'scrm-store-customer-first-allocation-time',
   'scrm-store-customer-latest-allocation-time',
   'scrm-store-customer-is-arrived',
   'scrm-store-customer-is-deal',
   'scrm-store-customer-appointment-arrival-time',
-  'scrm-store-customer-actual-arrival-status',
-  'scrm-store-customer-actual-deal-status',
-  'scrm-store-customer-invalid-lead-status',
-  'scrm-store-customer-invalid-lead-approval',
-  'scrm-store-customer-invalid-lead-detail',
-  'scrm-store-customer-invalid-lead-filter',
+  'scrm-store-customer-first-deal-amount',
+  'scrm-store-customer-invalid-approval-status',
+  'scrm-store-customer-invalid-approval-filter',
   'scrm-store-customer-requirement-view-mode',
+  // 闭环二：申请、审核、详情与权限（6 条）
+  'scrm-store-customer-invalid-application',
+  'scrm-store-customer-invalid-approval-review',
+  'scrm-store-customer-invalid-approval-detail',
+  'scrm-store-customer-invalid-approval-opinion',
+  'scrm-store-customer-invalid-approval-return-remark',
+  'scrm-store-customer-invalid-approval-resubmit',
 ] as const;
 
 /**
- * 校验 JSON 恰好包含预期的 12 个 key。
+ * 校验 JSON 恰好包含预期的 15 个 key。
  * 返回 null 表示通过，否则返回错误信息。
  */
 export function validateRequirementKeys(
