@@ -2,101 +2,74 @@
   "scrm-store-customer-first-allocation-time": {
     "requirementNo": "SC-01-01",
     "requirementName": "首次分配时间",
-    "status": "待确认",
-    "definition": "展示客户首次分配时间的字段；首次分配的正式业务口径尚待确认。",
+    "status": "已确认",
+    "definition": "指该用户首次被分配的时间。\n\n展示格式：\n0000-00-00 00:00:00",
     "dataSource": null,
     "rule": null,
-    "remark": "本轮不得根据模拟数据反推正式取值规则。"
+    "remark": null
   },
   "scrm-store-customer-latest-allocation-time": {
     "requirementNo": "SC-01-02",
     "requirementName": "最新分配时间",
-    "status": "待确认",
-    "definition": "展示客户最新分配时间的字段；最新分配的正式业务口径尚待确认。",
+    "status": "已确认",
+    "definition": "指该用户最近一次被分配的时间。\n\n判断规则：\n1. 用户只有一条分配记录时，展示该条记录的分配时间；\n2. 用户存在多条分配记录时，取时间最新的一条分配记录。",
     "dataSource": null,
     "rule": null,
-    "remark": "本轮不得根据模拟数据反推正式取值规则。"
+    "remark": null
   },
   "scrm-store-customer-is-arrived": {
     "requirementNo": "SC-01-03",
     "requirementName": "是否到店",
-    "status": "部分确认",
-    "definition": "用于展示客户是否到店的状态字段。",
+    "status": "已确认",
+    "definition": "用于展示用户是否已经到店。\n\n字段值：\n1. 已到店；\n2. 未到店。\n\n判断规则：\n系统根据用户ID查询“到店记录”中的“是否到店”字段。\n\n只要存在任意一条“已到店”记录，门店客户等相关列表即显示“已到店”；所有到店记录中均不存在“已到店”记录时，显示“未到店”。",
     "dataSource": null,
     "rule": null,
-    "remark": "正式判断条件、状态来源和空值规则待确认。"
+    "remark": null
   },
   "scrm-store-customer-is-deal": {
     "requirementNo": "SC-01-04",
     "requirementName": "是否成交",
-    "status": "部分确认",
-    "definition": "用于展示客户是否成交的状态字段。",
+    "status": "已确认",
+    "definition": "用于展示用户是否已经成交。\n\n字段值：\n1. 已成交；\n2. 未成交。\n\n判断规则：\n系统根据用户ID查询“到店记录”中的“是否成交”字段。\n\n只要存在任意一条“已成交”记录，门店客户等相关列表即显示“已成交”；所有到店记录中均不存在“已成交”记录时，显示“未成交”。",
     "dataSource": null,
     "rule": null,
-    "remark": "正式判断条件、状态来源和已成交样式待确认。"
+    "remark": null
   },
   "scrm-store-customer-appointment-arrival-time": {
     "requirementNo": "SC-01-05",
     "requirementName": "预约到店时间",
-    "status": "部分确认",
+    "status": "已确认",
     "definition": "用于展示客户预约到店时间的字段。",
     "dataSource": null,
-    "rule": "原型体验模式保留0003本地升降序；需求查看模式点击对应表头只打开需求说明，不触发排序。",
-    "remark": "真实时间来源、空值和时区规则待确认。"
+    "rule": "原型体验模式保留本地升降序；需求查看模式点击对应表头只打开需求说明，不触发排序。",
+    "remark": null
   },
-  "scrm-store-customer-actual-arrival-status": {
-    "requirementNo": "SC-01-06",
-    "requirementName": "实际到店状态",
-    "status": "待确认",
-    "definition": "用于展示客户实际到店状态的字段。",
+  "scrm-store-customer-first-deal-amount": {
+    "requirementNo": "SC-08-01",
+    "requirementName": "首笔成交金额",
+    "status": "已确认",
+    "definition": "指用户首次购买正式课后，以首笔正式课成交时间为起点，统计24小时内所有正式课已成交金额的合计值。\n\n计算示例：\n1. 用户9:00购买3000元正式课，10:00再次购买6000元正式课，两笔均发生在24小时内，首笔成交金额为9000元；\n2. 若第二笔6000元正式课在次日10:00成交，已超过24小时，则首笔成交金额仅计算3000元。\n\n注意事项：\n1. 只统计正式课的已成交金额；\n2. 需要累计首笔正式课成交后24小时内的多笔已成交金额；\n3. 与“到店记录”中的现有“成交金额”字段不是同一计算逻辑。",
     "dataSource": null,
-    "rule": null,
-    "remark": "正式状态枚举、来源和变化规则待确认。"
+    "rule": "有值时保留两位小数，无数据展示\"--\"，不显示人民币符号，不支持排序。0是合法金额显示0.00。",
+    "remark": null
   },
-  "scrm-store-customer-actual-deal-status": {
-    "requirementNo": "SC-01-07",
-    "requirementName": "实际成交状态",
-    "status": "待确认",
-    "definition": "用于展示客户实际成交状态的字段。",
+  "scrm-store-customer-invalid-approval-status": {
+    "requirementNo": "SC-08-02",
+    "requirementName": "无效审批状态",
+    "status": "已确认",
+    "definition": "用于展示客户无效审批状态的字段，状态枚举为待审核、审核通过、审核退回。",
     "dataSource": null,
-    "rule": null,
-    "remark": "正式状态枚举、来源和变化规则待确认。"
+    "rule": "状态为空展示\"--\"，待审核为橙色，审核通过为绿色，审核退回为红色。文字必须始终可见，颜色不能是唯一信息表达方式。",
+    "remark": null
   },
-  "scrm-store-customer-invalid-lead-status": {
-    "requirementNo": "SC-01-08",
-    "requirementName": "无效客资状态",
-    "status": "待确认",
-    "definition": "用于展示客户无效客资状态的字段。",
+  "scrm-store-customer-invalid-approval-filter": {
+    "requirementNo": "SC-08-03",
+    "requirementName": "无效审批状态筛选",
+    "status": "已确认",
+    "definition": "用于说明筛选区「无效审批状态」条件的需求。",
     "dataSource": null,
-    "rule": null,
-    "remark": "正式状态枚举、来源和权限规则待确认。"
-  },
-  "scrm-store-customer-invalid-lead-approval": {
-    "requirementNo": "SC-02",
-    "requirementName": "审批无效客资",
-    "status": "待确认",
-    "definition": "用于说明标注或审批无效客资入口的需求。",
-    "dataSource": null,
-    "rule": "本轮只展示只读需求说明，不实现真实审批、保存或提交。",
-    "remark": "0003菜单当前显示「标注无效客资」；最终业务命名和审批流程待确认。"
-  },
-  "scrm-store-customer-invalid-lead-detail": {
-    "requirementNo": "SC-03",
-    "requirementName": "无效客资状态详情",
-    "status": "部分确认",
-    "definition": "用于说明列表中无效客资状态区域对应的状态详情需求。",
-    "dataSource": null,
-    "rule": "需求查看模式只打开需求说明；原型体验模式不被需求查看层拦截。",
-    "remark": "本轮不实现真实状态详情业务抽屉。"
-  },
-  "scrm-store-customer-invalid-lead-filter": {
-    "requirementNo": "SC-04",
-    "requirementName": "无效客资状态筛选",
-    "status": "部分确认",
-    "definition": "用于说明筛选区「标注客资无效」条件对应的无效客资状态筛选需求。",
-    "dataSource": null,
-    "rule": "需求查看模式点击编号点只打开需求说明，不改变筛选值；原型体验模式保留0003筛选行为。",
-    "remark": "正式筛选口径与状态枚举待确认。"
+    "rule": "筛选提供待审核、审核通过、审核退回三种选项，不提供空状态独立筛选。需求查看模式点击编号点只打开需求说明，不改变筛选值。",
+    "remark": null
   },
   "scrm-store-customer-requirement-view-mode": {
     "requirementNo": "WB-01",
@@ -105,6 +78,60 @@
     "definition": "在同一门店客户原型中提供原型体验和需求查看两种模式，并通过稳定需求点打开右侧只读说明。",
     "dataSource": "页面独立需求说明JSON与稳定需求点配置。",
     "rule": "页面默认进入原型体验模式；需求查看模式点击需求点打开或切换抽屉内容；关闭抽屉仍停留在需求查看模式；返回原型体验会关闭抽屉并退出需求查看模式。",
-    "remark": "V1不支持页面内编辑、保存、后端、版本历史、多人协作或权限体系。"
+    "remark": null
+  },
+  "scrm-store-customer-invalid-application": {
+    "requirementNo": "SC-08-04",
+    "requirementName": "无效申请",
+    "status": "已确认",
+    "definition": "用于提交或重新提交无效客资申请的原型流程。",
+    "dataSource": null,
+    "rule": "状态为空或审核退回时可提交申请；提交后状态变为待审核；申请备注最多200字；附件非必填。",
+    "remark": null
+  },
+  "scrm-store-customer-invalid-approval-review": {
+    "requirementNo": "SC-08-05",
+    "requirementName": "审核无效标注",
+    "status": "已确认",
+    "definition": "管理员对待审核无效申请进行审核的组合操作。",
+    "dataSource": null,
+    "rule": "只有管理员可审核；审核意见必选通过或退回；通过时备注非必填；退回时备注必填；附件始终非必填；确认后状态立即更新。",
+    "remark": null
+  },
+  "scrm-store-customer-invalid-approval-detail": {
+    "requirementNo": "SC-08-06",
+    "requirementName": "无效标注详情",
+    "status": "已确认",
+    "definition": "只读展示无效标注申请与审核信息的详情抽屉。",
+    "dataSource": null,
+    "rule": "待审核时审核信息区全部显示--；已审核时展示审核结果、审核人、审核时间和备注；关闭详情不改变状态。",
+    "remark": null
+  },
+  "scrm-store-customer-invalid-approval-opinion": {
+    "requirementNo": "SC-08-07",
+    "requirementName": "审核意见",
+    "status": "已确认",
+    "definition": "审核无效标注时的意见字段，必选通过或退回。",
+    "dataSource": null,
+    "rule": "必填；单选；未选择时不能确认并显示校验提示。",
+    "remark": null
+  },
+  "scrm-store-customer-invalid-approval-return-remark": {
+    "requirementNo": "SC-08-08",
+    "requirementName": "退回备注",
+    "status": "已确认",
+    "definition": "审核退回时的备注字段。",
+    "dataSource": null,
+    "rule": "退回时必填；最多200字；未填写时不能确认并显示校验提示。",
+    "remark": null
+  },
+  "scrm-store-customer-invalid-approval-resubmit": {
+    "requirementNo": "SC-08-09",
+    "requirementName": "重新申请无效标注",
+    "status": "已确认",
+    "definition": "审核退回后允许重新提交无效申请。",
+    "dataSource": null,
+    "rule": "审核退回后操作菜单显示重新申请；重新申请后状态回到待审核；旧的审核信息不继续作为当前审核结果显示。",
+    "remark": null
   }
 }

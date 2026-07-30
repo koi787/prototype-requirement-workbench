@@ -26,7 +26,7 @@ function parseAndValidate(): RequirementViewMap {
     throw new Error(`requirements.json Schema 校验失败:\n${issues}`);
   }
 
-  // 2. 交叉校验 12 个 key
+  // 2. 交叉校验 15 个 key
   const keyError = validateRequirementKeys(result.data);
   if (keyError) {
     throw new Error(`requirements.json key 校验失败: ${keyError}`);

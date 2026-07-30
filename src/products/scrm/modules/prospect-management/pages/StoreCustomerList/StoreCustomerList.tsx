@@ -11,9 +11,8 @@ import {
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { CustomerRecord } from './mockData';
-import rawCustomers from './mockData';
 import { ALL_COLUMNS, COLUMN_REQUIREMENT_ANCHORS } from './columns';
-import { REQUIREMENT_POINTS } from './requirementPoints';
+import { REQUIREMENT_POINTS, getPointByNumber } from './requirementPoints';
 import { getRequirement } from '../../../../../../requirements/products/scrm/pages/store-customer';
 import {
   RequirementViewProvider,
@@ -22,6 +21,13 @@ import {
   RequirementMarker,
   RequirementDrawer,
 } from '../../../../../../prototype-core/requirement-view';
+import { useApprovalState } from './useApprovalState';
+import { InvalidApplicationDrawer } from './InvalidApplicationDrawer';
+import { InvalidReviewDrawer } from './InvalidReviewDrawer';
+import { InvalidApprovalDetailDrawer } from './InvalidApprovalDetailDrawer';
+import type { AttachmentMeta, DrawerMode } from './approvalTypes';
+import { InvalidApprovalStatusTag } from './StatusTags';
+import type { InvalidApprovalStatus } from './approvalTypes';
 import {
   NavHomeIcon,
   NavCalendarIcon,
@@ -159,10 +165,11 @@ const customerTypeOptions = [
   { value: '老客', label: '老客' },
 ];
 
-const invalidOptions = [
+const invalidApprovalStatusOptions = [
   { value: '', label: '全部' },
-  { value: '是', label: '是' },
-  { value: '否', label: '否' },
+  { value: 'pending', label: '待审核' },
+  { value: 'approved', label: '审核通过' },
+  { value: 'rejected', label: '审核退回' },
 ];
 
 const questionnaireOptions = [
@@ -202,7 +209,7 @@ interface FilterValues {
   source: string;
   retainStore: string[];
   isAssigned: string;
-  markInvalid: string;
+  invalidApprovalStatus: string;
   customerType: string;
   contractNo: string;
   createTimeRange: [string, string] | null;
@@ -226,7 +233,7 @@ const defaultFilters: FilterValues = {
   source: '',
   retainStore: [],
   isAssigned: '',
-  markInvalid: '',
+  invalidApprovalStatus: '',
   customerType: '',
   contractNo: '',
   createTimeRange: null,
@@ -243,20 +250,85 @@ const defaultFilters: FilterValues = {
 };
 
 // ============================================================================
-// 操作菜单项
+// 动态操作菜单构建（仅根据状态，不使用身份）
 // ============================================================================
-const operationMenuItems = [
-  { key: 'follow-detail', label: '跟进详情' },
-  { key: 'remark', label: '备注' },
-  { key: 'transfer', label: '转让' },
-  { key: 'set-tag', label: '设置标签' },
-  { key: 'add-sharer', label: '添加共享人' },
-  { key: 'add-visit-record', label: '添加拜访记录' },
-  {
-    key: 'mark-invalid',
-    label: <span style={{ color: '#ff4d4f' }}>标注无效客资</span>,
-  },
-];
+function buildOperationMenuItems(params: {
+  status: InvalidApprovalStatus;
+  reqMode: 'prototype' | 'requirement';
+  recordKey: string;
+  onMarkInvalid: () => void;
+  onReview: () => void;
+}): Array<{ key: string; label: React.ReactNode }> {
+  const { status, reqMode, recordKey, onMarkInvalid, onReview } = params;
+
+  const items: Array<{ key: string; label: React.ReactNode }> = [];
+
+  // 通用菜单项（始终显示）
+  items.push({ key: 'follow-detail', label: '跟进详情' });
+  items.push({ key: 'remark', label: '备注' });
+  items.push({ key: 'transfer', label: '转让' });
+  items.push({ key: 'set-tag', label: '设置标签' });
+  items.push({ key: 'add-sharer', label: '添加共享人' });
+  items.push({ key: 'add-visit-record', label: '添加拜访记录' });
+
+  // 审批相关菜单项（仅根据状态）
+  if (status === null || status === 'rejected') {
+    // 标记无效客资
+    const label = <span style={{ color: '#ff4d4f' }}>标记无效客资</span>;
+    if (reqMode === 'requirement') {
+      const point = getPointByNumber(9);
+      if (point) {
+        items.push({
+          key: 'mark-invalid',
+          label: (
+            <RequirementMarker
+              requirementKey={point.requirementKey}
+              displayNumber={point.displayNumber}
+              targetId={`${point.targetDataReqId}-${recordKey}`}
+              positionLabel="行操作"
+              preventDefaultAction={true}
+              onOriginalClick={onMarkInvalid}
+              exposeDataReqId={true}
+            >
+              {label}
+            </RequirementMarker>
+          ),
+        });
+        return items;
+      }
+    }
+    items.push({ key: 'mark-invalid', label });
+  } else if (status === 'pending') {
+    // 审核无效标注
+    const reviewLabel = '审核无效标注';
+    if (reqMode === 'requirement') {
+      const reviewPoint = getPointByNumber(10);
+      if (reviewPoint) {
+        items.push({
+          key: 'review-invalid',
+          label: (
+            <RequirementMarker
+              requirementKey={reviewPoint.requirementKey}
+              displayNumber={reviewPoint.displayNumber}
+              targetId={`${reviewPoint.targetDataReqId}-${recordKey}`}
+              positionLabel="行操作"
+              preventDefaultAction={true}
+              onOriginalClick={onReview}
+              exposeDataReqId={true}
+            >
+              {reviewLabel}
+            </RequirementMarker>
+          ),
+        });
+        return items;
+      }
+    }
+    items.push({ key: 'review-invalid', label: reviewLabel });
+  }
+  // approved: 不显示任何无效审批相关操作
+
+  return items;
+}
 
 // ============================================================================
 // 筛选函数
@@ -282,8 +354,8 @@ function applyFilter(record: CustomerRecord, filters: FilterValues): boolean {
   if (filters.retainStore.length > 0 && !filters.retainStore.includes(record.retainStore))
     return false;
   if (filters.isAssigned && record.isAssigned !== filters.isAssigned) return false;
-  if (filters.markInvalid === '是' && record.invalidCustomerStatus === '--') return false;
-  if (filters.markInvalid === '否' && record.invalidCustomerStatus !== '--') return false;
+  if (filters.invalidApprovalStatus && record.invalidApprovalStatus !== filters.invalidApprovalStatus)
+    return false;
   if (filters.customerType && record.customerType !== filters.customerType) return false;
   if (filters.contractNo && !record.contractNo.includes(filters.contractNo)) return false;
   return true;
@@ -311,6 +383,9 @@ function StoreCustomerListInner({
   initialExportMessage,
 }: Omit<StoreCustomerListProps, 'initialRequirementMode'>) {
   const reqView = useRequirementView();
+  // ---------- 审批状态管理 ----------
+  const approval = useApprovalState(propData);
+
   // ---------- 全局状态 ----------
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -331,12 +406,13 @@ function StoreCustomerListInner({
     initialExportMessage ?? null,
   );
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
-  const [appointmentSortOrder, setAppointmentSortOrder] = useState<
-    'ascend' | 'descend' | null
-  >(null);
+
+  // ---------- 抽屉状态 ----------
+  const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
+  const [drawerRecordKey, setDrawerRecordKey] = useState<string | null>(null);
 
   // ---------- 数据 ----------
-  const allData = useMemo(() => propData ?? rawCustomers, [propData]);
+  const allData = useMemo(() => approval.customers, [approval.customers]);
 
   // ---------- 筛选逻辑（基于 appliedFilters，非 pendingFilters）----------
   const filteredData = useMemo(() => {
@@ -409,13 +485,97 @@ function StoreCustomerListInner({
   const openMenuKeyRef = useRef<string | null>(null);
   const openMenuModeRef = useRef<'prototype' | 'requirement' | null>(null);
 
-  const handleMenuClick = useCallback((key: string) => {
+  const closeMenu = useCallback(() => {
     setOpenMenuKey(null);
     openMenuKeyRef.current = null;
     openMenuModeRef.current = null;
-    // 轻量提示不在此处实现，仅关闭菜单
-    void key;
   }, []);
+
+  const handleMenuClick = useCallback(
+    (key: string, recordKey: string) => {
+      closeMenu();
+      if (key === 'mark-invalid') {
+        setDrawerRecordKey(recordKey);
+        setDrawerMode('application');
+        return;
+      }
+      if (key === 'review-invalid') {
+        setDrawerRecordKey(recordKey);
+        setDrawerMode('review');
+        return;
+      }
+      // 其他菜单项：仅关闭菜单
+    },
+    [closeMenu],
+  );
+
+  // ---------- 状态标签点击 → 打开详情抽屉 ----------
+  const handleStatusClick = useCallback(
+    (recordKey: string) => {
+      if (reqView.mode === 'requirement') {
+        // 需求模式：打开需求说明
+        const detailPoint = getPointByNumber(11);
+        if (detailPoint) {
+          reqView.selectRequirement(
+            detailPoint.requirementKey,
+            `${detailPoint.targetDataReqId}-${recordKey}`,
+          );
+        }
+        return;
+      }
+      setDrawerRecordKey(recordKey);
+      setDrawerMode('detail');
+    },
+    [reqView],
+  );
+
+  // ---------- 抽屉关闭 ----------
+  const handleDrawerClose = useCallback(() => {
+    setDrawerMode(null);
+    setDrawerRecordKey(null);
+  }, []);
+
+  // ---------- 提交申请 ----------
+  const handleApplicationSubmit = useCallback(
+    (remark: string, attachments: AttachmentMeta[]) => {
+      if (drawerRecordKey) {
+        approval.submitApplication(drawerRecordKey, remark, attachments);
+      }
+      handleDrawerClose();
+    },
+    [drawerRecordKey, approval, handleDrawerClose],
+  );
+
+  // ---------- 提交审核 ----------
+  const handleReviewSubmit = useCallback(
+    (
+      opinion: 'approved' | 'rejected',
+      remark: string,
+      attachments: AttachmentMeta[],
+    ) => {
+      if (drawerRecordKey) {
+        approval.submitReview(drawerRecordKey, opinion, remark, attachments);
+      }
+      handleDrawerClose();
+    },
+    [drawerRecordKey, approval, handleDrawerClose],
+  );
+
+  // ---------- 获取当前抽屉客户的上下文 ----------
+  const drawerRecord = useMemo(() => {
+    if (!drawerRecordKey) return null;
+    return allData.find((c) => c.key === drawerRecordKey) ?? null;
+  }, [drawerRecordKey, allData]);
+
+  const drawerApplication = useMemo(() => {
+    if (!drawerRecordKey) return null;
+    return approval.getApplication(drawerRecordKey) ?? null;
+  }, [drawerRecordKey, approval]);
+
+  const drawerReview = useMemo(() => {
+    if (!drawerRecordKey) return null;
+    return approval.getReview(drawerRecordKey) ?? null;
+  }, [drawerRecordKey, approval]);
 
   // ---------- 行操作按钮点击 ----------
   const handleOperationClick = useCallback(
@@ -440,23 +600,6 @@ function StoreCustomerListInner({
   const updatePending = useCallback(
     (patch: Partial<FilterValues>) => {
       setPendingFilters((f) => ({ ...f, ...patch }));
-    },
-    [],
-  );
-
-  // ---------- 表格排序变更（仅处理预约到店时间受控排序）----------
-  const handleTableChange = useCallback(
-    (
-      _pagination: unknown,
-      _filters: unknown,
-      sorter: { columnKey?: React.Key; order?: 'ascend' | 'descend' | null } | Array<{
-        columnKey?: React.Key;
-        order?: 'ascend' | 'descend' | null;
-      }>,
-    ) => {
-      if (!Array.isArray(sorter) && sorter.columnKey === 'appointmentTime') {
-        setAppointmentSortOrder(sorter.order ?? null);
-      }
     },
     [],
   );
@@ -594,21 +737,21 @@ function StoreCustomerListInner({
         <div className="store-customer-filter-item">
           <label>
             <RequirementMarker
-              requirementKey="scrm-store-customer-invalid-lead-filter"
-              displayNumber={9}
-              targetId="invalid-lead-filter"
+              requirementKey="scrm-store-customer-invalid-approval-filter"
+              displayNumber={8}
+              targetId="invalid-approval-filter"
               positionLabel="筛选"
               className="requirement-marker--header"
               preventDefaultAction={true}
             >
-              标注客资无效
+              无效审批状态
             </RequirementMarker>
           </label>
           <Select
             placeholder="请选择"
-            value={pendingFilters.markInvalid || undefined}
-            onChange={(v) => updatePending({ markInvalid: v || '' })}
-            options={invalidOptions}
+            value={pendingFilters.invalidApprovalStatus || undefined}
+            onChange={(v) => updatePending({ invalidApprovalStatus: v || '' })}
+            options={invalidApprovalStatusOptions}
             allowClear
             style={{ width: '100%' }}
           />
@@ -802,15 +945,13 @@ function StoreCustomerListInner({
   // ---------- 表格 ----------
   const columns = useMemo(() => {
     return ALL_COLUMNS.map((col) => {
-      // --- 预约到店时间列（point 5）：受控排序 + 模式隔离 ---
+      // --- 预约到店时间列（point 3）：需求模式移除排序 ---
       if (col.key === 'appointmentTime') {
-        const point = REQUIREMENT_POINTS.find((p) => p.displayNumber === 5);
-        // 需求模式：移除 sorter/sortOrder，仅显示需求点
+        const point = REQUIREMENT_POINTS.find((p) => p.displayNumber === 3);
         if (reqView.mode === 'requirement') {
           return {
             ...col,
             sorter: undefined as unknown as typeof col.sorter,
-            sortOrder: undefined as unknown as typeof col.sortOrder,
             title: point ? (
               <RequirementMarker
                 requirementKey={point.requirementKey}
@@ -825,10 +966,8 @@ function StoreCustomerListInner({
             ) : col.title,
           };
         }
-        // 原型模式：受控排序（页面本地状态跨模式切换保留）
         return {
           ...col,
-          sortOrder: appointmentSortOrder,
           title: point ? (
             <RequirementMarker
               requirementKey={point.requirementKey}
@@ -844,10 +983,32 @@ function StoreCustomerListInner({
         };
       }
 
-      // --- 无效客资状态列（point 8 header + point 10 inline）---
-      if (col.key === 'invalidCustomerStatus') {
-        const headerPoint = REQUIREMENT_POINTS.find((p) => p.displayNumber === 8);
-        const inlinePoint = REQUIREMENT_POINTS.find((p) => p.displayNumber === 10);
+      // --- 首笔成交金额列（point 6）---
+      if (col.key === 'firstDealAmount') {
+        const point = REQUIREMENT_POINTS.find((p) => p.displayNumber === 6);
+        if (point) {
+          return {
+            ...col,
+            title: (
+              <RequirementMarker
+                requirementKey={point.requirementKey}
+                displayNumber={point.displayNumber}
+                targetId={point.targetDataReqId}
+                positionLabel="表头"
+                className="requirement-marker--header"
+                exposeDataReqId={false}
+              >
+                {col.title as React.ReactNode}
+              </RequirementMarker>
+            ),
+          };
+        }
+        return col;
+      }
+
+      // --- 无效审批状态列（point 7 header + clickable status）---
+      if (col.key === 'invalidApprovalStatus') {
+        const headerPoint = REQUIREMENT_POINTS.find((p) => p.displayNumber === 7);
         return {
           ...col,
           title: headerPoint ? (
@@ -862,30 +1023,25 @@ function StoreCustomerListInner({
               {col.title as React.ReactNode}
             </RequirementMarker>
           ) : col.title,
-          render: (value: string, record: CustomerRecord) => {
-            const targetId = inlinePoint
-              ? `${inlinePoint.targetDataReqId}-${record.key}`
-              : '';
-            return inlinePoint ? (
-              <RequirementMarker
-                requirementKey={inlinePoint.requirementKey}
-                displayNumber={inlinePoint.displayNumber}
-                targetId={targetId}
-                positionLabel="行内"
-                className="requirement-marker--inline"
-              >
-                {value}
-              </RequirementMarker>
-            ) : (
-              value
+          render: (_: unknown, record: CustomerRecord) => {
+            const statusVal = record.invalidApprovalStatus;
+            return (
+              <InvalidApprovalStatusTag
+                value={statusVal}
+                {...(statusVal
+                  ? {
+                      onClick: () => handleStatusClick(record.key),
+                      detailReqId: `invalid-approval-detail-${record.key}`,
+                    }
+                  : {})}
+              />
             );
           },
         };
       }
 
-      // --- 操作列（point 11：菜单项编号）---
+      // --- 操作列（0008 闭环二：动态菜单 + 需求编号点）---
       if (col.key === 'operation') {
-        const menuPoint = REQUIREMENT_POINTS.find((p) => p.displayNumber === 11);
         return {
           ...col,
           render: (_: unknown, record: CustomerRecord) => {
@@ -893,29 +1049,23 @@ function StoreCustomerListInner({
               openMenuKey === record.key &&
               openMenuModeRef.current === reqView.mode;
 
-            // 需求查看模式下，操作菜单项增加编号11
-            const menuItems = reqView.mode === 'requirement' && menuPoint
-              ? operationMenuItems.map((item) => {
-                  if (item.key === 'mark-invalid') {
-                    return {
-                      ...item,
-                      label: (
-                        <RequirementMarker
-                          requirementKey={menuPoint.requirementKey}
-                          displayNumber={menuPoint.displayNumber}
-                          targetId={`${menuPoint.targetDataReqId}-${record.key}`}
-                          positionLabel="菜单项"
-                          className="requirement-marker--inline"
-                          preventDefaultAction={true}
-                        >
-                          {item.label}
-                        </RequirementMarker>
-                      ),
-                    };
-                  }
-                  return item;
-                })
-              : operationMenuItems;
+            const menuItems = buildOperationMenuItems({
+              status: record.invalidApprovalStatus,
+              reqMode: reqView.mode,
+              recordKey: record.key,
+              onMarkInvalid: () => {
+                if (reqView.mode === 'prototype') {
+                  setDrawerRecordKey(record.key);
+                  setDrawerMode('application');
+                }
+              },
+              onReview: () => {
+                if (reqView.mode === 'prototype') {
+                  setDrawerRecordKey(record.key);
+                  setDrawerMode('review');
+                }
+              },
+            });
 
             const triggerButton = (
               <Button
@@ -939,7 +1089,7 @@ function StoreCustomerListInner({
               <Dropdown
                 menu={{
                   items: menuItems,
-                  onClick: ({ key }) => handleMenuClick(key),
+                  onClick: ({ key }) => handleMenuClick(key, record.key),
                 }}
                 trigger={['click']}
                 destroyOnHidden
@@ -959,11 +1109,30 @@ function StoreCustomerListInner({
         };
       }
 
-      // --- 其他列：添加表头需求标记（points 1-4, 6, 7）---
+      // --- 其他列：添加表头需求标记（points 1, 2, 4, 5）---
+      // 需求模式下移除排序能力
       const headerPoint = REQUIREMENT_POINTS.find(
         (p) => p.targetKind === 'column-header' && p.columnKey === col.key,
       );
       if (headerPoint) {
+        if (reqView.mode === 'requirement') {
+          return {
+            ...col,
+            sorter: undefined as unknown as typeof col.sorter,
+            title: (
+              <RequirementMarker
+                requirementKey={headerPoint.requirementKey}
+                displayNumber={headerPoint.displayNumber}
+                targetId={headerPoint.targetDataReqId}
+                positionLabel="表头"
+                className="requirement-marker--header"
+                exposeDataReqId={false}
+              >
+                {col.title as React.ReactNode}
+              </RequirementMarker>
+            ),
+          };
+        }
         return {
           ...col,
           title: (
@@ -983,7 +1152,7 @@ function StoreCustomerListInner({
 
       return col;
     }) as ColumnsType<CustomerRecord>;
-  }, [appointmentSortOrder, handleMenuClick, handleOperationClick, openMenuKey, reqView.mode]);
+  }, [handleMenuClick, handleOperationClick, openMenuKey, reqView.mode, handleStatusClick, setDrawerRecordKey, setDrawerMode]);
 
   const renderTable = () => {
     if (pageState === 'loading') {
@@ -1044,7 +1213,6 @@ function StoreCustomerListInner({
         rowKey="key"
         scroll={{ x: 6500 }}
         pagination={false}
-        onChange={handleTableChange}
         data-req-id="customer-table"
       />
     );
@@ -1162,6 +1330,43 @@ function StoreCustomerListInner({
     <>
       <RequirementModeControl />
       <RequirementDrawer getRequirementData={getRequirement} />
+
+      {/* 无效申请抽屉 */}
+      <InvalidApplicationDrawer
+        open={drawerMode === 'application'}
+        onClose={handleDrawerClose}
+        onSubmit={handleApplicationSubmit}
+        defaultRemark={
+          drawerRecord?.invalidApprovalStatus === 'rejected'
+            ? (drawerApplication?.remark ?? '')
+            : ''
+        }
+        defaultAttachments={
+          drawerRecord?.invalidApprovalStatus === 'rejected'
+            ? (drawerApplication?.attachments ?? [])
+            : []
+        }
+      />
+
+      {/* 审核抽屉 */}
+      <InvalidReviewDrawer
+        open={drawerMode === 'review'}
+        onClose={handleDrawerClose}
+        onSubmit={handleReviewSubmit}
+        recordName={drawerRecord?.name ?? ''}
+        application={drawerApplication}
+      />
+
+      {/* 详情抽屉 */}
+      <InvalidApprovalDetailDrawer
+        open={drawerMode === 'detail'}
+        onClose={handleDrawerClose}
+        recordName={drawerRecord?.name ?? ''}
+        status={drawerRecord?.invalidApprovalStatus ?? null}
+        application={drawerApplication}
+        review={drawerReview}
+      />
+
       <div className="store-customer-page" data-req-id="store-customer-page-root">
         {renderNav()}
         <div className="store-customer-main">

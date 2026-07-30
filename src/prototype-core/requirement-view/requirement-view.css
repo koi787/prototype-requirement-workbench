@@ -230,6 +230,10 @@
   line-height: 1.6;
 }
 
+.requirement-drawer-field-content--multiline {
+  white-space: pre-line;
+}
+
 .requirement-drawer-field-content--no {
   font-size: 16px;
   font-weight: 600;

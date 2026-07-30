@@ -546,3 +546,144 @@
     width: 70px;
   }
 }
+
+/* ============================================================================
+   0008 闭环二：审批抽屉样式
+   ============================================================================ */
+
+/* 抽屉内容区域 */
+.invalid-approval-drawer-body {
+  padding-bottom: 60px;
+}
+
+/* 分区 */
+.invalid-approval-drawer-section {
+  margin-bottom: 20px;
+}
+
+.invalid-approval-drawer-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2329;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 字段行 */
+.invalid-approval-drawer-field {
+  margin-bottom: 12px;
+}
+
+.invalid-approval-drawer-field label {
+  display: block;
+  font-size: 13px;
+  color: #8c8c8c;
+  margin-bottom: 6px;
+}
+
+.invalid-approval-drawer-field span {
+  font-size: 14px;
+  color: #333;
+}
+
+/* 错误提示 */
+.invalid-approval-drawer-error {
+  color: #ff4d4f;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* 附件列表 */
+.invalid-approval-drawer-attachments {
+  margin-top: 4px;
+}
+
+.invalid-approval-drawer-attachment-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.invalid-approval-drawer-attachment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: #fafbfc;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.invalid-approval-drawer-attachment-name {
+  font-size: 13px;
+  color: #595959;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 红色必填星号（覆盖 label 和 opinion-label 的文字颜色） */
+.invalid-approval-drawer-field label .invalid-approval-drawer-required,
+.invalid-approval-drawer-opinion-label .invalid-approval-drawer-required {
+  color: #ff4d4f;
+  margin-right: 2px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* 审核意见：标签与选项同行 */
+.invalid-approval-drawer-opinion-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 20px;
+}
+
+.invalid-approval-drawer-opinion-label {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+/* 审核意见 Radio 组：强制横向布局，圆圈与文字同行 */
+.invalid-approval-drawer-opinion-group {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 48px;
+}
+
+.invalid-approval-drawer-opinion-group .ant-radio-wrapper {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  margin-inline-end: 0;
+  white-space: nowrap;
+}
+
+.invalid-approval-drawer-opinion-group
+  .ant-radio-wrapper
+  > span:last-child {
+  display: inline-block !important;
+  padding-inline-start: 8px;
+  white-space: nowrap;
+}
+
+/* 抽屉底部按钮 */
+.invalid-approval-drawer-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 24px;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  text-align: right;
+}

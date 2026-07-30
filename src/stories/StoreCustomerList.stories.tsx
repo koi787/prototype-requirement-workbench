@@ -63,10 +63,75 @@ export const 原型体验模式: Story = {
   },
 };
 
-/** 需求查看模式（显示12个需求编号点，可点击查看需求说明） */
+/** 需求查看模式（显示需求编号点，可点击查看需求说明） */
 export const 需求查看模式: Story = {
   args: {
     initialState: 'normal',
     initialRequirementMode: 'requirement',
+  },
+};
+
+// ============================================================================
+// 0008 闭环二：审批流程 Story
+// ============================================================================
+
+/** 待审核状态（第一页有 pending 记录，操作菜单显示"审核无效标注"） */
+export const 无效审批待审核: Story = {
+  args: {
+    initialState: 'normal',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '第一页包含李四（待审核）的列表，操作菜单显示"审核无效标注"。点击状态标签可查看详情。',
+      },
+    },
+  },
+};
+
+/** 审核通过完整详情（第一页有 approved 记录） */
+export const 无效审批通过: Story = {
+  args: {
+    initialState: 'normal',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '第一页包含陈晨（审核通过）的记录，操作菜单不显示无效审批相关操作。点击状态标签可查看完整申请和审核详情。',
+      },
+    },
+  },
+};
+
+/** 审核退回完整详情（第一页有 rejected 记录） */
+export const 无效审批退回: Story = {
+  args: {
+    initialState: 'normal',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '第一页包含周杰（审核退回）的记录，操作菜单显示"标记无效客资"。点击状态标签可查看完整申请和退回详情。',
+      },
+    },
+  },
+};
+
+/** 需求查看模式 - 审批流程需求点可见 */
+export const 需求查看模式审批流程: Story = {
+  args: {
+    initialState: 'normal',
+    initialRequirementMode: 'requirement',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '需求查看模式下展开操作菜单，可见审批流程需求编号点，点击编号只打开需求说明，不执行申请或审核业务动作。',
+      },
+    },
   },
 };

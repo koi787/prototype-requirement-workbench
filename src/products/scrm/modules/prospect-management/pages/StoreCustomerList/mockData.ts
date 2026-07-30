@@ -1,3 +1,5 @@
+import type { InvalidApprovalStatus } from './approvalTypes';
+
 /**
  * 门店客户列表模拟数据
  * 所有数据均为虚构，不包含真实客户、门店、员工或账号信息
@@ -11,8 +13,7 @@ export interface CustomerRecord {
   isVisited: string;
   isDeal: string;
   appointmentTime: string;
-  actualVisitStatus: string;
-  actualDealStatus: string;
+  firstDealAmount: number | null;
   id: string;
   userId: string;
   wechatId: string;
@@ -54,7 +55,7 @@ export interface CustomerRecord {
   isRegistered: string;
   repeatRetainCount: number | string;
   latestRetainTime: string;
-  invalidCustomerStatus: string;
+  invalidApprovalStatus: InvalidApprovalStatus;
   createTime: string;
 }
 
@@ -67,8 +68,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '已到店',
     isDeal: '未成交',
     appointmentTime: '2026-07-25 15:00:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: 29.9,
     id: 'SC001',
     userId: 'UID1001',
     wechatId: 'wx_zhangsan_01',
@@ -110,7 +110,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 1,
     latestRetainTime: '2026-07-21 14:30:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-07-15 08:00:00',
   },
   {
@@ -121,8 +121,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '未到店',
     isDeal: '未成交',
     appointmentTime: '2026-07-28 10:30:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: 0,
     id: 'SC002',
     userId: 'UID1002',
     wechatId: 'wx_lisi_02',
@@ -164,7 +163,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: 'pending',
     createTime: '2026-07-14 09:00:00',
   },
   {
@@ -175,8 +174,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '已到店',
     isDeal: '--',
     appointmentTime: '2026-07-22 14:00:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC003',
     userId: 'UID1003',
     wechatId: 'wx_wangwu_03',
@@ -218,7 +216,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-07-13 11:00:00',
   },
   {
@@ -229,8 +227,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '未到店',
     isDeal: '未成交',
     appointmentTime: '-',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC004',
     userId: 'UID1004',
     wechatId: 'wx_liuyang_04',
@@ -272,7 +269,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 2,
     latestRetainTime: '2026-07-18 13:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-07-12 16:00:00',
   },
   {
@@ -281,10 +278,9 @@ const rawCustomers: CustomerRecord[] = [
     firstAssignTime: '2026-07-17 09:00:00',
     lastAssignTime: '2026-07-21 11:00:00',
     isVisited: '已到店',
-    isDeal: '未成交',
+    isDeal: '已成交',
     appointmentTime: '2026-07-30 09:00:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC005',
     userId: 'UID1005',
     wechatId: 'wx_chenchen_05',
@@ -326,7 +322,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 3,
     latestRetainTime: '2026-07-17 09:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: 'approved',
     createTime: '2026-07-10 08:30:00',
   },
   {
@@ -337,8 +333,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '--',
     isDeal: '--',
     appointmentTime: '2026-08-01 11:00:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC006',
     userId: 'UID1006',
     wechatId: 'wx_zhaomin_06',
@@ -380,7 +375,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-07-09 13:00:00',
   },
   {
@@ -391,8 +386,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '已到店',
     isDeal: '未成交',
     appointmentTime: '2026-07-24 16:30:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC007',
     userId: 'UID1007',
     wechatId: 'wx_zhoujie_07',
@@ -434,7 +428,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 5,
     latestRetainTime: '2026-07-15 11:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: 'rejected',
     createTime: '2026-07-08 10:00:00',
   },
   {
@@ -445,8 +439,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '未到店',
     isDeal: '--',
     appointmentTime: '-',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC008',
     userId: 'UID1008',
     wechatId: 'wx_wufang_08',
@@ -488,7 +481,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-07-07 14:00:00',
   },
   {
@@ -499,8 +492,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '已到店',
     isDeal: '未成交',
     appointmentTime: '2026-07-26 10:00:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC009',
     userId: 'UID1009',
     wechatId: 'wx_zhenghao_09',
@@ -542,7 +534,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 1,
     latestRetainTime: '2026-07-13 16:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-07-06 09:30:00',
   },
   {
@@ -553,8 +545,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '未到店',
     isDeal: '--',
     appointmentTime: '2026-08-05 14:30:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC010',
     userId: 'UID1010',
     wechatId: 'wx_sunli_10',
@@ -596,7 +587,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-07-05 11:00:00',
   },
   {
@@ -607,8 +598,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '已到店',
     isDeal: '未成交',
     appointmentTime: '2026-07-23 09:30:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC011',
     userId: 'UID1011',
     wechatId: 'wx_huangqiang_11',
@@ -650,7 +640,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 2,
     latestRetainTime: '2026-07-11 14:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-07-04 08:00:00',
   },
   {
@@ -661,8 +651,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '--',
     isDeal: '--',
     appointmentTime: '-',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC012',
     userId: 'UID1012',
     wechatId: 'wx_yangjing_12',
@@ -704,7 +693,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-07-03 15:00:00',
   },
   {
@@ -715,8 +704,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '已到店',
     isDeal: '未成交',
     appointmentTime: '2026-07-27 11:00:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: 299.90,
     id: 'SC013',
     userId: 'UID1013',
     wechatId: 'wx_hewei_13',
@@ -758,7 +746,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 4,
     latestRetainTime: '2026-07-09 10:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: 'pending',
     createTime: '2026-07-01 09:00:00',
   },
   {
@@ -769,8 +757,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '未到店',
     isDeal: '未成交',
     appointmentTime: '2026-07-29 15:30:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC014',
     userId: 'UID1014',
     wechatId: 'wx_linting_14',
@@ -812,7 +799,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 1,
     latestRetainTime: '2026-07-08 13:30:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-06-30 10:00:00',
   },
   {
@@ -823,8 +810,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '已到店',
     isDeal: '--',
     appointmentTime: '-',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC015',
     userId: 'UID1015',
     wechatId: 'wx_machao_15',
@@ -866,7 +852,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-06-29 14:00:00',
   },
   {
@@ -877,8 +863,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '未到店',
     isDeal: '未成交',
     appointmentTime: '2026-07-31 13:00:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: 199.00,
     id: 'SC016',
     userId: 'UID1016',
     wechatId: 'wx_hanxue_16',
@@ -920,7 +905,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 1,
     latestRetainTime: '2026-07-06 11:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-06-28 08:00:00',
   },
   {
@@ -931,8 +916,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '已到店',
     isDeal: '未成交',
     appointmentTime: '2026-07-24 10:00:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: 29.90,
     id: 'SC017',
     userId: 'UID1017',
     wechatId: 'wx_songming_17',
@@ -974,7 +958,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 3,
     latestRetainTime: '2026-07-05 15:30:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-06-27 10:00:00',
   },
   {
@@ -985,8 +969,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '--',
     isDeal: '--',
     appointmentTime: '-',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC018',
     userId: 'UID1018',
     wechatId: 'wx_gaoyuan_18',
@@ -1028,7 +1011,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-06-26 13:00:00',
   },
   {
@@ -1039,8 +1022,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '未到店',
     isDeal: '未成交',
     appointmentTime: '2026-08-02 16:00:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: 199.5,
     id: 'SC019',
     userId: 'UID1019',
     wechatId: 'wx_tangwen_19',
@@ -1082,7 +1064,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-06-25 09:00:00',
   },
   {
@@ -1093,8 +1075,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '已到店',
     isDeal: '--',
     appointmentTime: '2026-07-28 14:00:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: 599.00,
     id: 'SC020',
     userId: 'UID1020',
     wechatId: 'wx_luoyi_20',
@@ -1136,7 +1117,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 6,
     latestRetainTime: '2026-07-02 10:30:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: 'rejected',
     createTime: '2026-06-24 11:00:00',
   },
   {
@@ -1147,8 +1128,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '未到店',
     isDeal: '未成交',
     appointmentTime: '-',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC021',
     userId: 'UID1021',
     wechatId: 'wx_xuhan_21',
@@ -1190,7 +1170,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-06-23 16:00:00',
   },
   {
@@ -1201,8 +1181,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '已到店',
     isDeal: '--',
     appointmentTime: '2026-07-26 09:30:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: 1299.50,
     id: 'SC022',
     userId: 'UID1022',
     wechatId: 'wx_shenpeng_22',
@@ -1244,7 +1223,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 8,
     latestRetainTime: '2026-06-30 14:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: 'approved',
     createTime: '2026-06-22 10:00:00',
   },
   {
@@ -1255,8 +1234,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '已到店',
     isDeal: '未成交',
     appointmentTime: '2026-07-25 15:30:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: 89.00,
     id: 'SC023',
     userId: 'UID1023',
     wechatId: 'wx_qinyue_23',
@@ -1298,7 +1276,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-06-21 09:00:00',
   },
   {
@@ -1309,8 +1287,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '--',
     isDeal: '--',
     appointmentTime: '-',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: null,
     id: 'SC024',
     userId: 'UID1024',
     wechatId: 'wx_fanghao_24',
@@ -1352,7 +1329,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '否',
     repeatRetainCount: 0,
     latestRetainTime: '0000-00-00 00:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: null,
     createTime: '2026-06-20 08:30:00',
   },
   {
@@ -1363,8 +1340,7 @@ const rawCustomers: CustomerRecord[] = [
     isVisited: '未到店',
     isDeal: '未成交',
     appointmentTime: '2026-08-03 10:00:00',
-    actualVisitStatus: '--',
-    actualDealStatus: '--',
+    firstDealAmount: 499.00,
     id: 'SC025',
     userId: 'UID1025',
     wechatId: 'wx_yuanyao_25',
@@ -1406,7 +1382,7 @@ const rawCustomers: CustomerRecord[] = [
     isRegistered: '是',
     repeatRetainCount: 2,
     latestRetainTime: '2026-06-27 15:00:00',
-    invalidCustomerStatus: '--',
+    invalidApprovalStatus: 'pending',
     createTime: '2026-06-19 13:00:00',
   },
 ];

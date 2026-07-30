@@ -1,0 +1,390 @@
+[
+  {
+    "id": "scrm-store-customer-list-field-adjustment",
+    "title": "门店客户列表字段调整",
+    "product": "scrm",
+    "module": "prospect-management",
+    "involvedModules": ["prospect-management"],
+    "requirementBatch": "2026-07-scrm-invalid-approval-flow",
+    "involvedPages": ["store-customer"],
+    "status": "developing",
+    "priority": "P1",
+    "background": "门店客户列表需要调整到店、成交及无效审批相关字段，并最终稳定为51列。",
+    "description": "删除实际到店状态和实际成交状态两列；将预约到店时间移至最新分配时间与是否到店之间；新增首笔成交金额列；无效客资状态统一更名为无效审批状态。",
+    "trigger": "产品需求调整列表字段顺序和内容。",
+    "businessRules": [
+      "最终列数为51列，顺序固定",
+      "预约到店时间保留排序能力",
+      "首笔成交金额不支持排序"
+    ],
+    "exceptionRules": [],
+    "permissionRules": [],
+    "interactionResult": "列表按指定顺序显示51列，原删除字段不再出现。",
+    "acceptanceCriteria": [
+      "列表严格为51列且顺序正确",
+      "实际到店状态和实际成交状态不再出现",
+      "首笔成交金额格式正确"
+    ],
+    "pendingQuestions": [],
+    "referenceImages": [],
+    "relatedRequirementIds": [],
+    "anchors": [
+      {
+        "type": "element",
+        "id": "anchor-first-deal-amount-column",
+        "page": "store-customer",
+        "dataReqId": "first-deal-amount-column",
+        "description": "首笔成交金额列表头",
+        "autoScroll": false,
+        "focusHighlight": true,
+        "elementKind": "table-field"
+      }
+    ],
+    "createdAt": "2026-07-24T00:00:00+08:00",
+    "updatedAt": "2026-07-29T00:00:00+08:00",
+    "publishedVersion": null
+  },
+  {
+    "id": "scrm-store-customer-first-deal-amount",
+    "title": "首笔成交金额",
+    "product": "scrm",
+    "module": "prospect-management",
+    "involvedModules": ["prospect-management"],
+    "requirementBatch": "2026-07-scrm-invalid-approval-flow",
+    "involvedPages": ["store-customer"],
+    "status": "developing",
+    "priority": "P1",
+    "background": "门店客户列表需要在是否成交之后新增首笔成交金额列。",
+    "description": "在是否成交列之后新增首笔成交金额列，数据类型为金额数字或空值。有值时保留两位小数，无数据时展示--，不显示人民币符号，0为合法金额显示0.00。",
+    "trigger": "产品需求新增首笔成交金额字段。",
+    "businessRules": [
+      "有值时保留两位小数",
+      "无数据展示--",
+      "0显示0.00",
+      "不支持排序"
+    ],
+    "exceptionRules": [],
+    "permissionRules": [],
+    "interactionResult": "金额正确格式化展示，空值显示--。",
+    "acceptanceCriteria": [
+      "29.9展示为29.90",
+      "0展示为0.00",
+      "null展示为--",
+      "不支持排序"
+    ],
+    "pendingQuestions": [],
+    "referenceImages": [],
+    "relatedRequirementIds": ["scrm-store-customer-list-field-adjustment"],
+    "anchors": [
+      {
+        "type": "element",
+        "id": "anchor-first-deal-amount-column-2",
+        "page": "store-customer",
+        "dataReqId": "first-deal-amount-column",
+        "description": "首笔成交金额列",
+        "autoScroll": false,
+        "focusHighlight": true,
+        "elementKind": "table-field"
+      }
+    ],
+    "createdAt": "2026-07-24T00:00:00+08:00",
+    "updatedAt": "2026-07-29T00:00:00+08:00",
+    "publishedVersion": null
+  },
+  {
+    "id": "scrm-store-customer-invalid-approval-status",
+    "title": "无效审批状态",
+    "product": "scrm",
+    "module": "prospect-management",
+    "involvedModules": ["prospect-management"],
+    "requirementBatch": "2026-07-scrm-invalid-approval-flow",
+    "involvedPages": ["store-customer"],
+    "status": "developing",
+    "priority": "P1",
+    "background": "原无效客资状态需要改为申请审核流程，并更名为无效审批状态。",
+    "description": "字段统一更名为无效审批状态，状态枚举为待审核、审核通过、审核退回。状态为空展示--，待审核为橙色，审核通过为绿色，审核退回为红色。筛选提供待审核、审核通过、审核退回三种选项。",
+    "trigger": "产品需求将直接标注改为申请审核流程。",
+    "businessRules": [
+      "状态枚举：null表示未申请",
+      "pending待审核为橙色",
+      "approved审核通过为绿色",
+      "rejected审核退回为红色",
+      "文字必须始终可见"
+    ],
+    "exceptionRules": [],
+    "permissionRules": [],
+    "interactionResult": "列表正确展示四种状态样式，筛选功能正常。",
+    "acceptanceCriteria": [
+      "四种状态样式正确",
+      "筛选提供待审核、审核通过、审核退回",
+      "非空状态可点击打开详情"
+    ],
+    "pendingQuestions": [],
+    "referenceImages": [],
+    "relatedRequirementIds": ["scrm-store-customer-list-field-adjustment"],
+    "anchors": [
+      {
+        "type": "element",
+        "id": "anchor-invalid-approval-status-column",
+        "page": "store-customer",
+        "dataReqId": "invalid-approval-status-column",
+        "description": "无效审批状态列表头",
+        "autoScroll": false,
+        "focusHighlight": true,
+        "elementKind": "table-field"
+      }
+    ],
+    "createdAt": "2026-07-24T00:00:00+08:00",
+    "updatedAt": "2026-07-29T00:00:00+08:00",
+    "publishedVersion": null
+  },
+  {
+    "id": "scrm-store-customer-invalid-application",
+    "title": "无效申请",
+    "product": "scrm",
+    "module": "prospect-management",
+    "involvedModules": ["prospect-management"],
+    "requirementBatch": "2026-07-scrm-invalid-approval-flow",
+    "involvedPages": ["store-customer"],
+    "status": "developing",
+    "priority": "P1",
+    "background": "将原来直接生效的标注改为申请审核流程。",
+    "description": "状态为null或审核退回时，操作菜单显示标记无效客资入口。打开抽屉填写理由（必填）和附件（非必填），提交后状态变为待审核。操作入口只根据审批状态决定。",
+    "trigger": "用户点击操作菜单中的标记无效客资。",
+    "businessRules": [
+      "仅null或rejected状态可提交申请",
+      "提交后状态变为pending",
+      "申请理由最多200字",
+      "附件非必填",
+      "操作入口仅根据无效审批状态决定，不区分身份"
+    ],
+    "exceptionRules": [
+      "pending状态不可重复申请",
+      "approved状态不可申请"
+    ],
+    "permissionRules": [],
+    "interactionResult": "提交后状态立即变为待审核，生成申请信息。",
+    "acceptanceCriteria": [
+      "null状态菜单显示标记无效客资",
+      "rejected状态菜单显示标记无效客资",
+      "提交后状态变为待审核",
+      "申请表单只显示理由和附件"
+    ],
+    "pendingQuestions": [],
+    "referenceImages": [],
+    "relatedRequirementIds": ["scrm-store-customer-invalid-approval-status"],
+    "anchors": [
+      {
+        "type": "region",
+        "id": "anchor-invalid-application-drawer",
+        "page": "store-customer",
+        "dataReqId": "invalid-application-drawer",
+        "description": "无效申请抽屉",
+        "autoScroll": false,
+        "focusHighlight": true,
+        "regionKind": "modal"
+      }
+    ],
+    "createdAt": "2026-07-24T00:00:00+08:00",
+    "updatedAt": "2026-07-29T00:00:00+08:00",
+    "publishedVersion": null
+  },
+  {
+    "id": "scrm-store-customer-invalid-approval-review",
+    "title": "审核无效标注",
+    "product": "scrm",
+    "module": "prospect-management",
+    "involvedModules": ["prospect-management"],
+    "requirementBatch": "2026-07-scrm-invalid-approval-flow",
+    "involvedPages": ["store-customer"],
+    "status": "developing",
+    "priority": "P1",
+    "background": "待审核的无效申请需要经过审核才能生效。",
+    "description": "状态为pending时，操作菜单显示审核无效标注入口。打开审核抽屉展示申请信息（只读），审核意见必选通过或退回，退回时备注必填，通过时备注非必填，附件始终非必填。操作入口只根据审批状态决定。",
+    "trigger": "用户点击操作菜单中的审核无效标注。",
+    "businessRules": [
+      "仅pending状态可审核",
+      "审核意见必填（通过或退回）",
+      "退回时备注必填",
+      "通过时备注非必填",
+      "附件始终非必填",
+      "操作入口仅根据无效审批状态决定"
+    ],
+    "exceptionRules": [
+      "确认按钮在提交中禁用，防止重复提交",
+      "未选择审核意见不能确认"
+    ],
+    "permissionRules": [],
+    "interactionResult": "审核通过后状态变为审核通过；审核退回后状态变为审核退回。",
+    "acceptanceCriteria": [
+      "pending状态菜单显示审核无效标注",
+      "审核意见必填校验",
+      "退回备注必填校验",
+      "防重复提交"
+    ],
+    "pendingQuestions": [],
+    "referenceImages": [],
+    "relatedRequirementIds": ["scrm-store-customer-invalid-approval-status", "scrm-store-customer-invalid-application"],
+    "anchors": [
+      {
+        "type": "region",
+        "id": "anchor-invalid-review-drawer",
+        "page": "store-customer",
+        "dataReqId": "invalid-approval-review-drawer",
+        "description": "审核无效标注抽屉",
+        "autoScroll": false,
+        "focusHighlight": true,
+        "regionKind": "modal"
+      }
+    ],
+    "createdAt": "2026-07-24T00:00:00+08:00",
+    "updatedAt": "2026-07-29T00:00:00+08:00",
+    "publishedVersion": null
+  },
+  {
+    "id": "scrm-store-customer-invalid-approval-detail",
+    "title": "无效标注详情",
+    "product": "scrm",
+    "module": "prospect-management",
+    "involvedModules": ["prospect-management"],
+    "requirementBatch": "2026-07-scrm-invalid-approval-flow",
+    "involvedPages": ["store-customer"],
+    "status": "developing",
+    "priority": "P1",
+    "background": "需要查看无效标注的申请和审核详情。",
+    "description": "详情仅通过点击非空无效审批状态标签打开，不通过操作菜单打开。只读展示申请信息（客户姓名、申请人、申请时间、申请理由、申请附件）和审核信息（审核状态、审核结果、审核人、审核时间、审核备注、审核附件）。空值显示--。关闭抽屉不改变状态。",
+    "trigger": "用户点击非空的无效审批状态标签。",
+    "businessRules": [
+      "仅通过非空状态标签点击打开",
+      "操作菜单不含查看详情入口",
+      "只读展示，不可编辑",
+      "关闭不改变状态"
+    ],
+    "exceptionRules": [
+      "null状态不可点击"
+    ],
+    "permissionRules": [],
+    "interactionResult": "详情抽屉展示完整申请和审核信息。",
+    "acceptanceCriteria": [
+      "点击非空状态标签打开详情",
+      "null状态不可点击",
+      "详情字段完整",
+      "关闭不修改状态"
+    ],
+    "pendingQuestions": [],
+    "referenceImages": [],
+    "relatedRequirementIds": ["scrm-store-customer-invalid-approval-status"],
+    "anchors": [
+      {
+        "type": "element",
+        "id": "anchor-invalid-approval-detail-clickable",
+        "page": "store-customer",
+        "dataReqId": "invalid-approval-detail",
+        "description": "行级详情点击锚点",
+        "autoScroll": false,
+        "focusHighlight": true,
+        "elementKind": "other"
+      }
+    ],
+    "createdAt": "2026-07-24T00:00:00+08:00",
+    "updatedAt": "2026-07-29T00:00:00+08:00",
+    "publishedVersion": null
+  },
+  {
+    "id": "scrm-store-customer-invalid-approval-state-flow",
+    "title": "无效审批状态流转",
+    "product": "scrm",
+    "module": "prospect-management",
+    "involvedModules": ["prospect-management"],
+    "requirementBatch": "2026-07-scrm-invalid-approval-flow",
+    "involvedPages": ["store-customer"],
+    "status": "developing",
+    "priority": "P1",
+    "background": "无效审批需要完整的状态流转。",
+    "description": "状态流转规则：null或rejected提交申请后变为pending；pending审核通过变为approved；pending审核退回变为rejected。approved不可再次申请或审核。rejected提交申请回到pending。",
+    "trigger": "用户提交申请或审核操作。",
+    "businessRules": [
+      "null→提交申请→pending",
+      "rejected→提交申请→pending",
+      "pending→审核通过→approved",
+      "pending→审核退回→rejected",
+      "approved不可再申请或审核",
+      "pending不可重复申请"
+    ],
+    "exceptionRules": [
+      "非法状态流转不生效"
+    ],
+    "permissionRules": [],
+    "interactionResult": "状态按规则正确流转，非法操作被阻止。",
+    "acceptanceCriteria": [
+      "状态流转正确",
+      "非法操作不改变状态",
+      "重新提交后旧审核信息清除"
+    ],
+    "pendingQuestions": [],
+    "referenceImages": [],
+    "relatedRequirementIds": [
+      "scrm-store-customer-invalid-application",
+      "scrm-store-customer-invalid-approval-review"
+    ],
+    "anchors": [],
+    "createdAt": "2026-07-24T00:00:00+08:00",
+    "updatedAt": "2026-07-29T00:00:00+08:00",
+    "publishedVersion": null
+  },
+  {
+    "id": "scrm-store-customer-invalid-approval-form-validation",
+    "title": "无效审批表单校验",
+    "product": "scrm",
+    "module": "prospect-management",
+    "involvedModules": ["prospect-management"],
+    "requirementBatch": "2026-07-scrm-invalid-approval-flow",
+    "involvedPages": ["store-customer"],
+    "status": "developing",
+    "priority": "P1",
+    "background": "申请和审核表单需要完整的校验规则。",
+    "description": "申请理由必填（红色*）最多200字，附件非必填。审核意见必填（红色*）单选通过或退回，退回时备注必填（红色*）最多200字，通过时备注非必填（无*），附件非必填。取消和关闭不改变状态。确认按钮提交中禁用防止重复提交。",
+    "trigger": "用户打开申请或审核抽屉。",
+    "businessRules": [
+      "申请理由必填，显示红色*",
+      "审核意见必填，显示红色*",
+      "退回时备注必填，选择退回后立即显示红色*",
+      "通过时备注非必填，无红色*",
+      "通过和退回到同一水平行",
+      "确认按钮提交中禁用"
+    ],
+    "exceptionRules": [
+      "未通过校验不能提交",
+      "取消和关闭不改变状态"
+    ],
+    "permissionRules": [],
+    "interactionResult": "校验错误提示清晰，防止无效提交。",
+    "acceptanceCriteria": [
+      "必填*为红色#ff4d4f",
+      "退回备注红色*在选择退回后立即出现",
+      "通过备注无红色*",
+      "确认按钮防重复提交"
+    ],
+    "pendingQuestions": [],
+    "referenceImages": [],
+    "relatedRequirementIds": [
+      "scrm-store-customer-invalid-application",
+      "scrm-store-customer-invalid-approval-review"
+    ],
+    "anchors": [
+      {
+        "type": "element",
+        "id": "anchor-invalid-approval-opinion",
+        "page": "store-customer",
+        "dataReqId": "invalid-approval-opinion",
+        "description": "审核意见字段",
+        "autoScroll": false,
+        "focusHighlight": true,
+        "elementKind": "other"
+      }
+    ],
+    "createdAt": "2026-07-24T00:00:00+08:00",
+    "updatedAt": "2026-07-29T00:00:00+08:00",
+    "publishedVersion": null
+  }
+]
