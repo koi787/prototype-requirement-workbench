@@ -10,12 +10,12 @@
     "status": "developing",
     "priority": "P1",
     "background": "门店客户列表需要调整到店、成交及无效审批相关字段，并最终稳定为51列。",
-    "description": "删除实际到店状态和实际成交状态两列；将预约到店时间移至最新分配时间与是否到店之间；新增首笔成交金额列；无效客资状态统一更名为无效审批状态。",
+    "description": "删除实际到店状态和实际成交状态两列；将预约到店时间移至最新分配时间与是否到店之间；新增新办成交金额列；无效客资状态统一更名为无效审批状态。",
     "trigger": "产品需求调整列表字段顺序和内容。",
     "businessRules": [
       "最终列数为51列，顺序固定",
       "预约到店时间保留排序能力",
-      "首笔成交金额不支持排序"
+      "新办成交金额不支持排序"
     ],
     "exceptionRules": [],
     "permissionRules": [],
@@ -23,7 +23,7 @@
     "acceptanceCriteria": [
       "列表严格为51列且顺序正确",
       "实际到店状态和实际成交状态不再出现",
-      "首笔成交金额格式正确"
+      "新办成交金额格式正确"
     ],
     "pendingQuestions": [],
     "referenceImages": [],
@@ -34,7 +34,7 @@
         "id": "anchor-first-deal-amount-column",
         "page": "store-customer",
         "dataReqId": "first-deal-amount-column",
-        "description": "首笔成交金额列表头",
+        "description": "新办成交金额列表头",
         "autoScroll": false,
         "focusHighlight": true,
         "elementKind": "table-field"
@@ -46,7 +46,7 @@
   },
   {
     "id": "scrm-store-customer-first-deal-amount",
-    "title": "首笔成交金额",
+    "title": "新办成交金额",
     "product": "scrm",
     "module": "prospect-management",
     "involvedModules": ["prospect-management"],
@@ -54,9 +54,9 @@
     "involvedPages": ["store-customer"],
     "status": "developing",
     "priority": "P1",
-    "background": "门店客户列表需要在是否成交之后新增首笔成交金额列。",
-    "description": "在是否成交列之后新增首笔成交金额列，数据类型为金额数字或空值。有值时保留两位小数，无数据时展示--，不显示人民币符号，0为合法金额显示0.00。",
-    "trigger": "产品需求新增首笔成交金额字段。",
+    "background": "门店客户列表需要在是否成交之后新增新办成交金额列。",
+    "description": "在是否成交列之后新增新办成交金额列，数据类型为金额数字或空值。有值时保留两位小数，无数据时展示--，不显示人民币符号，0为合法金额显示0.00。",
+    "trigger": "产品需求新增新办成交金额字段。",
     "businessRules": [
       "有值时保留两位小数",
       "无数据展示--",
@@ -81,7 +81,7 @@
         "id": "anchor-first-deal-amount-column-2",
         "page": "store-customer",
         "dataReqId": "first-deal-amount-column",
-        "description": "首笔成交金额列",
+        "description": "新办成交金额列",
         "autoScroll": false,
         "focusHighlight": true,
         "elementKind": "table-field"

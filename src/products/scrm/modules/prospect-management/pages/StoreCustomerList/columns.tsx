@@ -25,7 +25,7 @@ export const COLUMN_REQUIREMENT_ANCHORS = [
   { id: 'latest-allocation-time-column', columnKey: 'lastAssignTime', description: '最新分配时间列' },
   { id: 'is-arrived-column', columnKey: 'isVisited', description: '是否到店列' },
   { id: 'is-deal-column', columnKey: 'isDeal', description: '是否成交列' },
-  { id: 'first-deal-amount-column', columnKey: 'firstDealAmount', description: '首笔成交金额列' },
+  { id: 'first-deal-amount-column', columnKey: 'firstDealAmount', description: '新办成交金额列' },
   { id: 'invalid-approval-status-column', columnKey: 'invalidApprovalStatus', description: '无效审批状态列' },
 ] as const;
 
@@ -129,7 +129,7 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     render: (v: string) => <DealTag value={v} />,
   },
   {
-    title: '首笔成交金额',
+    title: '新办成交金额',
     dataIndex: 'firstDealAmount',
     key: 'firstDealAmount',
     width: 130,

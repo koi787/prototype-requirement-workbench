@@ -232,7 +232,7 @@ describe('StoreCustomerList', () => {
         { id: 'latest-allocation-time-column', columnKey: 'lastAssignTime', description: '最新分配时间列' },
         { id: 'is-arrived-column', columnKey: 'isVisited', description: '是否到店列' },
         { id: 'is-deal-column', columnKey: 'isDeal', description: '是否成交列' },
-        { id: 'first-deal-amount-column', columnKey: 'firstDealAmount', description: '首笔成交金额列' },
+        { id: 'first-deal-amount-column', columnKey: 'firstDealAmount', description: '新办成交金额列' },
         { id: 'invalid-approval-status-column', columnKey: 'invalidApprovalStatus', description: '无效审批状态列' },
       ]);
     });
@@ -561,7 +561,7 @@ describe('StoreCustomerList', () => {
       ]);
     });
 
-    it('首笔成交金额仍不可排序', () => {
+    it('新办成交金额仍不可排序', () => {
       const column = ALL_COLUMNS.find((item) => item.key === 'firstDealAmount');
       expect(column).toBeDefined();
       expect(column?.sorter).toBeUndefined();
@@ -1699,7 +1699,34 @@ describe('StoreCustomerList', () => {
   // ==========================================================================
 
   describe('0008 闭环一：列表字段调整', () => {
-    describe('首笔成交金额展示', () => {
+    describe('新办成交金额展示', () => {
+      it('统一展示新名称并保持字段Key、需求Key和锚点不变', () => {
+        render(<StoreCustomerList initialState="normal" />);
+
+        expect(
+          screen.getByRole('columnheader', { name: '新办成交金额' }),
+        ).toBeTruthy();
+        expect(screen.queryByText(['首笔', '成交金额'].join(''))).toBeNull();
+
+        const column = ALL_COLUMNS.find((item) => item.key === 'firstDealAmount');
+        expect(column).toBeDefined();
+        expect(
+          column && 'dataIndex' in column ? column.dataIndex : undefined,
+        ).toBe('firstDealAmount');
+        expect(
+          COLUMN_REQUIREMENT_ANCHORS.find(
+            (anchor) => anchor.columnKey === 'firstDealAmount',
+          )?.id,
+        ).toBe('first-deal-amount-column');
+
+        const requirement = getRequirement(
+          'scrm-store-customer-first-deal-amount',
+        );
+        expect(requirement?.requirementName).toBe('新办成交金额');
+        expect(requirement?.definition).toContain('新办成交金额为9000元');
+        expect(requirement?.definition).not.toContain(['首笔', '成交金额'].join(''));
+      });
+
       it('第一页同时显示 29.90、0.00 和 --', () => {
         render(<StoreCustomerList initialState="normal" />);
 
@@ -1720,7 +1747,7 @@ describe('StoreCustomerList', () => {
         expect(cellTexts).toContain('--');
       });
 
-      it('首笔成交金额列不支持排序', () => {
+      it('新办成交金额列不支持排序', () => {
         const col = ALL_COLUMNS.find((c) => c.key === 'firstDealAmount');
         expect(col).toBeTruthy();
         expect((col as Record<string, unknown>).sorter).toBeUndefined();

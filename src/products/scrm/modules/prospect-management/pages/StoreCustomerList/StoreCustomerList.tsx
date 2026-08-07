@@ -983,7 +983,7 @@ function StoreCustomerListInner({
         };
       }
 
-      // --- 首笔成交金额列（point 6）---
+      // --- 新办成交金额列（point 6）---
       if (col.key === 'firstDealAmount') {
         const point = REQUIREMENT_POINTS.find((p) => p.displayNumber === 6);
         if (point) {
