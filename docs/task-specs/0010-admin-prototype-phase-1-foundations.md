@@ -9,8 +9,9 @@
 - 所属模块：潜客管理与产品内后台通用结构
 - 涉及页面：门店客户列表
 - Storybook 入口：`SCRM / 潜客管理 / 门店客户`
-- 当前阶段：任务单已确认，等待 Claude + DeepSeek V4 开发
-- 基线提交：`bbfc66f`
+- 当前阶段：重新实施基线已确认，等待 Claude + DeepSeek V4 基于最新 `main` 开发
+- 正式代码基线：`3507db4c490388e8a099ceb9290229abe6c399f5`
+- 旧成果参考 stash：`backup: 0010 phase1 before 52-column baseline`（只读参考，禁止 `stash pop` / `stash apply`）
 
 ## 2. 需求确认卡
 
@@ -29,12 +30,12 @@
 
 允许的配套修改仅包括：
 
-- 为上述组件新增产品内或仓库既有边界认可的共享文件；
-- 修改 `StoreCustomerList`，把现有结构原样接回新组件；
-- 原样迁移抽取所必需的 CSS，尽量保留现有选择器、DOM 层级和 `className`；
-- 新增或调整与结构抽取直接相关的测试；
-- 必要的 barrel export 或模块说明更新。
-- 按第 4 节的最新产品字段基线，将当前页面、当前需求说明、当前 Story 和当前测试同步到 52 列；该字段基线更新必须与结构抽取分成可检查的小闭环，不得夹带其他业务调整。
+- 在 `src/products/scrm/shared/admin/` 新增六个公共组件、`index.ts`、`README.md` 和基础测试；
+- 最小机械修改 `StoreCustomerList.tsx`，把当前已发布结构原样接回上述组件；
+- 必要更新 `src/products/scrm/shared/README.md` 的目录说明；
+- 必要时只追加与组件接回直接相关的当前页面测试，不删除、不弱化既有测试。
+
+当前 52 列字段、需求数据、需求映射、Story 和业务测试基线已经完成并上线，不再属于 0010 Phase 1 的开发内容。
 
 本任务属于当前页面结构更新，不新增需求批次，不创建平行版本，不删除或覆盖历史需求。
 
@@ -44,8 +45,9 @@
 - 不新增 Breadcrumb 或可见 PageHeader。
 - 不改变 Sidebar、TopHeader、顶部页签现有视觉。
 - 不提前抽取 `AdminActionMenu`、`AdminDrawer`、`AdminStatusTag`、`AdminEmptyState`。
-- 不创建 Modal、Axure Export Story，不接入 Axhub Runtime。
+- 不创建 Modal，不新增 Async 能力，不创建 Axure Export Story，不接入 Axure 或 Axhub Runtime。
 - 不处理 Drawer、ActionMenu 或其他 Phase 2 范围。
+- 不搬迁 CSS，不重命名 `store-customer-*` 类名，不做换肤，不改变当前 DOM 视觉结构。
 - 不引入新增付费插件、付费元件库或付费托管服务。
 - 不新增状态管理库，不升级依赖，不切换 Node.js。
 - 不重构需求查看基础设施、Storybook Channel 或正式需求 Schema。
@@ -55,12 +57,12 @@
 - UI 验收等级：B 级。
 - 目标是保持现有已验收页面的关键布局、密度、尺寸、颜色和控件风格，无明显视觉回归。
 - 现有页面是本任务唯一视觉基线；不自行现代化、不使用抽取作为调整视觉的机会。
-- CSS 优先原样迁移，不边迁移边重写。
+- 当前 Phase 1 不搬 CSS；继续使用现有 `StoreCustomerList.css` 和 `store-customer-*` 类名保护线上视觉基线。
 
 ### 2.5 验收标准摘要
 
 - 4 组基础组件均已独立抽取，门店客户列表通过这些组件恢复原有页面。
-- 页面结构、筛选、排序、分页及既有业务行为保持不变，并以第 4 节规定的 52 列最新产品基线完成字段、锚点与需求映射同步。
+- 页面结构、筛选、排序、分页及既有业务行为保持不变，并完整保留第 4 节已经上线的 52 列、锚点与需求映射。
 - 前 3 列严格为“姓名 → 手机号 → 客资来源”；第 4～10 列为固定业务重点字段区；“首次分配时间”为第 50 列、“创建时间”为第 51 列；第 52 列为“操作”。
 - “标记无效客资”和“无效审批状态”相邻展示但业务语义、数据字段与需求对象相互独立。
 - Sidebar、TopHeader、顶部页签、内容布局、筛选网格、表格和分页无明显视觉回归。
@@ -105,8 +107,8 @@
 
 - 原 51 列基线自本任务单本次更新起废止，不再作为当前页面或 0010 模块化验收依据。
 - 0008 正式需求批次及历史任务中记载的“当时交付 51 列”属于历史事实，本任务不得机械追溯改写。
-- 当前页面、0010 模块化验收、当前 `requirements.json`、当前 Story 和当前测试应以 52 列为最新基线。
-- 模块化前后，无论拆分 `columns`、hooks、mock、table components 或 requirement mapping，都必须保持本节完整顺序。
+- 当前页面、`requirements.json`、Story、测试及 Requirement 13 已按 52 列正式发布；0010 重新实施只消费该基线，不再负责创建或调整它。
+- 模块化前后，无论接回 Shell、Filter、Table 或 Pagination，都必须保持本节完整顺序，禁止修改字段定义、mock、需求数据和需求映射。
 
 ### 4.2 最终 52 列顺序
 
@@ -176,84 +178,109 @@
 - 定义：表示当前客户是否已经被正式标记为无效客资。
 - 展示值仅为“是”或“否”。
 - “标记无效客资”表示最终业务结果；“无效审批状态”表示审批流程状态，二者必须严格区分。
-- 实施前必须再次搜索 `CustomerRecord`、mock、hooks 及其他当前数据模型是否已有 `isInvalidCustomer`、`invalidCustomer`、`invalidFlag`、`isInvalid` 或其他等价字段；如存在，直接复用，不得制造第二套相同业务语义。
-- 本任务单更新时的代码审计未发现独立等价字段。当前 `CustomerRecord`、`mockData` 与 `useApprovalState` 只有 `invalidApprovalStatus` 流程字段。
-- 在当前纯前端原型阶段，如实施时仍不存在独立字段，优先根据审批状态派生展示：`approved → 是`；`null` / `pending` / `rejected → 否`。
-- 不得把 `invalidApprovalStatus` 直接作为新列的 `dataIndex` 或数据字段；派生逻辑必须保留“结果字段”和“流程字段”的独立语义，并确保审批状态变化后展示同步更新。
+- 当前 main 已通过 `invalidCustomerFlag.ts` 从审批状态实时派生展示：`approved → 是`；`null` / `pending` / `rejected → 否`。
+- 当前实现没有第二套 Mock 审批状态，也没有把 `invalidApprovalStatus` 直接作为新列的 `dataIndex`。
+- 以上规则已经上线并冻结；Phase 1 重新实施不得修改 `invalidCustomerFlag.ts`、`mockData.ts`、`useApprovalState` 或该列业务语义。
 
 ### 4.4 Requirement 与稳定 ID 规则
 
-本任务单更新时已检查当前页面 `requirements.json`、`requirementPoints.ts`、列锚点及 0008 正式需求批次：
-
-- 未发现与“标记无效客资（最终业务结果）”等价的当前需求对象。
-- 已有 `scrm-store-customer-invalid-application` 表示申请操作，不是结果字段，不得复用。
-- 已有 `scrm-store-customer-invalid-approval-status` / `invalid-approval-status-column` 表示流程状态，不是结果字段，不得复用。
-- 未发现 `scrm-store-customer-invalid-customer-flag` 或 `invalid-customer-flag-column` 冲突或等价定义。
-
-若实施前复查仍无等价定义，新字段使用：
+当前 main 已正式发布独立的“标记无效客资”需求对象和稳定锚点：
 
 - requirement key：`scrm-store-customer-invalid-customer-flag`
-- `targetId` / `data-req-id`：`invalid-customer-flag-column`
+- requirementNo：`SC-08-10`
+- displayNumber：`13`
+- targetId / `data-req-id`：`invalid-customer-flag-column`
 - `requirementName`：`标记无效客资`
 - `definition`：表示当前客户是否已经被正式标记为无效客资。
 - `dataSource`：当前纯前端原型阶段说明由无效审批结果派生；不得把审批流程字段描述成最终结果字段。
 - `rule`：`approved` 展示“是”；`null`、`pending`、`rejected` 展示“否”；与“无效审批状态”相邻但独立。
 
-实施时应同步当前页面需求 JSON、需求 key 校验、列级稳定锚点、需求点映射和真实结果测试；不得修改 0008 历史批次以伪装为当时已有该字段。
+以上需求数据、需求 key 校验、列级稳定锚点和需求点映射均已进入 main；Phase 1 重新实施只能透传和保护，不得再次创建、重排或修改，也不得改写 0008 历史批次。
 
-### 4.5 displayNumber 处理结论
+### 4.5 Requirement 编号正式结论
 
-- 当前 `displayNumber` 属于页面需求点编号，不等于字段序号，也不与列顺序绑定。证据包括：仅部分列配置需求点、抽屉字段复用编号 9/10、编号 12 由 `RequirementModeControl` 固定。
-- 因此，52 列重排不要求任何已有需求的 `displayNumber` 随字段位置调整。首次分配时间、最新分配时间、预约到店时间、是否到店、是否成交、新办成交金额和无效审批状态等已有需求点均保留现有编号。
-- 新字段应新增独立 requirement key 和需求点，而不是改写或占用“无效审批状态”的编号。
-- 当前真实编号体系没有足够依据决定新字段的 `displayNumber`；不得把字段序号 9 当作需求编号，也不得凭空选择 13 或整体顺延 7～12。
-- 开发进入新需求点实现前，产品经理必须单独确认新字段的 `displayNumber`。确认前可以完成无需求编号依赖的字段数据与表格结构准备，但不得提交一个猜测编号。
-- `requirementNo` 同样不得根据列序猜测；应按当前需求编号治理单独确认。它与页面 `displayNumber` 是不同概念。
+- `displayNumber` 属于页面需求点编号，不等于字段序号，也不与列顺序绑定。
+- “标记无效客资”已正式确认为 `displayNumber: 13`、`requirementNo: SC-08-10`，不再属于待确认项。
+- `scrm-store-customer-invalid-customer-flag`、`SC-08-10`、编号 13 和 `invalid-customer-flag-column` 必须整体保持不变。
+- 既有编号 1～12、抽屉字段共享编号 9/10 以及 `RequirementModeControl` 固定编号 12 均保持不变。
 
 ## 5. 绝对保护项
 
 开发过程中严禁修改下列内容及语义：
 
-- 第 4 节规定的 52 列定义、字段顺序和现有列宽规则；
+- 第 4 节规定的 52 列定义、字段顺序和现有列宽规则；其中第 50 列必须为首次分配时间、第 51 列为创建时间、第 52 列为操作；
 - 筛选数据模型及 `applyFilter`、`pending` / `applied` filters 逻辑；
 - 排序规则；
-- 已有 requirement key、`displayNumber`、`targetId`；新字段只按第 4.4～4.5 节新增，禁止覆盖旧映射或猜测编号；
+- 所有已有 requirement key、`requirementNo`、`displayNumber`、`targetId`；Requirement 13 与 `SC-08-10` 尤其不得改变；
 - `ColumnRequirementAnchorRegistry`；
 - 行级锚点规则；
-- 既有无效审批流程；新增结果列只按第 4.3 节派生，不改变申请、审核、退回和重提规则；
+- 既有无效审批状态机及申请、审核、退回和重提规则；
+- 新办成交金额的字段名、格式、空值、`0.00` 与不可排序规则；
 - Drawer、ActionMenu 及 Phase 2 业务。
 
 如任一组件抽取必须明显改变现有 DOM、CSS 或业务接口，应停止该项抽取并报告，不得为组件化强行重构。
 
 ## 6. 建议文件边界
 
-执行前先核对现有共享目录，优先把后台通用组件放在符合 `PROJECT_STRUCTURE.md` 的共享边界中。建议范围如下，最终路径可根据现有目录约定微调，但不得放入 `prototype-core` 或需求数据目录：
+Phase 1 重新实施只允许新增：
 
-- 新增后台共享组件目录及 4 组组件文件；
-- 修改 `src/products/scrm/modules/prospect-management/pages/StoreCustomerList/StoreCustomerList.tsx`；
-- 修改或拆分 `src/products/scrm/modules/prospect-management/pages/StoreCustomerList/StoreCustomerList.css`，仅限原样迁移必要样式；
-- 修改 `src/products/scrm/modules/prospect-management/pages/StoreCustomerList/columns.tsx`、`mockData.ts`、当前需求映射及相关文件，仅用于落实第 4 节 52 列基线；
-- 修改 `src/products/scrm/modules/prospect-management/pages/StoreCustomerList/__tests__/StoreCustomerList.test.tsx`，补充结构抽取回归断言并把当前字段基线更新为 52 列；
-- 修改当前门店客户 `requirements.json`、需求 key 校验及当前 Story，仅用于同步新字段需求说明与 52 列当前基线；
-- 如新增共享组件测试，测试应验证插槽、受控参数透传和用户可观察结果，不依赖 Ant Design 私有 DOM。
+- `src/products/scrm/shared/admin/AdminShell.tsx`
+- `src/products/scrm/shared/admin/FilterBar.tsx`
+- `src/products/scrm/shared/admin/FilterField.tsx`
+- `src/products/scrm/shared/admin/FilterActions.tsx`
+- `src/products/scrm/shared/admin/AdminDataTable.tsx`
+- `src/products/scrm/shared/admin/AdminPagination.tsx`
+- `src/products/scrm/shared/admin/index.ts`
+- `src/products/scrm/shared/admin/README.md`
+- `src/products/scrm/shared/admin/__tests__/admin-foundations.test.tsx`
 
-不得修改 0008 历史正式需求批次、需求 Schema、无效审批 Drawer、ActionMenu 逻辑及其他 Phase 2 文件。当前页面字段基线同步与通用组件抽取应分别形成可审查 diff，禁止借新增字段重构既有业务。
+只允许修改：
+
+- `src/products/scrm/modules/prospect-management/pages/StoreCustomerList/StoreCustomerList.tsx`：最小机械接回；
+- `src/products/scrm/shared/README.md`：必要目录说明；
+- `src/products/scrm/modules/prospect-management/pages/StoreCustomerList/__tests__/StoreCustomerList.test.tsx`：仅在确有需要时追加接回断言，不得改写业务基线。
+
+冻结且禁止修改：
+
+- `columns.tsx`
+- `mockData.ts`
+- `requirementPoints.ts`
+- `invalidCustomerFlag.ts`
+- 当前页面 `requirements.json`
+- `requirement-view` Schema 及其 key 校验
+- 当前 `StoreCustomerList.stories.tsx`
+- `StoreCustomerList.css`
+- 0008 历史正式需求批次
+- `useApprovalState`、审批 Drawer、ActionMenu、StatusTags 及无效审批状态机
+- 新办成交金额相关实现和测试
+
+### 6.1 CSS 与 DOM 策略
+
+- 当前 Phase 1 不搬 CSS，不新增另一套样式文件。
+- 不重命名 `store-customer-*` 类名，不做换肤或视觉现代化。
+- 公共组件在本阶段继续使用现有类名，以确保接回前后 CSS 命中与视觉结构一致。
+- 不改变已验收 DOM 视觉层级；如果抽取必须增加影响布局的包裹层，应暂停该项而不是强行组件化。
+
+### 6.2 旧 stash 使用策略
+
+- `backup: 0010 phase1 before 52-column baseline` 只允许作为只读参考代码来源。
+- 允许参考其中的六个公共组件、基础组件测试、README 和旧接回 diff。
+- 禁止执行 `stash pop`、`stash apply`，禁止直接恢复整个 stash。
+- 禁止直接恢复旧 `StoreCustomerList.tsx`；必须基于正式代码基线 `3507db4c490388e8a099ceb9290229abe6c399f5` 重新实施最小接回。
+- stash 中任何内容进入新分支前，都必须重新对照当前 52 列、Requirement 13、审批流程和现有测试审查。
 
 ## 7. 实施顺序与门禁
 
 采用小步修改，每个闭环先检查 diff，再执行与改动直接相关的最小验证：
 
-1. 抽取 `AdminShell`。
-2. 让 `StoreCustomerList` 接回 `AdminShell`。
-3. 检查 diff，并执行 typecheck 与相关测试。
-4. 抽取 `FilterBar`、`FilterField`、`FilterActions`，接回页面。
-5. 检查筛选 DOM、样式及筛选行为。
-6. 先按第 4 节完成并验证当前页面 52 列字段基线；字段基线 diff 与通用组件抽取 diff 分开检查。
-7. 抽取 `AdminDataTable`，接回页面。
-8. 检查 52 列、完整顺序、固定列、横向滚动、排序及 requirement 映射。
-9. 抽取 `AdminPagination`，接回页面。
-10. 检查分页受控行为、加载、空数据和 `0 / 0` 语义。
-11. 执行完整回归并停止，不进入 Phase 2。
+1. 从最新 `main` 的正式基线 `3507db4c490388e8a099ceb9290229abe6c399f5` 创建独立功能分支；不得通过恢复 stash 建立工作区。
+2. 参考旧 stash 重新实施 `AdminShell`。
+3. 让 `StoreCustomerList` 最小机械接回 `AdminShell`，检查 DOM 与视觉后执行 typecheck 和相关测试。
+4. 参考旧 stash 重新实施 `FilterBar`、`FilterField`、`FilterActions` 并逐项接回，检查 label、Requirement Marker、日期范围、筛选网格和行为。
+5. 参考旧 stash 重新实施 `AdminDataTable` 并接回四种表格状态，确认 columns、排序、Requirement 包装和列级锚点仍由当前页面管理。
+6. 检查 52 列完整顺序、固定列、横向滚动、加载/空数据和 Requirement 13。
+7. 参考旧 stash 重新实施 `AdminPagination`，检查受控回调、页容量切换和 `0 / 0` 语义。
+8. 执行完整回归并停止，不进入 Phase 2。
 
 ## 8. 自动验证
 

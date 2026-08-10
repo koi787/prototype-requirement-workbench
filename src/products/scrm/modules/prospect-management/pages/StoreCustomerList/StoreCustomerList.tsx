@@ -4,7 +4,6 @@ import {
   Select,
   DatePicker,
   Button,
-  Table,
   Dropdown,
   Space,
   InputNumber,
@@ -45,6 +44,14 @@ import {
   CaretDownIcon,
   FoldIcon,
 } from './IconComponents';
+import {
+  AdminShell,
+  FilterBar,
+  FilterField,
+  FilterActions,
+  AdminDataTable,
+  AdminPagination,
+} from '../../../../shared/admin';
 import './StoreCustomerList.css';
 
 const { RangePicker } = DatePicker;
@@ -658,20 +665,18 @@ function StoreCustomerListInner({
 
   // ---------- 筛选区 ----------
   const renderFilter = () => (
-    <div className="store-customer-filter-card" data-req-id="filter-area">
+    <FilterBar>
       {/* 默认10项 */}
       <div className="store-customer-filter-row">
-        <div className="store-customer-filter-item">
-          <label>用户ID</label>
+        <FilterField label="用户ID">
           <Input
             placeholder="请输入用户ID"
             value={pendingFilters.userId}
             onChange={(e) => updatePending({ userId: e.target.value })}
             allowClear
           />
-        </div>
-        <div className="store-customer-filter-item">
-          <label>姓名/手机号</label>
+        </FilterField>
+        <FilterField label="姓名/手机号">
           <Input
             placeholder="请输入姓名或手机号"
             aria-label="姓名或手机号"
@@ -680,27 +685,24 @@ function StoreCustomerListInner({
             allowClear
             data-req-id="filter-name-phone"
           />
-        </div>
-        <div className="store-customer-filter-item">
-          <label>员工姓名/编号</label>
+        </FilterField>
+        <FilterField label="员工姓名/编号">
           <Input
             placeholder="请输入员工姓名或编号"
             value={pendingFilters.employeeName}
             onChange={(e) => updatePending({ employeeName: e.target.value })}
             allowClear
           />
-        </div>
-        <div className="store-customer-filter-item">
-          <label>最新跟进人</label>
+        </FilterField>
+        <FilterField label="最新跟进人">
           <Input
             placeholder="请输入跟进人"
             value={pendingFilters.latestFollower}
             onChange={(e) => updatePending({ latestFollower: e.target.value })}
             allowClear
           />
-        </div>
-        <div className="store-customer-filter-item">
-          <label>客资来源</label>
+        </FilterField>
+        <FilterField label="客资来源">
           <Select
             placeholder="请选择"
             value={pendingFilters.source || undefined}
@@ -710,9 +712,8 @@ function StoreCustomerListInner({
             style={{ width: '100%' }}
             data-req-id="filter-source"
           />
-        </div>
-        <div className="store-customer-filter-item">
-          <label>留资门店</label>
+        </FilterField>
+        <FilterField label="留资门店">
           <Select
             mode="multiple"
             placeholder="请选择"
@@ -722,9 +723,8 @@ function StoreCustomerListInner({
             allowClear
             style={{ width: '100%' }}
           />
-        </div>
-        <div className="store-customer-filter-item">
-          <label>是否已分配</label>
+        </FilterField>
+        <FilterField label="是否已分配">
           <Select
             placeholder="请选择"
             value={pendingFilters.isAssigned || undefined}
@@ -733,9 +733,9 @@ function StoreCustomerListInner({
             allowClear
             style={{ width: '100%' }}
           />
-        </div>
-        <div className="store-customer-filter-item">
-          <label>
+        </FilterField>
+        <FilterField
+          label={
             <RequirementMarker
               requirementKey="scrm-store-customer-invalid-approval-filter"
               displayNumber={8}
@@ -746,7 +746,8 @@ function StoreCustomerListInner({
             >
               无效审批状态
             </RequirementMarker>
-          </label>
+          }
+        >
           <Select
             placeholder="请选择"
             value={pendingFilters.invalidApprovalStatus || undefined}
@@ -755,9 +756,8 @@ function StoreCustomerListInner({
             allowClear
             style={{ width: '100%' }}
           />
-        </div>
-        <div className="store-customer-filter-item">
-          <label>客资类型</label>
+        </FilterField>
+        <FilterField label="客资类型">
           <Select
             placeholder="请选择"
             value={pendingFilters.customerType || undefined}
@@ -766,26 +766,25 @@ function StoreCustomerListInner({
             allowClear
             style={{ width: '100%' }}
           />
-        </div>
-        <div className="store-customer-filter-item">
-          <label>合同号</label>
+        </FilterField>
+        <FilterField label="合同号">
           <Input
             placeholder="请输入合同号"
             value={pendingFilters.contractNo}
             onChange={(e) => updatePending({ contractNo: e.target.value })}
             allowClear
           />
-        </div>
+        </FilterField>
       </div>
 
       {/* 展开后增加的11项 */}
       {filtersExpanded && (
         <div className="store-customer-filter-row">
-          <div
-            className="store-customer-filter-item store-customer-filter-item--date-range"
-            data-req-id="filter-create-time-range"
+          <FilterField
+            label="创建时间"
+            className="store-customer-filter-item--date-range"
+            dataReqId="filter-create-time-range"
           >
-            <label>创建时间</label>
             <RangePicker
               separator="至"
               style={{ width: '100%' }}
@@ -798,9 +797,8 @@ function StoreCustomerListInner({
                 })
               }
             />
-          </div>
-          <div className="store-customer-filter-item">
-            <label>地推问卷状态</label>
+          </FilterField>
+          <FilterField label="地推问卷状态">
             <Select
               placeholder="请选择"
               value={pendingFilters.questionnaireStatus || undefined}
@@ -809,9 +807,8 @@ function StoreCustomerListInner({
               allowClear
               style={{ width: '100%' }}
             />
-          </div>
-          <div className="store-customer-filter-item">
-            <label>是否已预约</label>
+          </FilterField>
+          <FilterField label="是否已预约">
             <Select
               placeholder="请选择"
               value={pendingFilters.isAppointed || undefined}
@@ -820,9 +817,8 @@ function StoreCustomerListInner({
               allowClear
               style={{ width: '100%' }}
             />
-          </div>
-          <div className="store-customer-filter-item">
-            <label>体验课类型</label>
+          </FilterField>
+          <FilterField label="体验课类型">
             <Select
               placeholder="请选择"
               value={pendingFilters.trialClassType || undefined}
@@ -831,18 +827,16 @@ function StoreCustomerListInner({
               allowClear
               style={{ width: '100%' }}
             />
-          </div>
-          <div className="store-customer-filter-item">
-            <label>体验课顾问</label>
+          </FilterField>
+          <FilterField label="体验课顾问">
             <Input
               placeholder="请输入顾问姓名"
               value={pendingFilters.trialClassConsultant}
               onChange={(e) => updatePending({ trialClassConsultant: e.target.value })}
               allowClear
             />
-          </div>
-          <div className="store-customer-filter-item">
-            <label>用户标签</label>
+          </FilterField>
+          <FilterField label="用户标签">
             <Select
               placeholder="请选择"
               value={pendingFilters.userTag || undefined}
@@ -851,9 +845,8 @@ function StoreCustomerListInner({
               allowClear
               style={{ width: '100%' }}
             />
-          </div>
-          <div className="store-customer-filter-item">
-            <label>预约门店</label>
+          </FilterField>
+          <FilterField label="预约门店">
             <Select
               mode="multiple"
               placeholder="请选择"
@@ -863,12 +856,12 @@ function StoreCustomerListInner({
               allowClear
               style={{ width: '100%' }}
             />
-          </div>
-          <div
-            className="store-customer-filter-item store-customer-filter-item--date-range"
-            data-req-id="filter-appointment-date-range"
+          </FilterField>
+          <FilterField
+            label="预约到店日期"
+            className="store-customer-filter-item--date-range"
+            dataReqId="filter-appointment-date-range"
           >
-            <label>预约到店日期</label>
             <RangePicker
               separator="至"
               style={{ width: '100%' }}
@@ -881,10 +874,9 @@ function StoreCustomerListInner({
                 })
               }
             />
-          </div>
+          </FilterField>
           <div className="store-customer-filter-count-group">
-            <div className="store-customer-filter-item">
-              <label>次数筛选字段</label>
+            <FilterField label="次数筛选字段">
               <Select
                 placeholder="请选择"
                 value={pendingFilters.countField || undefined}
@@ -893,53 +885,53 @@ function StoreCustomerListInner({
                 allowClear
                 style={{ width: '100%' }}
               />
-            </div>
-            <div className="store-customer-filter-item">
-              <label>最小值</label>
+            </FilterField>
+            <FilterField label="最小值">
               <InputNumber
                 placeholder="最小值"
                 value={pendingFilters.countMin}
                 onChange={(v) => updatePending({ countMin: v })}
                 style={{ width: '100%' }}
               />
-            </div>
-            <div className="store-customer-filter-item">
-              <label>最大值</label>
+            </FilterField>
+            <FilterField label="最大值">
               <InputNumber
                 placeholder="最大值"
                 value={pendingFilters.countMax}
                 onChange={(v) => updatePending({ countMax: v })}
                 style={{ width: '100%' }}
               />
-            </div>
+            </FilterField>
           </div>
         </div>
       )}
 
       {/* 操作按钮行 */}
-      <div className="store-customer-filter-actions">
-        <div className="store-customer-filter-actions-left">
-          <Button
-            type="link"
-            onClick={() => setFiltersExpanded(!filtersExpanded)}
-            data-req-id="filter-expand-toggle"
-          >
-            {filtersExpanded ? '收起' : '展开'}
-          </Button>
-          <Button type="primary" onClick={handleSearch} data-req-id="search-button">
-            搜索
-          </Button>
-          <Button onClick={handleReset} data-req-id="reset-button">
-            重置
-          </Button>
-        </div>
-        <div className="store-customer-filter-actions-right">
+      <FilterActions
+        left={
+          <>
+            <Button
+              type="link"
+              onClick={() => setFiltersExpanded(!filtersExpanded)}
+              data-req-id="filter-expand-toggle"
+            >
+              {filtersExpanded ? '收起' : '展开'}
+            </Button>
+            <Button type="primary" onClick={handleSearch} data-req-id="search-button">
+              搜索
+            </Button>
+            <Button onClick={handleReset} data-req-id="reset-button">
+              重置
+            </Button>
+          </>
+        }
+        right={
           <Button type="primary" onClick={handleExport} data-req-id="export-button">
             导出记录
           </Button>
-        </div>
-      </div>
-    </div>
+        }
+      />
+    </FilterBar>
   );
 
   // ---------- 表格 ----------
@@ -1157,14 +1149,12 @@ function StoreCustomerListInner({
   const renderTable = () => {
     if (pageState === 'loading') {
       return (
-        <Table<CustomerRecord>
+        <AdminDataTable<CustomerRecord>
           columns={columns}
           dataSource={[]}
           loading
           rowKey="key"
           scroll={{ x: 6500 }}
-          pagination={false}
-          data-req-id="customer-table"
         />
       );
     }
@@ -1180,40 +1170,34 @@ function StoreCustomerListInner({
 
     if (pageState === 'empty') {
       return (
-        <Table<CustomerRecord>
+        <AdminDataTable<CustomerRecord>
           columns={columns}
           dataSource={[]}
           rowKey="key"
           scroll={{ x: 6500 }}
-          pagination={false}
           locale={{ emptyText: '当前暂无数据' }}
-          data-req-id="customer-table"
         />
       );
     }
 
     if (pageState === 'noResults') {
       return (
-        <Table<CustomerRecord>
+        <AdminDataTable<CustomerRecord>
           columns={columns}
           dataSource={[]}
           rowKey="key"
           scroll={{ x: 6500 }}
-          pagination={false}
           locale={{ emptyText: '筛选无结果，请调整筛选条件' }}
-          data-req-id="customer-table"
         />
       );
     }
 
     return (
-      <Table<CustomerRecord>
+      <AdminDataTable<CustomerRecord>
         columns={columns}
         dataSource={pagedData}
         rowKey="key"
         scroll={{ x: 6500 }}
-        pagination={false}
-        data-req-id="customer-table"
       />
     );
   };
@@ -1222,48 +1206,17 @@ function StoreCustomerListInner({
   const renderPagination = () => {
     if (pageState === 'loading' || pageState === 'error') return null;
 
-    const totalPages = totalCount === 0 ? 0 : Math.ceil(totalCount / pageSize);
-    const displayedCurrentPage = totalPages === 0 ? 0 : Math.min(currentPage, totalPages);
-
     return (
-      <div className="store-customer-pagination" data-req-id="pagination-area">
-        <div className="store-customer-pagination-left">
-          共 {totalCount} 条记录
-        </div>
-        <div className="store-customer-pagination-right">
-          <Space>
-            <Select
-              value={pageSize}
-              onChange={(v) => {
-                setPageSize(v);
-                setCurrentPage(1);
-              }}
-              options={[
-                { value: 10, label: '10条/页' },
-                { value: 20, label: '20条/页' },
-                { value: 50, label: '50条/页' },
-                { value: 100, label: '100条/页' },
-              ]}
-              style={{ width: 110 }}
-            />
-            <Button
-              disabled={totalPages === 0 || currentPage <= 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            >
-              上一页
-            </Button>
-            <span className="store-customer-page-indicator">
-              {displayedCurrentPage} / {totalPages}
-            </span>
-            <Button
-              disabled={totalPages === 0 || currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-            >
-              下一页
-            </Button>
-          </Space>
-        </div>
-      </div>
+      <AdminPagination
+        totalCount={totalCount}
+        pageSize={pageSize}
+        currentPage={currentPage}
+        onPageSizeChange={(v) => {
+          setPageSize(v);
+          setCurrentPage(1);
+        }}
+        onPageChange={setCurrentPage}
+      />
     );
   };
 
@@ -1367,12 +1320,12 @@ function StoreCustomerListInner({
         review={drawerReview}
       />
 
-      <div className="store-customer-page" data-req-id="store-customer-page-root">
-        {renderNav()}
-        <div className="store-customer-main">
-          {renderTopBar()}
-          {renderTabs()}
-          <div className="store-customer-content">
+      <AdminShell
+        sidebar={renderNav()}
+        topBar={renderTopBar()}
+        tabs={renderTabs()}
+        content={
+          <>
             {/* V-01：隐藏独立大标题块但保留锚点 */}
             <div className="store-customer-content-header" data-req-id="page-title-area" />
 
@@ -1388,9 +1341,9 @@ function StoreCustomerListInner({
             {exportMsg && (
               <div className="store-customer-export-toast">{exportMsg}</div>
             )}
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
     </>
   );
 }
