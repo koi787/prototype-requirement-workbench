@@ -40,6 +40,7 @@ const COLUMN_ANCHOR_IDS = [
   'customer-name-column',
   'appointment-arrival-time-column',
   'operation-column',
+  'invalid-customer-flag-column',
 ] as const;
 
 function getByReqId(id: string): HTMLElement {
@@ -195,7 +196,7 @@ function EmptyRequirementDrawerHarness() {
 }
 
 describe('StoreCustomerList', () => {
-  describe('页面与51列基线', () => {
+  describe('页面与52列基线', () => {
     it('渲染主要区域和25条演示数据', () => {
       render(<StoreCustomerList initialState="normal" />);
 
@@ -208,15 +209,46 @@ describe('StoreCustomerList', () => {
       expect(getOperationButtons()).toHaveLength(10);
     });
 
-    it('保持51列数量、顺序和固定列配置', () => {
-      expect(COLUMN_COUNT).toBe(51);
-      expect(new Set(COLUMN_ORDER).size).toBe(51);
+    it('保持52列数量、顺序和固定列配置', () => {
+      expect(COLUMN_COUNT).toBe(52);
+      expect(new Set(COLUMN_ORDER).size).toBe(52);
+      // 前 3 列客户核心
       expect(COLUMN_ORDER[0]).toBe('name');
-      expect(COLUMN_ORDER[3]).toBe('appointmentTime');
+      expect(COLUMN_ORDER[1]).toBe('phone');
+      expect(COLUMN_ORDER[2]).toBe('source');
+      // 第 4～11 列业务重点区：最新分配时间起，首次分配时间收尾
+      expect(COLUMN_ORDER[3]).toBe('lastAssignTime');
+      expect(COLUMN_ORDER[4]).toBe('appointmentTime');
+      expect(COLUMN_ORDER[5]).toBe('isVisited');
+      expect(COLUMN_ORDER[6]).toBe('isDeal');
+      expect(COLUMN_ORDER[7]).toBe('firstDealAmount');
+      // 标记无效客资与无效审批状态相邻（8、9），首次分配时间为重点区最后一列（10）
+      expect(COLUMN_ORDER[8]).toBe('invalidCustomerFlag');
+      expect(COLUMN_ORDER[9]).toBe('invalidApprovalStatus');
+      expect(COLUMN_ORDER[10]).toBe('firstAssignTime');
+      // 操作固定为第 52 列
       expect(COLUMN_ORDER.at(-1)).toBe('operation');
+      expect(COLUMN_ORDER).toHaveLength(52);
       expect(ALL_COLUMNS[0]?.fixed).toBe('left');
       expect(ALL_COLUMNS.at(-1)?.fixed).toBe('right');
       expect(COLUMN_ORDER.filter((key) => key === 'appointmentTime')).toHaveLength(1);
+      expect(COLUMN_ORDER.filter((key) => key === 'invalidCustomerFlag')).toHaveLength(1);
+    });
+
+    it('前3列、业务重点区（4—11）与第52列的表头顺序符合最新基线', () => {
+      const titles = ALL_COLUMNS.map((c) => c.title as string);
+      expect(titles.slice(0, 3)).toEqual(['姓名', '手机号', '客资来源']);
+      expect(titles.slice(3, 11)).toEqual([
+        '最新分配时间',
+        '预约到店时间',
+        '是否到店',
+        '是否成交',
+        '新办成交金额',
+        '标记无效客资',
+        '无效审批状态',
+        '首次分配时间',
+      ]);
+      expect(titles.at(-1)).toBe('操作');
     });
 
     it('列级锚点注册信息明确关联原有和新增列字段', () => {
@@ -234,7 +266,81 @@ describe('StoreCustomerList', () => {
         { id: 'is-deal-column', columnKey: 'isDeal', description: '是否成交列' },
         { id: 'first-deal-amount-column', columnKey: 'firstDealAmount', description: '新办成交金额列' },
         { id: 'invalid-approval-status-column', columnKey: 'invalidApprovalStatus', description: '无效审批状态列' },
+        { id: 'invalid-customer-flag-column', columnKey: 'invalidCustomerFlag', description: '标记无效客资列' },
       ]);
+    });
+  });
+
+  describe('标记无效客资列（派生结果字段）', () => {
+    function getFlagCellByRowKey(rowKey: string): HTMLElement {
+      const row = document.querySelector(`tr[data-row-key="${rowKey}"]`);
+      if (!row) throw new Error(`未找到行 ${rowKey}`);
+      return getCellByHeader(row as HTMLElement, '标记无效客资');
+    }
+
+    it('展示值仅为"是"或"否"，与无效审批状态相邻且语义独立', () => {
+      render(<StoreCustomerList initialState="normal" />);
+
+      // 表头显示"标记无效客资"
+      expect(screen.getByRole('columnheader', { name: '标记无效客资' })).toBeTruthy();
+
+      // 状态映射：approved → 是；null / pending / rejected → 否
+      expect(getFlagCellByRowKey('5').textContent?.trim()).toBe('是'); // 陈晨 approved
+      expect(getFlagCellByRowKey('1').textContent?.trim()).toBe('否'); // 张三 null
+      expect(getFlagCellByRowKey('2').textContent?.trim()).toBe('否'); // 李四 pending
+      expect(getFlagCellByRowKey('7').textContent?.trim()).toBe('否'); // 周杰 rejected
+
+      // 两列相邻且独立：结果列（8）紧邻流程列（9）
+      expect(COLUMN_ORDER.indexOf('invalidCustomerFlag')).toBe(8);
+      expect(COLUMN_ORDER.indexOf('invalidApprovalStatus')).toBe(9);
+    });
+
+    it('结果列不把 invalidApprovalStatus 作为 dataIndex，仅按审批状态派生', () => {
+      const col = ALL_COLUMNS.find((c) => c.key === 'invalidCustomerFlag');
+      expect(col).toBeDefined();
+      const colWithDataIndex = col as { dataIndex?: unknown };
+      // 派生列没有独立数据字段，不创建第二套模拟状态
+      expect(colWithDataIndex.dataIndex).toBeUndefined();
+      expect(colWithDataIndex.dataIndex).not.toBe('invalidApprovalStatus');
+    });
+
+    it('标记无效客资列不支持排序', () => {
+      const col = ALL_COLUMNS.find((c) => c.key === 'invalidCustomerFlag');
+      expect(col).toBeTruthy();
+      expect((col as Record<string, unknown>).sorter).toBeUndefined();
+    });
+
+    it('审批状态变化后结果列同步更新（审核通过 → 是）', async () => {
+      const user = userEvent.setup();
+      render(<StoreCustomerList initialState="normal" />);
+
+      // 李四（key=2）初始待审核：结果列为"否"
+      expect(getFlagCellByRowKey('2').textContent?.trim()).toBe('否');
+
+      // 审核通过
+      const trigger = getByReqId('operation-menu-trigger-2');
+      await user.click(trigger);
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: '审核无效标注' })).toBeTruthy();
+      });
+      await user.click(screen.getByRole('menuitem', { name: '审核无效标注' }));
+      await waitFor(() => {
+        expect(
+          document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
+        ).toBeTruthy();
+      });
+      const opinionContainer = document.querySelector(
+        '[data-req-id="invalid-approval-opinion"]',
+      ) as HTMLElement;
+      await user.click(within(opinionContainer).getByText('通过'));
+      const confirmBtn = document.querySelector(
+        '[data-req-id="invalid-approval-review-confirm"]',
+      ) as HTMLElement;
+      await user.click(confirmBtn);
+      await waitFor(() => {
+        // 审核通过后结果列同步变为"是"
+        expect(getFlagCellByRowKey('2').textContent?.trim()).toBe('是');
+      });
     });
   });
 
@@ -1008,6 +1114,50 @@ describe('StoreCustomerList', () => {
             'aria-pressed',
           ),
         ).toBe('true');
+      });
+
+      it('编号13实际渲染，锚点可稳定定位并可打开SC-08-10标记无效客资说明', async () => {
+        const user = await enterRequirementMode();
+
+        // 正式列级锚点唯一：data-req-id="invalid-customer-flag-column" 恰好1个
+        const anchors = document.querySelectorAll(
+          '[data-req-id="invalid-customer-flag-column"]',
+        );
+        expect(anchors).toHaveLength(1);
+        const anchor = anchors[0]!;
+        expect(anchor.getAttribute('data-column-key')).toBe('invalidCustomerFlag');
+        expect(anchor.getAttribute('data-anchor-description')).toBe('标记无效客资列');
+
+        // 编号13 marker 可稳定定位，target 指向新锚点
+        const marker13 = document.querySelector(
+          '[data-requirement-number="13"]',
+        );
+        expect(marker13).toBeTruthy();
+        expect(marker13!.getAttribute('data-requirement-key')).toBe(
+          'scrm-store-customer-invalid-customer-flag',
+        );
+        expect(marker13!.getAttribute('data-target-id')).toBe(
+          'invalid-customer-flag-column',
+        );
+
+        // 点击编号13只打开需求说明，展示 SC-08-10 标记无效客资
+        await user.click(marker13 as HTMLElement);
+        const drawer = getByReqId('requirement-drawer');
+        expect(drawer.textContent).toContain('SC-08-10');
+        expect(drawer.textContent).toContain('标记无效客资');
+        expect(drawer.textContent).toContain('已确认');
+      });
+
+      it('标记无效客资正式需求数据已接入（SC-08-10）', () => {
+        const entry = getRequirement('scrm-store-customer-invalid-customer-flag');
+        expect(entry).toBeDefined();
+        expect(entry!.requirementNo).toBe('SC-08-10');
+        expect(entry!.requirementName).toBe('标记无效客资');
+        expect(entry!.definition).toContain("invalidApprovalStatus === 'approved'");
+        // 与无效审批状态需求对象相互独立
+        expect(getRequirement('scrm-store-customer-invalid-approval-status')!.requirementNo).toBe(
+          'SC-08-02',
+        );
       });
 
       it('点击需求点打开抽屉并展示对应requirementNo和requirementName', async () => {

@@ -78,11 +78,11 @@ export const requirementViewMapSchema = z.record(stableIdSchema, requirementView
 // ============================================================================
 
 /**
- * 0008 预期 requirement key 集合（15 条：闭环一 9 条 + 闭环二 6 条）。
- * 用于交叉校验 JSON 恰好包含这 15 个 key。
+ * 0008 预期 requirement key 集合（16 条：闭环一 10 条 + 闭环二 6 条）。
+ * 用于交叉校验 JSON 恰好包含这 16 个 key。
  */
 export const EXPECTED_REQUIREMENT_KEYS = [
-  // 闭环一：列与筛选（9 条）
+  // 闭环一：列与筛选（10 条）
   'scrm-store-customer-first-allocation-time',
   'scrm-store-customer-latest-allocation-time',
   'scrm-store-customer-is-arrived',
@@ -90,6 +90,7 @@ export const EXPECTED_REQUIREMENT_KEYS = [
   'scrm-store-customer-appointment-arrival-time',
   'scrm-store-customer-first-deal-amount',
   'scrm-store-customer-invalid-approval-status',
+  'scrm-store-customer-invalid-customer-flag',
   'scrm-store-customer-invalid-approval-filter',
   'scrm-store-customer-requirement-view-mode',
   // 闭环二：申请、审核、详情与权限（6 条）
@@ -102,7 +103,7 @@ export const EXPECTED_REQUIREMENT_KEYS = [
 ] as const;
 
 /**
- * 校验 JSON 恰好包含预期的 15 个 key。
+ * 校验 JSON 恰好包含预期的 16 个 key。
  * 返回 null 表示通过，否则返回错误信息。
  */
 export function validateRequirementKeys(

@@ -6,6 +6,13 @@
 
 ### 变更
 
+- 门店客户列表 52 列字段基线（当前状态，不追溯改写 0008 历史"当时 51 列"事实）
+  - 当前页面由 51 列调整为 52 列，前 3 列固定为"姓名 → 手机号 → 客资来源"；第 4～11 列为业务重点字段区（最新分配时间、预约到店时间、是否到店、是否成交、新办成交金额、标记无效客资、无效审批状态、首次分配时间）；"操作"固定为第 52 列。
+  - 新增"标记无效客资"列（列 key `invalidCustomerFlag`），作为最终业务结果字段，由无效审批状态实时派生：`approved → 是`，`null / pending / rejected → 否`；与"无效审批状态"相邻但字段、需求对象与展示语义相互独立，不把 `invalidApprovalStatus` 作为新列 dataIndex，不新增第二套模拟状态字段。
+  - 新增列级稳定锚点 `invalid-customer-flag-column`；已有需求点编号与 `requirementNo` 保持不变。
+  - 标记无效客资正式需求映射已接入（编号经产品经理确认）：requirement key `scrm-store-customer-invalid-customer-flag`，displayNumber 13，requirementNo SC-08-10，targetId `invalid-customer-flag-column`；`REQUIREMENT_POINTS`、当前页面 `requirements.json`、`EXPECTED_REQUIREMENT_KEYS` 三套映射均扩展为 16 条且完全一致，displayNumber 唯一集合为 1～13；不重排任何已有编号，WB-01 仍为 12，9/10 共享机制保持不变。
+  - 正常列表 Story 补充 52 列说明；现有排序、分页、固定列与横向滚动行为保持不变。
+
 - 0008 闭环一：门店客户列表字段调整
   - 删除"实际到店状态""实际成交状态"两列及其类型、模拟数据和需求点。
   - 预约到店时间移至最新分配时间与是否到店之间（第 4 列），保留排序和需求查看隔离。

@@ -62,6 +62,15 @@
     "rule": "状态为空展示\"--\"，待审核为橙色，审核通过为绿色，审核退回为红色。文字必须始终可见，颜色不能是唯一信息表达方式。",
     "remark": null
   },
+  "scrm-store-customer-invalid-customer-flag": {
+    "requirementNo": "SC-08-10",
+    "requirementName": "标记无效客资",
+    "status": "已确认",
+    "definition": "表示当前客户是否已经被正式标记为无效客资。\n\n展示值：\n是\n否\n\n判断规则：\ninvalidApprovalStatus === 'approved' 时为是；invalidApprovalStatus === null / 'pending' / 'rejected' 时为否。",
+    "dataSource": null,
+    "rule": "最终业务结果字段；与\"无效审批状态\"独立；不直接复用 invalidApprovalStatus 作为 dataIndex 业务语义；不新增第二套 Mock 审批状态。",
+    "remark": null
+  },
   "scrm-store-customer-invalid-approval-filter": {
     "requirementNo": "SC-08-03",
     "requirementName": "无效审批状态筛选",
