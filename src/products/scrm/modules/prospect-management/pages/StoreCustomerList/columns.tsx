@@ -1,10 +1,15 @@
 /**
- * 门店客户列表 - 51列定义
- * 顺序严格按照任务单第5.5节
+ * 门店客户列表 - 52列定义
+ * 顺序严格按照任务单 0010 第4.2节最新产品字段基线：
+ * - 前 3 列固定为"姓名 → 手机号 → 客资来源"；
+ * - 第 4～11 列为业务重点字段区，"首次分配时间"为其最后一列；
+ * - "标记无效客资"与"无效审批状态"相邻但为两个独立字段；
+ * - "操作"固定为第 52 列。
  */
 import type { ColumnsType } from 'antd/es/table';
 import type { CustomerRecord } from './mockData';
 import { VisitedTag, DealTag, InvalidApprovalStatusTag } from './StatusTags';
+import { formatInvalidCustomerFlag } from './invalidCustomerFlag';
 import type { InvalidApprovalStatus } from './approvalTypes';
 
 /**
@@ -25,11 +30,13 @@ export const COLUMN_REQUIREMENT_ANCHORS = [
   { id: 'latest-allocation-time-column', columnKey: 'lastAssignTime', description: '最新分配时间列' },
   { id: 'is-arrived-column', columnKey: 'isVisited', description: '是否到店列' },
   { id: 'is-deal-column', columnKey: 'isDeal', description: '是否成交列' },
-  { id: 'first-deal-amount-column', columnKey: 'firstDealAmount', description: '首笔成交金额列' },
+  { id: 'first-deal-amount-column', columnKey: 'firstDealAmount', description: '新办成交金额列' },
   { id: 'invalid-approval-status-column', columnKey: 'invalidApprovalStatus', description: '无效审批状态列' },
+  { id: 'invalid-customer-flag-column', columnKey: 'invalidCustomerFlag', description: '标记无效客资列' },
 ] as const;
 
 export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
+  // --- 前 3 列：客户核心 ---
   {
     title: '姓名',
     dataIndex: 'name',
@@ -38,22 +45,19 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     width: 140,
   },
   {
-    title: '首次分配时间',
-    dataIndex: 'firstAssignTime',
-    key: 'firstAssignTime',
-    width: 150,
-    sorter: {
-      compare: (a, b, sortOrder) => {
-        const isInvalid = (v: string) => v === '-' || v.trim() === '' || v === '0000-00-00 00:00:00';
-        const aInv = isInvalid(a.firstAssignTime);
-        const bInv = isInvalid(b.firstAssignTime);
-        if (aInv && bInv) return 0;
-        if (aInv) return sortOrder === 'descend' ? -1 : 1;
-        if (bInv) return sortOrder === 'descend' ? 1 : -1;
-        return a.firstAssignTime.localeCompare(b.firstAssignTime);
-      },
-    },
+    title: '手机号',
+    dataIndex: 'phone',
+    key: 'phone',
+    width: 120,
   },
+  {
+    title: '客资来源',
+    dataIndex: 'source',
+    key: 'source',
+    width: 100,
+  },
+
+  // --- 第 4～11 列：业务重点区（顺序不得变更，"首次分配时间"为最后一列）---
   {
     title: '最新分配时间',
     dataIndex: 'lastAssignTime',
@@ -129,7 +133,7 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     render: (v: string) => <DealTag value={v} />,
   },
   {
-    title: '首笔成交金额',
+    title: '新办成交金额',
     dataIndex: 'firstDealAmount',
     key: 'firstDealAmount',
     width: 130,
@@ -138,6 +142,41 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
       return v.toFixed(2);
     },
   },
+  {
+    title: '标记无效客资',
+    key: 'invalidCustomerFlag',
+    width: 110,
+    // 结果字段：由审批状态实时派生，approved → 是，null/pending/rejected → 否。
+    // 不创建第二套模拟状态字段，也不把 invalidApprovalStatus 作为本列 dataIndex。
+    render: (_: unknown, record: CustomerRecord) =>
+      formatInvalidCustomerFlag(record.invalidApprovalStatus),
+  },
+  {
+    title: '无效审批状态',
+    dataIndex: 'invalidApprovalStatus',
+    key: 'invalidApprovalStatus',
+    width: 120,
+    render: (v: InvalidApprovalStatus) => <InvalidApprovalStatusTag value={v} />,
+  },
+  {
+    title: '首次分配时间',
+    dataIndex: 'firstAssignTime',
+    key: 'firstAssignTime',
+    width: 150,
+    sorter: {
+      compare: (a, b, sortOrder) => {
+        const isInvalid = (v: string) => v === '-' || v.trim() === '' || v === '0000-00-00 00:00:00';
+        const aInv = isInvalid(a.firstAssignTime);
+        const bInv = isInvalid(b.firstAssignTime);
+        if (aInv && bInv) return 0;
+        if (aInv) return sortOrder === 'descend' ? -1 : 1;
+        if (bInv) return sortOrder === 'descend' ? 1 : -1;
+        return a.firstAssignTime.localeCompare(b.firstAssignTime);
+      },
+    },
+  },
+
+  // --- 其余业务字段（保持原相对顺序）---
   {
     title: 'ID',
     dataIndex: 'id',
@@ -155,12 +194,6 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     dataIndex: 'wechatId',
     key: 'wechatId',
     width: 130,
-  },
-  {
-    title: '手机号',
-    dataIndex: 'phone',
-    key: 'phone',
-    width: 120,
   },
   {
     title: '留资门店',
@@ -186,12 +219,6 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     dataIndex: 'age',
     key: 'age',
     width: 80,
-  },
-  {
-    title: '客资来源',
-    dataIndex: 'source',
-    key: 'source',
-    width: 100,
   },
   {
     title: '客资类型',
@@ -389,18 +416,13 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     width: 150,
   },
   {
-    title: '无效审批状态',
-    dataIndex: 'invalidApprovalStatus',
-    key: 'invalidApprovalStatus',
-    width: 120,
-    render: (v: InvalidApprovalStatus) => <InvalidApprovalStatusTag value={v} />,
-  },
-  {
     title: '创建时间',
     dataIndex: 'createTime',
     key: 'createTime',
     width: 150,
   },
+
+  // --- 第 52 列：操作（右固定）---
   {
     title: '操作',
     key: 'operation',
@@ -409,6 +431,6 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
   },
 ];
 
-/** 验证51列顺序 */
+/** 验证52列顺序 */
 export const COLUMN_COUNT = ALL_COLUMNS.length;
 export const COLUMN_ORDER = ALL_COLUMNS.map((c) => c.key);

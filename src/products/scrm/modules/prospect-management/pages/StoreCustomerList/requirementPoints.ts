@@ -1,7 +1,7 @@
 /**
  * 门店客户列表 - 需求点映射
  *
- * 0008 闭环一 + 闭环二：15 个固定编号对应的页面需求点配置。
+ * 0008 闭环一 + 闭环二 + 标记无效客资：16 个固定编号对应的页面需求点配置。
  * 编号属于页面锚点配置，不进入需求正文 JSON。
  *
  * 注意：编号 12 由 prototype-core 中的 RequirementModeControl 硬编码，
@@ -32,7 +32,7 @@ export interface RequirementPointConfig {
 }
 
 // ============================================================================
-// 0008 需求点（15 个页面可配 + 1 个 prototype-core 硬编码）
+// 0008 需求点（16 个页面可配 + 1 个 prototype-core 硬编码）
 // ============================================================================
 
 export const REQUIREMENT_POINTS: RequirementPointConfig[] = [
@@ -124,6 +124,15 @@ export const REQUIREMENT_POINTS: RequirementPointConfig[] = [
     targetDataReqId: 'requirement-view-mode-control',
   },
 
+  // --- 标记无效客资（独立编号 13，不与列位置 9 对应）---
+  {
+    requirementKey: 'scrm-store-customer-invalid-customer-flag',
+    displayNumber: 13,
+    targetKind: 'column-header',
+    targetDataReqId: 'invalid-customer-flag-column',
+    columnKey: 'invalidCustomerFlag',
+  },
+
   // --- 闭环二：抽屉字段（编号与关联菜单共享：opinion/return-remark 共享 10，resubmit 共享 9）---
   {
     requirementKey: 'scrm-store-customer-invalid-approval-opinion',
@@ -164,7 +173,7 @@ export function getPointByNumber(num: number): RequirementPointConfig | undefine
 export function validateDisplayNumbers(): string | null {
   const numbers = REQUIREMENT_POINTS.map((p) => p.displayNumber);
   // 显示编号允许重复（drawer-field 复用菜单编号）
-  const distinctNums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  const distinctNums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
   for (const n of distinctNums) {
     if (!numbers.includes(n)) return `缺少显示编号 ${n}`;
   }
@@ -175,6 +184,6 @@ export function validateDisplayNumbers(): string | null {
 export function validateRequirementKeys(): string | null {
   const keys = REQUIREMENT_POINTS.map((p) => p.requirementKey);
   const unique = new Set(keys);
-  if (unique.size !== 15) return `requirement key 不唯一，预期 15 个，实际 ${unique.size} 个`;
+  if (unique.size !== 16) return `requirement key 不唯一，预期 16 个，实际 ${unique.size} 个`;
   return null;
 }

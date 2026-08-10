@@ -17,6 +17,14 @@ export const 正常列表: Story = {
   args: {
     initialState: 'normal',
   },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '第一页展示前 10 条记录，共 52 列：前 3 列为姓名、手机号、客资来源；第 4～11 列为业务重点字段区；"标记无效客资"与"无效审批状态"相邻但为两个独立字段；第 52 列为操作。',
+      },
+    },
+  },
 };
 
 /** 首次加载状态 */
