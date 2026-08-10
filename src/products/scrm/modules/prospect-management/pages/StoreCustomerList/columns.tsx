@@ -2,8 +2,9 @@
  * 门店客户列表 - 52列定义
  * 顺序严格按照任务单 0010 第4.2节最新产品字段基线：
  * - 前 3 列固定为"姓名 → 手机号 → 客资来源"；
- * - 第 4～11 列为业务重点字段区，"首次分配时间"为其最后一列；
+ * - 第 4～10 列为业务重点字段区（最新分配时间 → 无效审批状态）；
  * - "标记无效客资"与"无效审批状态"相邻但为两个独立字段；
+ * - "首次分配时间"位于尾部倒数区域（第 50 列，紧邻"创建时间"之前）；
  * - "操作"固定为第 52 列。
  */
 import type { ColumnsType } from 'antd/es/table';
@@ -57,7 +58,7 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     width: 100,
   },
 
-  // --- 第 4～11 列：业务重点区（顺序不得变更，"首次分配时间"为最后一列）---
+  // --- 第 4～10 列：业务重点区（顺序不得变更；"首次分配时间"已移至尾部第 50 列）---
   {
     title: '最新分配时间',
     dataIndex: 'lastAssignTime',
@@ -157,23 +158,6 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     key: 'invalidApprovalStatus',
     width: 120,
     render: (v: InvalidApprovalStatus) => <InvalidApprovalStatusTag value={v} />,
-  },
-  {
-    title: '首次分配时间',
-    dataIndex: 'firstAssignTime',
-    key: 'firstAssignTime',
-    width: 150,
-    sorter: {
-      compare: (a, b, sortOrder) => {
-        const isInvalid = (v: string) => v === '-' || v.trim() === '' || v === '0000-00-00 00:00:00';
-        const aInv = isInvalid(a.firstAssignTime);
-        const bInv = isInvalid(b.firstAssignTime);
-        if (aInv && bInv) return 0;
-        if (aInv) return sortOrder === 'descend' ? -1 : 1;
-        if (bInv) return sortOrder === 'descend' ? 1 : -1;
-        return a.firstAssignTime.localeCompare(b.firstAssignTime);
-      },
-    },
   },
 
   // --- 其余业务字段（保持原相对顺序）---
@@ -414,6 +398,25 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     dataIndex: 'latestRetainTime',
     key: 'latestRetainTime',
     width: 150,
+  },
+
+  // --- 尾部区域：首次分配时间（第 50 列）→ 创建时间（第 51 列）→ 操作（第 52 列）---
+  {
+    title: '首次分配时间',
+    dataIndex: 'firstAssignTime',
+    key: 'firstAssignTime',
+    width: 150,
+    sorter: {
+      compare: (a, b, sortOrder) => {
+        const isInvalid = (v: string) => v === '-' || v.trim() === '' || v === '0000-00-00 00:00:00';
+        const aInv = isInvalid(a.firstAssignTime);
+        const bInv = isInvalid(b.firstAssignTime);
+        if (aInv && bInv) return 0;
+        if (aInv) return sortOrder === 'descend' ? -1 : 1;
+        if (bInv) return sortOrder === 'descend' ? 1 : -1;
+        return a.firstAssignTime.localeCompare(b.firstAssignTime);
+      },
+    },
   },
   {
     title: '创建时间',
