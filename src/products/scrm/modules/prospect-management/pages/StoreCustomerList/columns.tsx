@@ -2,8 +2,8 @@
  * 门店客户列表 - 52列定义
  * 顺序严格按照任务单 0010 第4.2节最新产品字段基线：
  * - 前 3 列固定为"姓名 → 手机号 → 客资来源"；
- * - 第 4～10 列为业务重点字段区（最新分配时间 → 无效审批状态）；
- * - "标记无效客资"与"无效审批状态"相邻但为两个独立字段；
+ * - 第 9～13 列固定为"标记无效客资 → 拜访次数 → 近7天到店次数 → 无效审批状态 → ID"；
+ * - "标记无效客资"与"无效审批状态"保持独立字段语义；
  * - "首次分配时间"位于尾部倒数区域（第 50 列，紧邻"创建时间"之前）；
  * - "操作"固定为第 52 列。
  */
@@ -58,7 +58,7 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     width: 100,
   },
 
-  // --- 第 4～10 列：业务重点区（顺序不得变更；"首次分配时间"已移至尾部第 50 列）---
+  // --- 第 4～12 列：业务重点区（顺序不得变更；"首次分配时间"已移至尾部第 50 列）---
   {
     title: '最新分配时间',
     dataIndex: 'lastAssignTime',
@@ -153,6 +153,18 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
       formatInvalidCustomerFlag(record.invalidApprovalStatus),
   },
   {
+    title: '拜访次数',
+    dataIndex: 'interviewCount',
+    key: 'interviewCount',
+    width: 90,
+  },
+  {
+    title: '近7天到店次数',
+    dataIndex: 'visitCount7d',
+    key: 'visitCount7d',
+    width: 120,
+  },
+  {
     title: '无效审批状态',
     dataIndex: 'invalidApprovalStatus',
     key: 'invalidApprovalStatus',
@@ -235,22 +247,10 @@ export const ALL_COLUMNS: ColumnsType<CustomerRecord> = [
     width: 90,
   },
   {
-    title: '近7天到店次数',
-    dataIndex: 'visitCount7d',
-    key: 'visitCount7d',
-    width: 120,
-  },
-  {
     title: '近30天到店次数',
     dataIndex: 'visitCount30d',
     key: 'visitCount30d',
     width: 130,
-  },
-  {
-    title: '拜访次数',
-    dataIndex: 'interviewCount',
-    key: 'interviewCount',
-    width: 90,
   },
   {
     title: '近7天拜访次数',

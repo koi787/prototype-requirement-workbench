@@ -212,30 +212,60 @@ describe('StoreCustomerList', () => {
     it('保持52列数量、顺序和固定列配置', () => {
       expect(COLUMN_COUNT).toBe(52);
       expect(new Set(COLUMN_ORDER).size).toBe(52);
-      // 前 3 列客户核心
-      expect(COLUMN_ORDER[0]).toBe('name');
-      expect(COLUMN_ORDER[1]).toBe('phone');
-      expect(COLUMN_ORDER[2]).toBe('source');
-      // 第 4～10 列业务重点区：最新分配时间起，无效审批状态收尾
-      expect(COLUMN_ORDER[3]).toBe('lastAssignTime');
-      expect(COLUMN_ORDER[4]).toBe('appointmentTime');
-      expect(COLUMN_ORDER[5]).toBe('isVisited');
-      expect(COLUMN_ORDER[6]).toBe('isDeal');
-      expect(COLUMN_ORDER[7]).toBe('firstDealAmount');
-      // 标记无效客资与无效审批状态相邻（8、9）
-      expect(COLUMN_ORDER[8]).toBe('invalidCustomerFlag');
-      expect(COLUMN_ORDER[9]).toBe('invalidApprovalStatus');
-      // 第 11 列起为其余业务字段
-      expect(COLUMN_ORDER[10]).toBe('id');
-      // 尾部：是否已注册(47) → 重复留资次数(48) → 最新留资时间(49) → 首次分配时间(50) → 创建时间(51) → 操作(52)
-      expect(COLUMN_ORDER[46]).toBe('isRegistered');
-      expect(COLUMN_ORDER[47]).toBe('repeatRetainCount');
-      expect(COLUMN_ORDER[48]).toBe('latestRetainTime');
-      expect(COLUMN_ORDER[49]).toBe('firstAssignTime');
-      expect(COLUMN_ORDER[50]).toBe('createTime');
-      expect(COLUMN_ORDER[51]).toBe('operation');
-      expect(COLUMN_ORDER.at(-1)).toBe('operation');
-      expect(COLUMN_ORDER).toHaveLength(52);
+      expect(COLUMN_ORDER).toEqual([
+        'name',
+        'phone',
+        'source',
+        'lastAssignTime',
+        'appointmentTime',
+        'isVisited',
+        'isDeal',
+        'firstDealAmount',
+        'invalidCustomerFlag',
+        'interviewCount',
+        'visitCount7d',
+        'invalidApprovalStatus',
+        'id',
+        'userId',
+        'wechatId',
+        'retainStore',
+        'retainStoreRemark',
+        'gender',
+        'age',
+        'customerType',
+        'isAssigned',
+        'latestFollower',
+        'sharer',
+        'visitCount',
+        'visitCount30d',
+        'interviewCount7d',
+        'interviewCount30d',
+        'conversionDays',
+        'dealCycleDays',
+        'latestEditor',
+        'remark',
+        'inviteEmployeeId',
+        'inviteEmployeeName',
+        'groundPromotionQuestionnaire',
+        'answer',
+        'questionnaireSubmitTime',
+        'appointmentStore',
+        'isGiftTrialClass',
+        'trialClassGetTime',
+        'contractNo',
+        'isAppointed',
+        'trialClassStatus',
+        'trialClassEndTime',
+        'userTags',
+        'trialClassPayAmount',
+        'trialClassConsultant',
+        'isRegistered',
+        'repeatRetainCount',
+        'latestRetainTime',
+        'firstAssignTime',
+        'createTime',
+        'operation',
+      ]);
       expect(ALL_COLUMNS[0]?.fixed).toBe('left');
       expect(ALL_COLUMNS.at(-1)?.fixed).toBe('right');
       expect(COLUMN_ORDER.filter((key) => key === 'appointmentTime')).toHaveLength(1);
@@ -243,20 +273,23 @@ describe('StoreCustomerList', () => {
       expect(COLUMN_ORDER.filter((key) => key === 'firstAssignTime')).toHaveLength(1);
     });
 
-    it('前3列、业务重点区（4—10）与第52列的表头顺序符合最新基线', () => {
+    it('前13列与尾部表头顺序符合最新基线', () => {
       const titles = ALL_COLUMNS.map((c) => c.title as string);
-      expect(titles.slice(0, 3)).toEqual(['姓名', '手机号', '客资来源']);
-      expect(titles.slice(3, 10)).toEqual([
+      expect(titles.slice(0, 13)).toEqual([
+        '姓名',
+        '手机号',
+        '客资来源',
         '最新分配时间',
         '预约到店时间',
         '是否到店',
         '是否成交',
         '新办成交金额',
         '标记无效客资',
+        '拜访次数',
+        '近7天到店次数',
         '无效审批状态',
+        'ID',
       ]);
-      // 第 11 列起为其余业务字段
-      expect(titles[10]).toBe('ID');
       // 尾部：最新留资时间(49) → 首次分配时间(50) → 创建时间(51) → 操作(52)
       expect(titles.slice(-4)).toEqual([
         '最新留资时间',
@@ -267,7 +300,7 @@ describe('StoreCustomerList', () => {
       expect(titles.at(-1)).toBe('操作');
     });
 
-    it('实际渲染的表头顺序与52列基线一致（左、业务重点区、第11列与尾部）', () => {
+    it('实际渲染的表头顺序与52列基线一致（前13列与尾部）', () => {
       render(<StoreCustomerList initialState="normal" />);
 
       // 读取真实渲染的表头（固定列可能重复渲染，按首次出现去重保留 52 个唯一列名）。
@@ -285,7 +318,7 @@ describe('StoreCustomerList', () => {
 
       expect(renderedTitles).toHaveLength(52);
       // 左侧实际渲染顺序
-      expect(renderedTitles.slice(0, 10)).toEqual([
+      expect(renderedTitles.slice(0, 13)).toEqual([
         '姓名',
         '手机号',
         '客资来源',
@@ -295,9 +328,11 @@ describe('StoreCustomerList', () => {
         '是否成交',
         '新办成交金额',
         '标记无效客资',
+        '拜访次数',
+        '近7天到店次数',
         '无效审批状态',
+        'ID',
       ]);
-      expect(renderedTitles[10]).toBe('ID');
       // 页面最右侧尾部实际顺序
       expect(renderedTitles.slice(-4)).toEqual([
         '最新留资时间',
@@ -334,7 +369,7 @@ describe('StoreCustomerList', () => {
       return getCellByHeader(row as HTMLElement, '标记无效客资');
     }
 
-    it('展示值仅为"是"或"否"，与无效审批状态相邻且语义独立', () => {
+    it('展示值仅为"是"或"否"，与无效审批状态语义独立', () => {
       render(<StoreCustomerList initialState="normal" />);
 
       // 表头显示"标记无效客资"
@@ -346,9 +381,9 @@ describe('StoreCustomerList', () => {
       expect(getFlagCellByRowKey('2').textContent?.trim()).toBe('否'); // 李四 pending
       expect(getFlagCellByRowKey('7').textContent?.trim()).toBe('否'); // 周杰 rejected
 
-      // 两列相邻且独立：结果列（8）紧邻流程列（9）
+      // 两列位置符合最新基线且语义独立：结果列为第 9 列，流程列为第 12 列
       expect(COLUMN_ORDER.indexOf('invalidCustomerFlag')).toBe(8);
-      expect(COLUMN_ORDER.indexOf('invalidApprovalStatus')).toBe(9);
+      expect(COLUMN_ORDER.indexOf('invalidApprovalStatus')).toBe(11);
     });
 
     it('结果列不把 invalidApprovalStatus 作为 dataIndex，仅按审批状态派生', () => {
