@@ -687,3 +687,587 @@
   border-top: 1px solid #f0f0f0;
   text-align: right;
 }
+
+/* ============================================================================
+   0011 Cycle 1：跟进详情抽屉样式
+   ============================================================================ */
+
+/* 抽屉内容区：独立纵向滚动（Tab 栏固定，内容区滚动） */
+.store-customer-followup-drawer-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 16px 16px;
+}
+
+.store-customer-followup-drawer-body .ant-tabs {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.store-customer-followup-drawer-body .ant-tabs-content-holder {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* 顶部五 Tab：浅灰容器 + 平铺文字菜单；选中态为系统蓝色文字（无下划线、无 ink） */
+.store-customer-followup-tabs .ant-tabs-nav {
+  margin: 0 0 16px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  padding: 0 8px;
+}
+
+.store-customer-followup-tabs .ant-tabs-nav::before {
+  display: none;
+}
+
+.store-customer-followup-tabs .ant-tabs-ink-bar {
+  display: none;
+}
+
+.store-customer-followup-tabs .ant-tabs-tab {
+  margin: 0;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+}
+
+.store-customer-followup-tabs .ant-tabs-tab .ant-tabs-tab-btn {
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+.store-customer-followup-tabs .ant-tabs-tab:hover .ant-tabs-tab-btn {
+  color: #1677ff;
+}
+
+.store-customer-followup-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #1677ff;
+  font-weight: 600;
+}
+
+/* 模块标题：细蓝色竖线 + 名称（系统风格，非 Dashboard） */
+.store-customer-followup-section {
+  margin-bottom: 24px;
+}
+
+/* 用户信息区与下一模块（跟进概览）之间增加底部留白，避免标题贴底 */
+.store-customer-followup-process > .store-customer-followup-section:first-child {
+  /* 用户信息区（详情三栏末行）到 跟进概览 的模块级留白 */
+  margin-bottom: 36px;
+}
+
+.store-customer-followup-module-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2329;
+  margin: 0 0 12px;
+}
+
+.store-customer-followup-module-title-bar {
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: #1677ff;
+  flex-shrink: 0;
+}
+
+/* ---------- 用户信息 ---------- */
+/* 操作条：独立浅灰条，蓝色文字入口 + 浅蓝描边按钮，不在姓名/头像行内 */
+.store-customer-followup-user-operation-bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 20px;
+}
+
+.store-customer-followup-op-text {
+  font-size: 13px;
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.store-customer-followup-op-btn-outline {
+  font-size: 13px;
+  color: #1677ff;
+  background: #fff;
+  border: 1px solid #91caff;
+  border-radius: 4px;
+  padding: 3px 12px;
+  cursor: pointer;
+  line-height: 22px;
+}
+
+.store-customer-followup-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #1677ff;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.store-customer-followup-user-identity {
+  /* row2（客资来源|微信号|手机号）到详情三栏：形成两个视觉分区 */
+  margin-bottom: 32px;
+}
+
+.store-customer-followup-user-identity-row1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+.store-customer-followup-user-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+/* 姓名旁"编辑"：浅蓝文字，紧邻姓名右侧 */
+.store-customer-followup-user-edit {
+  font-size: 13px;
+  color: #1677ff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.store-customer-followup-user-action-link {
+  font-size: 13px;
+  color: #1677ff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.store-customer-followup-user-identity-row2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #595959;
+}
+
+.store-customer-followup-identity-value {
+  white-space: nowrap;
+}
+
+.store-customer-followup-identity-sep {
+  color: #d9d9d9;
+}
+
+/* 左右两栏字段：低密度后台详情信息间距，保持宽松且不松散 */
+.store-customer-followup-user-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* grid 只有一行（左右两栏并排），row-gap 对栏内三行不生效；横向列距保持 40px */
+  column-gap: 40px;
+}
+
+/* 三行字段的真实容器：纵向 flex 布局，row-gap 控制栏内三行间距 */
+.store-customer-followup-user-column {
+  display: flex;
+  flex-direction: column;
+  row-gap: 24px;
+}
+
+.store-customer-followup-user-column-field {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.store-customer-followup-user-column-field-label {
+  width: 88px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #8c8c8c;
+  text-align: right;
+  margin-right: 8px;
+  line-height: 22px;
+}
+
+.store-customer-followup-user-column-field-value {
+  font-size: 13px;
+  color: #333;
+  line-height: 22px;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.store-customer-followup-user-column-field-actions {
+  margin-left: 10px;
+}
+
+.store-customer-followup-user-column-field-actions .store-customer-followup-user-action-link {
+  margin-right: 8px;
+}
+
+/* 蓝色链接视觉（用户姓名 / 操作文字，本阶段不实现跳转业务） */
+.store-customer-followup-name-link {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+/* ---------- 跟进概览：四张等宽卡片（主值 + 分组详细统计 + 组间浅分隔线） ---------- */
+.store-customer-followup-overview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.store-customer-followup-overview-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 16px 14px;
+  min-width: 0;
+  /* 轻微交互反馈（真实系统确认）：整卡可交互视觉，无业务点击行为 */
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  will-change: transform;
+}
+
+/* hover：轻微浮起/放大、阴影略增强、边框极轻强化；克制、平滑且短 */
+.store-customer-followup-overview-card:hover {
+  transform: translateY(-1px) scale(1.006);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #d9d9d9;
+}
+
+.store-customer-followup-overview-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.store-customer-followup-overview-card-title {
+  font-size: 13px;
+  color: #8c8c8c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 系统信息图标视觉：CSS 绘制圆形 + 字母 i，不依赖图标库 */
+.store-customer-followup-overview-info {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid #bfbfbf;
+  color: #bfbfbf;
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.store-customer-followup-overview-info::after {
+  content: 'i';
+}
+
+/* info 图标可键盘聚焦（Tooltip 触发），聚焦时给出轻量可见反馈 */
+.store-customer-followup-overview-info:focus-visible {
+  outline: 2px solid #91caff;
+  outline-offset: 2px;
+}
+
+.store-customer-followup-overview-main {
+  font-size: 26px;
+  font-weight: 600;
+  color: #1f2329;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+
+.store-customer-followup-overview-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.store-customer-followup-overview-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+}
+
+.store-customer-followup-overview-group + .store-customer-followup-overview-group {
+  border-top: 1px solid #f0f0f0;
+  margin-top: 12px;
+}
+
+.store-customer-followup-overview-detail {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* 上下层级展示：label 在上、value 在下（如 未拜访时长） */
+.store-customer-followup-overview-detail--stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.store-customer-followup-overview-detail-label {
+  font-size: 13px;
+  color: #8c8c8c;
+  white-space: nowrap;
+}
+
+.store-customer-followup-overview-detail--stacked .store-customer-followup-overview-detail-label {
+  line-height: 1.4;
+}
+
+.store-customer-followup-overview-detail-value {
+  font-size: 13px;
+  color: #333;
+  min-width: 0;
+  text-align: right;
+  word-break: break-all;
+}
+
+.store-customer-followup-overview-detail--stacked .store-customer-followup-overview-detail-value {
+  text-align: left;
+  font-size: 15px;
+  color: #1f2329;
+}
+
+/* ---------- 跟进旅程 ---------- */
+.store-customer-followup-journey-title {
+  margin-bottom: 12px;
+}
+
+.store-customer-followup-journey-title-text {
+  line-height: 22px;
+}
+
+/* Select 紧跟标题左侧排列（约 10px 间距），不再推到最右 */
+.store-customer-followup-journey-select-wrap {
+  margin-left: 10px;
+}
+
+.store-customer-followup-journey-select {
+  width: 168px;
+}
+
+.store-customer-followup-journey-empty {
+  padding: 32px 0;
+  text-align: center;
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+.store-customer-followup-journey-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 旅程分页：复用现有后台风格分页（.store-customer-pagination），列表下方留少量间距 */
+.store-customer-followup-journey-list + .store-customer-pagination {
+  margin-top: 4px;
+}
+
+.store-customer-followup-journey-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+
+/* header：左侧状态标签 + 右侧"详情"，下浅分隔线 */
+.store-customer-followup-journey-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.store-customer-followup-journey-card-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.store-customer-followup-journey-card-tag {
+  font-size: 12px;
+  color: #595959;
+  background: #f0f0f0;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.store-customer-followup-journey-card-detail {
+  font-size: 13px;
+  color: #1677ff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* body：单列纵向字段（label 左、value 右，整行堆叠），非双栏网格 */
+.store-customer-followup-journey-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.store-customer-followup-journey-field {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.store-customer-followup-journey-field-label {
+  width: 72px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #8c8c8c;
+  text-align: left;
+  margin-right: 12px;
+  line-height: 22px;
+}
+
+.store-customer-followup-journey-field-value {
+  font-size: 13px;
+  color: #333;
+  line-height: 22px;
+  min-width: 0;
+  word-break: break-word;
+}
+
+/* 附件：静态占位/缩略图 Mock，不真实上传 */
+.store-customer-followup-journey-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #595959;
+  background: #fafafa;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 3px 10px;
+  max-width: 100%;
+}
+
+.store-customer-followup-journey-attachment::before {
+  content: '';
+  width: 12px;
+  height: 14px;
+  border: 1px solid #bfbfbf;
+  border-radius: 2px;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+/* ---------- 四类记录表格（复用当前页面密度与固定列视觉） ---------- */
+.store-customer-followup-table {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0;
+}
+
+/* 横向滚动语义标记：有操作列且需要横向滚动的记录表格使用 */
+.store-customer-followup-table--h-scroll {
+  min-width: 0;
+}
+
+.store-customer-followup-table .ant-table-thead > tr > th.ant-table-cell {
+  background: #f3f4f5 !important;
+  color: #595959 !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  padding: 16px 12px !important;
+  line-height: 22px !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+.store-customer-followup-table .ant-table-tbody > tr > td.ant-table-cell {
+  padding: 18px 12px !important;
+  font-size: 14px !important;
+  line-height: 24px !important;
+  color: #333 !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  white-space: normal;
+  word-break: break-word;
+  vertical-align: middle !important;
+}
+
+.store-customer-followup-table .ant-table-tbody > tr:nth-child(even) > td {
+  background: #fafbfc;
+}
+
+/* 固定列白色不透底 */
+.store-customer-followup-table .ant-table-cell-fix-left,
+.store-customer-followup-table .ant-table-cell-fix-right {
+  background: #fff;
+}
+
+.store-customer-followup-table
+  .ant-table-tbody
+  > tr:nth-child(even)
+  > td.ant-table-cell-fix-left,
+.store-customer-followup-table
+  .ant-table-tbody
+  > tr:nth-child(even)
+  > td.ant-table-cell-fix-right {
+  background: #fafbfc;
+}
+
+.store-customer-followup-table .ant-table-thead > tr > th.ant-table-cell-fix-left,
+.store-customer-followup-table .ant-table-thead > tr > th.ant-table-cell-fix-right {
+  background: #f3f4f5;
+}
+
+.store-customer-followup-table .ant-table-cell-fix-left-last::after {
+  box-shadow: inset -4px 0 4px -4px rgba(0, 0, 0, 0.12);
+}
+
+.store-customer-followup-table .ant-table-cell-fix-right-first::after {
+  box-shadow: inset 4px 0 4px -4px rgba(0, 0, 0, 0.12);
+}
+
+/* 通话时长：蓝色音频样式，本阶段不实现播放能力 */
+.store-customer-call-duration {
+  color: #1677ff;
+}
+
+/* 记录列表"操作"列视觉入口 */
+.store-customer-followup-op-link {
+  color: #1677ff;
+  cursor: pointer;
+}
