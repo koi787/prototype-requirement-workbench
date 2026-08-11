@@ -52,6 +52,8 @@ import {
   AdminDataTable,
   AdminPagination,
 } from '../../../../shared/admin';
+import { FollowUpDetailDrawer } from './follow-up-detail/FollowUpDetailDrawer';
+import type { FollowUpTabKey } from './follow-up-detail/followUpTypes';
 import './StoreCustomerList.css';
 
 const { RangePicker } = DatePicker;
@@ -381,6 +383,11 @@ export interface StoreCustomerListProps {
   initialExportMessage?: string;
   /** 初始需求查看模式（默认 prototype） */
   initialRequirementMode?: 'prototype' | 'requirement';
+  /** 预设跟进详情抽屉初始打开状态（用于 Story 稳定展示跟进详情与记录 Tab） */
+  initialFollowUpDetail?: {
+    customerKey: string;
+    tab?: FollowUpTabKey;
+  };
 }
 
 function StoreCustomerListInner({
@@ -388,6 +395,7 @@ function StoreCustomerListInner({
   initialState = 'normal',
   initialFilters,
   initialExportMessage,
+  initialFollowUpDetail,
 }: Omit<StoreCustomerListProps, 'initialRequirementMode'>) {
   const reqView = useRequirementView();
   // ---------- 审批状态管理 ----------
@@ -417,6 +425,15 @@ function StoreCustomerListInner({
   // ---------- 抽屉状态 ----------
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
   const [drawerRecordKey, setDrawerRecordKey] = useState<string | null>(null);
+
+  // ---------- 0011 跟进详情抽屉状态 ----------
+  const [followUpOpen, setFollowUpOpen] = useState(Boolean(initialFollowUpDetail));
+  const [followUpTab, setFollowUpTab] = useState<FollowUpTabKey>(
+    initialFollowUpDetail?.tab ?? 'process',
+  );
+  const [followUpCustomerKey, setFollowUpCustomerKey] = useState<string | null>(
+    initialFollowUpDetail?.customerKey ?? null,
+  );
 
   // ---------- 数据 ----------
   const allData = useMemo(() => approval.customers, [approval.customers]);
@@ -501,6 +518,13 @@ function StoreCustomerListInner({
   const handleMenuClick = useCallback(
     (key: string, recordKey: string) => {
       closeMenu();
+      if (key === 'follow-detail') {
+        // 0011 Cycle 1：唯一"跟进详情"入口 → 一级右侧抽屉
+        setFollowUpCustomerKey(recordKey);
+        setFollowUpTab('process');
+        setFollowUpOpen(true);
+        return;
+      }
       if (key === 'mark-invalid') {
         setDrawerRecordKey(recordKey);
         setDrawerMode('application');
@@ -583,6 +607,11 @@ function StoreCustomerListInner({
     if (!drawerRecordKey) return null;
     return approval.getReview(drawerRecordKey) ?? null;
   }, [drawerRecordKey, approval]);
+
+  const followUpCustomer = useMemo(() => {
+    if (!followUpCustomerKey) return null;
+    return allData.find((customer) => customer.key === followUpCustomerKey) ?? null;
+  }, [followUpCustomerKey, allData]);
 
   // ---------- 行操作按钮点击 ----------
   const handleOperationClick = useCallback(
@@ -1318,6 +1347,15 @@ function StoreCustomerListInner({
         status={drawerRecord?.invalidApprovalStatus ?? null}
         application={drawerApplication}
         review={drawerReview}
+      />
+
+      {/* 0011 Cycle 1：跟进详情一级右侧抽屉 */}
+      <FollowUpDetailDrawer
+        open={followUpOpen}
+        onClose={() => setFollowUpOpen(false)}
+        customer={followUpCustomer}
+        activeTab={followUpTab}
+        onTabChange={setFollowUpTab}
       />
 
       <AdminShell
