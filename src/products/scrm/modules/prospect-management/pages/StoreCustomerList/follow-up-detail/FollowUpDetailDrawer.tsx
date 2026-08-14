@@ -8,18 +8,17 @@
 import { Drawer, Tabs } from 'antd';
 import type { CustomerRecord } from '../mockData';
 import { AdminDataTable } from '../../../../../shared/admin';
-import type { ArrivalRecord, AssignmentRecord, CallRecord, FollowUpTabKey, VisitRecord } from './followUpTypes';
+import type { AssignmentRecord, CallRecord, FollowUpTabKey } from './followUpTypes';
 import {
-  getArrivalRecords,
   getAssignmentRecords,
   getCallRecords,
-  getVisitRecords,
 } from './followUpMockData';
 import { FollowUpProcess } from './FollowUpProcess';
-import { ARRIVAL_RECORD_COLUMNS, ARRIVAL_RECORD_SCROLL_X } from './arrivalRecordColumns';
+import { ArrivalRecordTable } from '../../../arrival-record';
+import { VisitRecordTable } from '../../../visit-record';
+import { useRecordRuntimeStore } from '../../../record-shared';
 import { ASSIGNMENT_RECORD_COLUMNS } from './assignmentRecordColumns';
 import { CALL_RECORD_COLUMNS, CALL_RECORD_SCROLL_X } from './callRecordColumns';
-import { VISIT_RECORD_COLUMNS, VISIT_RECORD_SCROLL_X } from './visitRecordColumns';
 
 export interface FollowUpDetailDrawerProps {
   open: boolean;
@@ -36,6 +35,9 @@ export function FollowUpDetailDrawer({
   activeTab,
   onTabChange,
 }: FollowUpDetailDrawerProps) {
+  // 0012 Cycle B：与独立到店/拜访页共用同一份运行时状态实例（§9.2）
+  const { getArrivalRecordsByCustomerKey, getVisitRecordsByCustomerKey } =
+    useRecordRuntimeStore();
   return (
     <Drawer
       title="跟进详情"
@@ -63,13 +65,7 @@ export function FollowUpDetailDrawer({
               label: '到店记录',
               children: (
                 <div className="store-customer-followup-table store-customer-followup-table--h-scroll">
-                  <AdminDataTable<ArrivalRecord>
-                    columns={ARRIVAL_RECORD_COLUMNS}
-                    dataSource={getArrivalRecords(customer.key)}
-                    rowKey="key"
-                    scroll={{ x: ARRIVAL_RECORD_SCROLL_X }}
-                    dataReqId="arrival-record-table"
-                  />
+                  <ArrivalRecordTable dataSource={getArrivalRecordsByCustomerKey(customer.key)} />
                 </div>
               ),
             },
@@ -78,13 +74,7 @@ export function FollowUpDetailDrawer({
               label: '拜访记录',
               children: (
                 <div className="store-customer-followup-table store-customer-followup-table--h-scroll">
-                  <AdminDataTable<VisitRecord>
-                    columns={VISIT_RECORD_COLUMNS}
-                    dataSource={getVisitRecords(customer.key)}
-                    rowKey="key"
-                    scroll={{ x: VISIT_RECORD_SCROLL_X }}
-                    dataReqId="visit-record-table"
-                  />
+                  <VisitRecordTable dataSource={getVisitRecordsByCustomerKey(customer.key)} />
                 </div>
               ),
             },

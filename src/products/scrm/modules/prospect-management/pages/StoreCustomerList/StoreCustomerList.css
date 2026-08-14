@@ -1271,3 +1271,18 @@
   color: #1677ff;
   cursor: pointer;
 }
+
+/* ============================================================================
+   0012 Cycle A：到店/拜访记录独立页筛选标签
+   独立页筛选字段含"体验课卡获取时间"等较长标签，沿用既有筛选网格并放宽
+   标签宽度，保证 0012 §6.2 / §7.2 字段名不被截断；仅作用于记录独立页。
+   ============================================================================ */
+.store-customer-record-page .store-customer-filter-item label {
+  width: 108px;
+}
+
+@media (max-width: 1300px) {
+  .store-customer-record-page .store-customer-filter-item label {
+    width: 96px;
+  }
+}

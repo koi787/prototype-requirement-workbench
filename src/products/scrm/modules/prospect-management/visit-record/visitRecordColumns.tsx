@@ -1,15 +1,20 @@
 /**
- * 0011 门店客户跟进详情 Cycle 1 - 拜访记录（18 列）。
+ * 0012 Cycle A - 拜访记录（19 列）业务模块列定义。
  *
- * 列定义保留在 0011 页面模块内，禁止下沉 shared/admin。
- * 用户姓名使用蓝色链接视觉；金额统一两位小数、空值显示 `--`；
- * 操作列固定在右侧且仅视觉。
+ * 在 0011 §7 的 18 列基础上插入"下次拜访时间"为第 7 列（客资来源之后、
+ * 预约门店之前）。独立页（拜访记录）与跟进详情"拜访记录"Tab 共用同一份
+ * 列定义，禁止出现第二套拜访 columns。用户姓名使用蓝色链接视觉；意向度
+ * 按真实系统显示纯数字（不消费 IntentLevelTag，该标签仅跟进旅程卡使用）；
+ * 金额统一两位小数、空值显示 `--`；操作列固定在右侧，为 操作 按钮 +
+ * Dropdown（Cycle A 占位：仅 编辑 为 Cycle B 预留入口，点击仅关闭菜单）。
  */
 import type { ColumnsType } from 'antd/es/table';
-import type { VisitRecord } from './followUpTypes';
-import { IntentLevelTag, RecordNameLink, RecordOperationVisual } from './followUpShared';
+import type { VisitRecord } from './visitRecordTypes';
+import { NEXT_VISIT_TIME_EMPTY_TEXT } from './visitRecordTypes';
+import { RecordNameLink, RecordOperationCell } from '../record-shared';
+import type { RecordOperationItem } from '../record-shared';
 
-/** 拜访记录完整期望表头（18 列，顺序与 0011 §7 一致） */
+/** 拜访记录完整期望表头（19 列，0012 §7.3 顺序：下次拜访时间为第 7 列） */
 export const VISIT_RECORD_HEADERS = [
   'ID',
   '用户姓名',
@@ -17,6 +22,7 @@ export const VISIT_RECORD_HEADERS = [
   '微信号',
   '手机号',
   '客资来源',
+  '下次拜访时间',
   '预约门店',
   '拜访方式',
   '意向度',
@@ -31,6 +37,11 @@ export const VISIT_RECORD_HEADERS = [
   '操作',
 ] as const;
 
+/** 拜访记录操作列菜单项（Cycle A 占位，严格仅 编辑 一项） */
+export const VISIT_OPERATION_ITEMS: readonly RecordOperationItem[] = [
+  { key: 'edit', label: '编辑' },
+];
+
 export const VISIT_RECORD_COLUMNS: ColumnsType<VisitRecord> = [
   { title: 'ID', dataIndex: 'id', key: 'id', width: 70 },
   {
@@ -44,6 +55,13 @@ export const VISIT_RECORD_COLUMNS: ColumnsType<VisitRecord> = [
   { title: '微信号', dataIndex: 'wechatId', key: 'wechatId', width: 130 },
   { title: '手机号', dataIndex: 'phone', key: 'phone', width: 120 },
   { title: '客资来源', dataIndex: 'source', key: 'source', width: 100 },
+  {
+    title: '下次拜访时间',
+    dataIndex: 'nextVisitTime',
+    key: 'nextVisitTime',
+    width: 150,
+    render: (v: string | null | undefined) => v ?? NEXT_VISIT_TIME_EMPTY_TEXT,
+  },
   { title: '预约门店', dataIndex: 'appointmentStore', key: 'appointmentStore', width: 120 },
   { title: '拜访方式', dataIndex: 'visitWay', key: 'visitWay', width: 110 },
   {
@@ -51,7 +69,7 @@ export const VISIT_RECORD_COLUMNS: ColumnsType<VisitRecord> = [
     dataIndex: 'intentLevel',
     key: 'intentLevel',
     width: 90,
-    render: (v: number) => <IntentLevelTag level={v} />,
+    render: (v: number) => String(v),
   },
   { title: '改善需求', dataIndex: 'improvementNeed', key: 'improvementNeed', width: 140 },
   { title: '意向课程', dataIndex: 'intendedCourse', key: 'intendedCourse', width: 140 },
@@ -66,11 +84,18 @@ export const VISIT_RECORD_COLUMNS: ColumnsType<VisitRecord> = [
     key: 'operation',
     width: 90,
     fixed: 'right',
-    render: () => <RecordOperationVisual />,
+    render: (_: unknown, record: VisitRecord) => (
+      <RecordOperationCell
+        items={VISIT_OPERATION_ITEMS}
+        editKind="visit"
+        recordKey={record.key}
+        dataReqId={`visit-record-operation-${record.key}`}
+      />
+    ),
   },
 ];
 
-/** 拜访记录横向滚动总宽度（由列宽自动求和） */
+/** 拜访记录横向滚动总宽度（由列宽自动求和，避免与实际列宽漂移） */
 export const VISIT_RECORD_SCROLL_X = VISIT_RECORD_COLUMNS.reduce(
   (sum, column) => sum + (typeof column.width === 'number' ? column.width : 100),
   0,

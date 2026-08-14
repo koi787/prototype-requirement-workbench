@@ -4,15 +4,19 @@
  * 通过稳定客户 key 与当前列表选中客户关联，不复制第二套客户身份数据。
  * 仅覆盖测试与 Story 需要的演示客户；未配置的客户返回空数据，便于稳定复现空态。
  * 所有数据均为虚构演示数据。
+ *
+ * 0012 Cycle A：到店/拜访记录初始数据与选择器已迁移至独立业务模块
+ * （arrival-record / visit-record），本文件不再保留第二套数组，概览统计
+ * 按客户 key 从共享模块读取。
  */
 import type {
-  ArrivalRecord,
   AssignmentRecord,
   CallRecord,
   CustomerFollowUpData,
   JourneyEvent,
-  VisitRecord,
 } from './followUpTypes';
+import { getArrivalRecordsByCustomerKey } from '../../../arrival-record';
+import { getVisitRecordsByCustomerKey } from '../../../visit-record';
 
 /** 张三（key '1'）：完整演示数据（含金额 0.00 / -- / 两位小数、多类记录与旅程事件） */
 const ZHANG_SAN: CustomerFollowUpData = {
@@ -20,152 +24,6 @@ const ZHANG_SAN: CustomerFollowUpData = {
   noVisitDuration: '3天',
   remainingValue: 1290,
   totalRefundAmount: 0,
-  arrivalRecords: [
-    {
-      key: 'a1',
-      id: 'AR001',
-      userName: '张三',
-      userId: 'UID1001',
-      wechatId: 'wx_zhangsan_01',
-      phone: '139****4822',
-      source: '地推活动',
-      appointmentStore: '示例旗舰店',
-      arrivalTime: '2026-07-22 17:00:00',
-      isArrived: '已到店',
-      isDeal: '已成交',
-      dealAmount: 299.9,
-      courseType: '少儿体适能',
-      hasTrialClass: '是',
-      trialClassStatus: '已下课',
-      isSignedIn: '已签到',
-      trialClassCoach: '张顾问',
-      trialClassEndTime: '2026-07-22 18:00:00',
-      contractNo: 'HT2026001',
-      trialClassCardContractStatus: '已生效',
-      trialClassCard: '体验课A卡',
-      actualPaidAmount: 199,
-      trialClassGetTime: '2026-07-20 10:00:00',
-      intentLevel: 5,
-      improvementNeed: '改善基础体能',
-      intendedCourse: '少儿体适能课',
-      appointmentRemark: '--',
-      resultAnalysis: '到店体验良好，家长有明确报名意向',
-      creator: '王经理',
-      createTime: '2026-07-18 09:00:00',
-      updater: '王经理',
-      updateTime: '2026-07-22 18:00:00',
-    },
-    {
-      key: 'a2',
-      id: 'AR002',
-      userName: '张三',
-      userId: 'UID1001',
-      wechatId: 'wx_zhangsan_01',
-      phone: '139****4822',
-      source: '地推活动',
-      appointmentStore: '示例旗舰店',
-      arrivalTime: '2026-07-20 14:30:00',
-      isArrived: '已到店',
-      isDeal: '未成交',
-      dealAmount: 0,
-      courseType: '儿童篮球',
-      hasTrialClass: '是',
-      trialClassStatus: '待上课',
-      isSignedIn: '已签到',
-      trialClassCoach: '李教练',
-      trialClassEndTime: '--',
-      contractNo: '--',
-      trialClassCardContractStatus: '待生效',
-      trialClassCard: '体验课B卡',
-      actualPaidAmount: 0,
-      trialClassGetTime: '2026-07-20 10:00:00',
-      intentLevel: 3,
-      improvementNeed: '提升身体协调能力',
-      intendedCourse: '儿童篮球课',
-      appointmentRemark: '家长咨询课程方案',
-      resultAnalysis: '意向较高，待持续跟进',
-      creator: '王经理',
-      createTime: '2026-07-19 10:00:00',
-      updater: '王经理',
-      updateTime: '2026-07-20 15:00:00',
-    },
-    {
-      key: 'a3',
-      id: 'AR003',
-      userName: '张三',
-      userId: 'UID1001',
-      wechatId: 'wx_zhangsan_01',
-      phone: '139****4822',
-      source: '地推活动',
-      appointmentStore: '示例旗舰店',
-      arrivalTime: '2026-07-18 10:00:00',
-      isArrived: '未到店',
-      isDeal: '未成交',
-      dealAmount: null,
-      courseType: '亲子运动',
-      hasTrialClass: '否',
-      trialClassStatus: '--',
-      isSignedIn: '--',
-      trialClassCoach: '--',
-      trialClassEndTime: '--',
-      contractNo: '--',
-      trialClassCardContractStatus: '--',
-      trialClassCard: '--',
-      actualPaidAmount: null,
-      trialClassGetTime: '--',
-      intentLevel: 2,
-      improvementNeed: '改善亲子互动',
-      intendedCourse: '亲子运动课',
-      appointmentRemark: '--',
-      resultAnalysis: '临时有事未到店，改约下次',
-      creator: '王经理',
-      createTime: '2026-07-16 14:00:00',
-      updater: '王经理',
-      updateTime: '2026-07-18 11:00:00',
-    },
-  ],
-  visitRecords: [
-    {
-      key: 'v1',
-      id: 'VS001',
-      userName: '张三',
-      userId: 'UID1001',
-      wechatId: 'wx_zhangsan_01',
-      phone: '139****4822',
-      source: '地推活动',
-      appointmentStore: '示例旗舰店',
-      visitWay: '上门拜访',
-      intentLevel: 4,
-      improvementNeed: '咨询课程方案',
-      intendedCourse: '少儿体适能课',
-      visitRemark: '家长有报名意向，建议本周到店体验',
-      visitTime: '2026-07-21 09:00:00',
-      creator: '王经理',
-      createTime: '2026-07-21 09:00:00',
-      updater: '王经理',
-      updateTime: '2026-07-21 16:00:00',
-    },
-    {
-      key: 'v2',
-      id: 'VS002',
-      userName: '张三',
-      userId: 'UID1001',
-      wechatId: 'wx_zhangsan_01',
-      phone: '139****4822',
-      source: '地推活动',
-      appointmentStore: '示例旗舰店',
-      visitWay: '电话沟通',
-      intentLevel: 3,
-      improvementNeed: '了解课程安排',
-      intendedCourse: '儿童篮球课',
-      visitRemark: '--',
-      visitTime: '2026-07-19 10:00:00',
-      creator: '王经理',
-      createTime: '2026-07-19 10:00:00',
-      updater: '王经理',
-      updateTime: '2026-07-19 11:00:00',
-    },
-  ],
   callRecords: [
     {
       key: 'c1',
@@ -273,8 +131,6 @@ const EMPTY: CustomerFollowUpData = {
   noVisitDuration: '--',
   remainingValue: 0,
   totalRefundAmount: 0,
-  arrivalRecords: [],
-  visitRecords: [],
   callRecords: [],
   assignmentRecords: [],
   journeyEvents: [],
@@ -284,14 +140,6 @@ const FOLLOW_UP_MOCK: Record<string, CustomerFollowUpData> = {
   '1': ZHANG_SAN,
   '3': EMPTY,
 };
-
-export function getArrivalRecords(customerKey: string): ArrivalRecord[] {
-  return FOLLOW_UP_MOCK[customerKey]?.arrivalRecords ?? [];
-}
-
-export function getVisitRecords(customerKey: string): VisitRecord[] {
-  return FOLLOW_UP_MOCK[customerKey]?.visitRecords ?? [];
-}
 
 export function getCallRecords(customerKey: string): CallRecord[] {
   return FOLLOW_UP_MOCK[customerKey]?.callRecords ?? [];
@@ -356,8 +204,8 @@ function minTime(times: string[]): string {
  */
 export function getCustomerOverview(customerKey: string): FollowUpOverview {
   const data = FOLLOW_UP_MOCK[customerKey];
-  const arrivalRecords = data?.arrivalRecords ?? [];
-  const visitRecords = data?.visitRecords ?? [];
+  const arrivalRecords = getArrivalRecordsByCustomerKey(customerKey);
+  const visitRecords = getVisitRecordsByCustomerKey(customerKey);
   const totalDealAmount = arrivalRecords.reduce(
     (sum, record) => sum + (typeof record.dealAmount === 'number' ? record.dealAmount : 0),
     0,

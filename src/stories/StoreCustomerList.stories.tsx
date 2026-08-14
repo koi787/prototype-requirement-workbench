@@ -1,8 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { StoreCustomerList } from '../products/scrm/modules/prospect-management/pages/StoreCustomerList';
 
+/**
+ * 门店客户 · 列表 Story：按真实产品菜单归入
+ * SCRM → 潜客管理 → 门店客户 → 列表。
+ *
+ * 列表能力分组下展示既有列表状态（正常/首次加载/筛选无结果/空数据/查询失败/
+ * 导出成功反馈/原型体验模式/需求查看模式/无效审批状态/跟进详情入口）。
+ * 跟进详情各 Tab 状态在 门店客户 → 跟进详情 分组（FollowUpDetail.stories.tsx）。
+ */
 const meta = {
-  title: 'SCRM/潜客管理/门店客户',
+  title: 'SCRM/潜客管理/门店客户/列表',
   component: StoreCustomerList,
   parameters: {
     layout: 'fullscreen',
@@ -80,7 +88,7 @@ export const 需求查看模式: Story = {
 };
 
 // ============================================================================
-// 0008 闭环二：审批流程 Story
+// 无效客资审批：门店客户列表上的状态 Story
 // ============================================================================
 
 /** 待审核状态（第一页有 pending 记录，操作菜单显示"审核无效标注"） */
@@ -145,10 +153,8 @@ export const 需求查看模式审批流程: Story = {
 };
 
 // ============================================================================
-// 0011 Cycle 1：门店客户跟进详情 Story
+// 跟进详情入口：门店客户列表行操作菜单的入口状态
 // ============================================================================
-// 通过 initialFollowUpDetail 夹具直接复现目标状态，无需人工多步操作；
-// 记录 Tab Story 刷新即进入对应 Tab。
 
 /** 操作菜单打开跟进详情（唯一入口） */
 export const 操作菜单打开跟进详情: Story = {
@@ -160,137 +166,6 @@ export const 操作菜单打开跟进详情: Story = {
       description: {
         story:
           '门店客户列表行级"操作"菜单第一项为"跟进详情"（唯一入口）。点击后在右侧打开一级抽屉：标题"跟进详情"、宽度 70vw、右上角可关闭；抽屉打开期间底层列表的筛选、排序、分页与滚动位置保持不变。本 Story 展示入口所在列表状态，点击任意行操作菜单即可验证打开效果。',
-      },
-    },
-  },
-};
-
-/** 跟进详情默认跟进流程（王五，空旅程空态可复现） */
-export const 跟进详情默认跟进流程: Story = {
-  args: {
-    initialState: 'normal',
-    initialFollowUpDetail: {
-      customerKey: '3',
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          '抽屉默认落在"跟进流程"Tab（固定五个 Tab 顺序：跟进流程/到店记录/拜访记录/通话记录/分配记录）。内容按 用户信息 → 跟进概览 → 跟进旅程 三段展示；王五暂无旅程事件，旅程区稳定显示空态"暂无数据"，四张概览卡片（主值 + 分组详细统计）与记录列表同步为空态。',
-      },
-    },
-  },
-};
-
-/** 跟进旅程有数据（张三，六条事件时间倒序：到店/通话/拜访/客资有效性） */
-export const 跟进详情旅程有数据: Story = {
-  args: {
-    initialState: 'normal',
-    initialFollowUpDetail: {
-      customerKey: '1',
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          '跟进流程"跟进旅程"展示张三的到店、通话、拜访与客资有效性事件，按时间倒序（最新在前）；筛选 Select 紧跟标题左侧（六项固定选项：全部/到店记录/拜访记录/通话记录/已丢单/客资有效性），默认"全部"混合展示 6 条。旅程卡按真实系统结构还原：header 为左侧状态标签 + 右侧"详情"、下浅分隔线，body 为单列纵向字段（到店卡：到店时间/预约门店/体验课/改善需求/意向课程；拜访卡：拜访时间/改善需求/意向课程；客资有效性卡：标注无效客资/恢复有效客资 标签 + 提交时间/提交员工/备注/附件静态占位）。列表底部为现有后台风格分页（默认 10 条/页，共 6 条，切换筛选后总数与分页状态同步）。',
-      },
-    },
-  },
-};
-
-/** 到店记录 Tab（32 列，刷新直接进入） */
-export const 跟进详情到店记录: Story = {
-  args: {
-    initialState: 'normal',
-    initialFollowUpDetail: {
-      customerKey: '1',
-      tab: 'arrival',
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          '刷新即直接进入"到店记录"Tab。表格为 32 列（ID 至 操作），横向滚动，操作列固定在右侧；用户姓名蓝色链接、是否到店/是否成交状态标签、金额统一两位小数（空值显示 --）。',
-      },
-    },
-  },
-};
-
-/** 拜访记录 Tab（18 列，刷新直接进入） */
-export const 跟进详情拜访记录: Story = {
-  args: {
-    initialState: 'normal',
-    initialFollowUpDetail: {
-      customerKey: '1',
-      tab: 'visit',
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          '刷新即直接进入"拜访记录"Tab。表格为 18 列（ID 至 操作），横向滚动，操作列固定在右侧；拜访方式与意向度、改善需求、意向课程等字段完整展示。',
-      },
-    },
-  },
-};
-
-/** 通话记录 Tab（13 列，刷新直接进入） */
-export const 跟进详情通话记录: Story = {
-  args: {
-    initialState: 'normal',
-    initialFollowUpDetail: {
-      customerKey: '1',
-      tab: 'call',
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          '刷新即直接进入"通话记录"Tab。表格为 13 列（ID 至 操作），横向滚动，操作列固定在右侧；通话时长以蓝色音频样式展示，本阶段不实现播放能力。',
-      },
-    },
-  },
-};
-
-/** 分配记录 Tab（2 列，刷新直接进入） */
-export const 跟进详情分配记录: Story = {
-  args: {
-    initialState: 'normal',
-    initialFollowUpDetail: {
-      customerKey: '1',
-      tab: 'assignment',
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          '刷新即直接进入"分配记录"Tab。表格仅 分配人/分配时间 两列，无操作列、不制造横向滚动。',
-      },
-    },
-  },
-};
-
-/** 需求查看模式 - 跟进详情（需求点与跟进详情共存） */
-export const 需求查看模式跟进详情: Story = {
-  args: {
-    initialState: 'normal',
-    initialRequirementMode: 'requirement',
-    initialFollowUpDetail: {
-      customerKey: '1',
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          '需求查看模式下打开跟进详情抽屉，验证 0011 页面与既有需求锚点体系兼容：列表中的需求编号点点击只打开需求说明，不触发跟进详情业务；跟进详情抽屉独立展示，两者互不干扰。',
       },
     },
   },
