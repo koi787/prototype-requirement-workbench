@@ -1,0 +1,42 @@
+/* ============================================================================
+   0012 Cycle B3 - 到店变更记录 Drawer 明细表格样式（C 级还原）
+
+   变更记录 Drawer 为独立只读模块：明细表格视觉与后台列表表格一致
+   （浅灰表头 #f3f4f5 / 中灰 500 字重 / 数据行浅灰分隔线 / 平面边框容器），
+   与列表页表格（.store-customer-table-wrapper）同一套视觉语言。
+
+   仅新增 arrival-change-* 前缀类，不改动既有 record-drawer-* 与列表冻结样式。
+   ============================================================================ */
+
+/* 表格平面边框容器（与列表表格一致） */
+.arrival-change-table {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+}
+
+/* 表头：浅灰底、中灰文字、500 字重、紧凑密度 */
+.arrival-change-table .ant-table-thead > tr > th.ant-table-cell {
+  background: #f3f4f5;
+  color: #595959;
+  font-weight: 500;
+  font-size: 13px;
+  padding: 12px;
+  line-height: 22px;
+  border-bottom: 1px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+/* 数据行：正文深灰、浅灰分隔线、垂直居中 */
+.arrival-change-table .ant-table-tbody > tr > td.ant-table-cell {
+  padding: 12px;
+  font-size: 13px;
+  line-height: 22px;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+/* 极轻偶数行背景（与列表表格一致） */
+.arrival-change-table .ant-table-tbody > tr:nth-child(even) > td {
+  background: #fafbfc;
+}

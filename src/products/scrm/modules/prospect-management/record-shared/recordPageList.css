@@ -1,0 +1,27 @@
+/* ============================================================================
+   0012 Cycle C - 到店/拜访记录独立页列表区域固定可视框架（C 级复刻）
+
+   独立业务列表区域（筛选区下方）应为固定可视框架：数据少时只显示实际数据行，
+   剩余区域保持空白；横向滚动条位于列表区域底部；分页不随数据条数上下跳动。
+
+   实现方式：对两个独立页表格外层容器（data-req-id="arrival-record-table-area" /
+   "visit-record-table-area"）内层 antd 横向滚动容器（.ant-table-content）设置
+   min-height。空白区域位于滚动容器内部（表头 + 实际数据行之下、横向滚动条
+   之上），因此横向滚动条固定位于列表区域底部；空态同样保持固定高度。
+   使用 min-height 而非固定 height：数据多于框架时容器自然增高，不会因 antd
+   内联 overflow-y: hidden 而裁切数据行。
+
+   取值说明：到店全量 7 行中 结果分析 长文本使部分行换行（约 84px/行），
+   表头约 54px，全量自然高度约 570px；取 600px 使满数据与筛选后少数据场景下
+   分页位置完全稳定。若 min-height 过低（如 480px），满数据 7 行时列表仍会
+   高于下限，分页仍会随数据条数上下移动。
+
+   作用域仅限上述两个独立页 area：不影响门店客户 52 列表格（data-req-id=
+   "table-area"）、跟进详情 Drawer 内到店/拜访 Tab（其表格不在 area 容器内）、
+   shared/admin 公共组件。
+   ============================================================================ */
+
+[data-req-id='arrival-record-table-area'] .ant-table-content,
+[data-req-id='visit-record-table-area'] .ant-table-content {
+  min-height: 600px;
+}

@@ -1,15 +1,23 @@
 /**
- * 0011 门店客户跟进详情 Cycle 1 - 到店记录（32 列）。
+ * 0012 Cycle A - 到店记录（32 列）业务模块列定义。
  *
- * 列定义保留在 0011 页面模块内，禁止下沉 shared/admin。
- * 用户姓名使用蓝色链接视觉；状态列复用当前系统状态样式；
- * 金额统一两位小数、空值显示 `--`；操作列固定在右侧且仅视觉。
+ * 独立页（到店记录）与跟进详情"到店记录"Tab 共用同一份列定义，
+ * 禁止出现第二套到店 columns。用户姓名使用蓝色链接视觉；是否成交
+ * 使用统一风格 Tag（已成交 绿色/未成交 橙色）；意向度按真实系统显示
+ * 纯数字（不消费 IntentLevelTag，该标签仅跟进旅程卡使用）；金额统一
+ * 两位小数、空值显示 `--`；操作列固定在右侧，为 操作 按钮 + Dropdown
+ * （Cycle A 占位：编辑/变更记录 为 Cycle B 预留入口，点击仅关闭菜单）。
  */
 import type { ColumnsType } from 'antd/es/table';
-import { DealTag, VisitedTag } from '../StatusTags';
-import { formatRecordAmount } from './followUpTypes';
-import type { ArrivalRecord } from './followUpTypes';
-import { IntentLevelTag, RecordNameLink, RecordOperationVisual } from './followUpShared';
+import { VisitedTag } from '../pages/StoreCustomerList/StatusTags';
+import type { ArrivalRecord } from './arrivalRecordTypes';
+import {
+  formatRecordAmount,
+  DealStatusTag,
+  RecordNameLink,
+  RecordOperationCell,
+} from '../record-shared';
+import type { RecordOperationItem } from '../record-shared';
 
 /** 到店记录完整期望表头（32 列，顺序与 0011 §6 一致） */
 export const ARRIVAL_RECORD_HEADERS = [
@@ -47,6 +55,12 @@ export const ARRIVAL_RECORD_HEADERS = [
   '操作',
 ] as const;
 
+/** 到店记录操作列菜单项（Cycle A 占位，顺序固定：编辑 → 变更记录） */
+export const ARRIVAL_OPERATION_ITEMS: readonly RecordOperationItem[] = [
+  { key: 'edit', label: '编辑' },
+  { key: 'change-record', label: '变更记录' },
+];
+
 export const ARRIVAL_RECORD_COLUMNS: ColumnsType<ArrivalRecord> = [
   { title: 'ID', dataIndex: 'id', key: 'id', width: 70 },
   {
@@ -74,7 +88,7 @@ export const ARRIVAL_RECORD_COLUMNS: ColumnsType<ArrivalRecord> = [
     dataIndex: 'isDeal',
     key: 'isDeal',
     width: 100,
-    render: (v: string) => <DealTag value={v} />,
+    render: (v: string) => <DealStatusTag value={v} />,
   },
   {
     title: '成交金额',
@@ -110,7 +124,7 @@ export const ARRIVAL_RECORD_COLUMNS: ColumnsType<ArrivalRecord> = [
     dataIndex: 'intentLevel',
     key: 'intentLevel',
     width: 90,
-    render: (v: number) => <IntentLevelTag level={v} />,
+    render: (v: number) => String(v),
   },
   { title: '改善需求', dataIndex: 'improvementNeed', key: 'improvementNeed', width: 140 },
   { title: '意向课程', dataIndex: 'intendedCourse', key: 'intendedCourse', width: 140 },
@@ -125,7 +139,14 @@ export const ARRIVAL_RECORD_COLUMNS: ColumnsType<ArrivalRecord> = [
     key: 'operation',
     width: 90,
     fixed: 'right',
-    render: () => <RecordOperationVisual />,
+    render: (_: unknown, record: ArrivalRecord) => (
+      <RecordOperationCell
+        items={ARRIVAL_OPERATION_ITEMS}
+        editKind="arrival"
+        recordKey={record.key}
+        dataReqId={`arrival-record-operation-${record.key}`}
+      />
+    ),
   },
 ];
 

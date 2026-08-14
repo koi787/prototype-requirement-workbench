@@ -10,10 +10,11 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { StoreCustomerList } from '../../StoreCustomerList';
 import { COLUMN_COUNT, COLUMN_ORDER } from '../../columns';
-import { FOLLOW_UP_TABS, formatRecordAmount } from '../followUpTypes';
+import { FOLLOW_UP_TABS } from '../followUpTypes';
 import type { FollowUpTabKey } from '../followUpTypes';
-import { ARRIVAL_RECORD_COLUMNS, ARRIVAL_RECORD_HEADERS } from '../arrivalRecordColumns';
-import { VISIT_RECORD_COLUMNS, VISIT_RECORD_HEADERS } from '../visitRecordColumns';
+import { ARRIVAL_RECORD_COLUMNS, ARRIVAL_RECORD_HEADERS } from '../../../../arrival-record';
+import { VISIT_RECORD_COLUMNS, VISIT_RECORD_HEADERS } from '../../../../visit-record';
+import { formatRecordAmount } from '../../../../record-shared';
 import { CALL_RECORD_COLUMNS, CALL_RECORD_HEADERS } from '../callRecordColumns';
 import {
   ASSIGNMENT_RECORD_COLUMNS,
@@ -136,6 +137,7 @@ const EXPECTED_VISIT_HEADERS = [
   '微信号',
   '手机号',
   '客资来源',
+  '下次拜访时间',
   '预约门店',
   '拜访方式',
   '意向度',
@@ -792,10 +794,16 @@ describe('StoreCustomerList 跟进详情（0011 Cycle 1）', () => {
       expect(ARRIVAL_RECORD_COLUMNS).toHaveLength(32);
     });
 
-    it('拜访记录18列（0011 §7）', () => {
-      expect(EXPECTED_VISIT_HEADERS).toHaveLength(18);
+    it('拜访记录19列（0012 §7.3，含下次拜访时间）', () => {
+      expect(EXPECTED_VISIT_HEADERS).toHaveLength(19);
       expect(VISIT_RECORD_HEADERS).toEqual(EXPECTED_VISIT_HEADERS);
-      expect(VISIT_RECORD_COLUMNS).toHaveLength(18);
+      expect(VISIT_RECORD_COLUMNS).toHaveLength(19);
+      // 下次拜访时间为第 7 列：客资来源之后、预约门店之前
+      expect(EXPECTED_VISIT_HEADERS.indexOf('下次拜访时间')).toBe(6);
+      expect(VISIT_RECORD_COLUMNS[6]).toMatchObject({
+        title: '下次拜访时间',
+        dataIndex: 'nextVisitTime',
+      });
     });
 
     it('通话记录13列（0011 §8）', () => {
@@ -825,10 +833,15 @@ describe('StoreCustomerList 跟进详情（0011 Cycle 1）', () => {
       expect(dataRows(table)).toHaveLength(3);
     });
 
-    it('拜访记录18列表头实际渲染顺序一致', async () => {
+    it('拜访记录19列表头实际渲染顺序一致', async () => {
       const table = await renderRecordTable('visit');
       expect(visibleHeaders(table)).toEqual(EXPECTED_VISIT_HEADERS);
-      expect(dataRows(table)).toHaveLength(2);
+      const rows = dataRows(table);
+      expect(rows).toHaveLength(2);
+      // 下次拜访时间列：v1 有值按 YYYY-MM-DD HH:mm:ss 展示，v2 为空显示 --
+      const nextVisitIndex = EXPECTED_VISIT_HEADERS.indexOf('下次拜访时间');
+      expect(cellByIndex(rows[0]!, nextVisitIndex).textContent).toBe('2026-07-25 10:00:00');
+      expect(cellByIndex(rows[1]!, nextVisitIndex).textContent).toBe('--');
     });
 
     it('通话记录13列表头实际渲染顺序一致', async () => {
@@ -989,6 +1002,94 @@ describe('StoreCustomerList 跟进详情（0011 Cycle 1）', () => {
       await renderFollowUpDrawer('1');
       expect(getByReqId('customer-table')).toBeTruthy();
       expect(getByReqId('pagination-area').textContent).toContain('共 25 条记录');
+    });
+  });
+
+  describe('记录Tab操作列与意向度（0012 Cycle A，与独立页共享单一来源）', () => {
+    it('到店记录Tab操作列：操作按钮，点击后菜单严格 编辑 + 变更记录', async () => {
+      const user = userEvent.setup();
+      const table = await renderRecordTable('arrival');
+      const rows = dataRows(table);
+      const key = rows[0]!.getAttribute('data-row-key') as string;
+      const trigger = rows[0]!.querySelector(
+        `[data-req-id="arrival-record-operation-${key}"]`,
+      ) as HTMLElement;
+      expect(trigger).toBeTruthy();
+      expect(trigger.textContent).toContain('操作');
+      await user.click(trigger);
+      await screen.findByRole('menuitem', { name: '编辑' });
+      const menuItems = screen.getAllByRole('menuitem').map((item) => item.textContent?.trim());
+      expect(menuItems).toEqual(['编辑', '变更记录']);
+    });
+
+    it('拜访记录Tab操作列：操作按钮，点击后菜单严格仅 编辑', async () => {
+      const user = userEvent.setup();
+      const table = await renderRecordTable('visit');
+      const rows = dataRows(table);
+      const key = rows[0]!.getAttribute('data-row-key') as string;
+      const trigger = rows[0]!.querySelector(
+        `[data-req-id="visit-record-operation-${key}"]`,
+      ) as HTMLElement;
+      expect(trigger).toBeTruthy();
+      expect(trigger.textContent).toContain('操作');
+      await user.click(trigger);
+      await screen.findByRole('menuitem', { name: '编辑' });
+      const menuItems = screen.getAllByRole('menuitem').map((item) => item.textContent?.trim());
+      expect(menuItems).toEqual(['编辑']);
+      expect(screen.queryByRole('menuitem', { name: '变更记录' })).toBeNull();
+    });
+
+    it('点击到店记录操作菜单项打开编辑抽屉（Cycle B），跟进详情抽屉保持打开', async () => {
+      const user = userEvent.setup();
+      const table = await renderRecordTable('arrival');
+      const rows = dataRows(table);
+      const key = rows[0]!.getAttribute('data-row-key') as string;
+      const trigger = rows[0]!.querySelector(
+        `[data-req-id="arrival-record-operation-${key}"]`,
+      ) as HTMLElement;
+      await user.click(trigger);
+      const editItem = await screen.findByRole('menuitem', { name: '编辑' });
+      await user.click(editItem);
+      // 跟进详情抽屉保持打开，编辑到店记录抽屉作为第二层打开
+      await waitFor(() => {
+        expect(document.querySelector('[data-req-id="arrival-record-edit-drawer"]')).toBeTruthy();
+      });
+      expect(document.querySelectorAll('.ant-drawer')).toHaveLength(2);
+      expect(document.querySelector('.ant-modal')).toBeNull();
+      // 标题固定为"编辑到店记录"，编辑抽屉与跟进详情共用同一运行时状态实例
+      const editDrawer = document.querySelector(
+        '[data-req-id="arrival-record-edit-drawer"]',
+      ) as HTMLElement;
+      expect(within(editDrawer).getByText('编辑到店记录')).toBeTruthy();
+      expect(document.querySelector('[data-req-id="follow-up-detail-drawer"]')).toBeTruthy();
+    });
+
+    it('到店记录Tab列表意向度显示纯数字（与独立页同步）', async () => {
+      const table = await renderRecordTable('arrival');
+      const rows = dataRows(table);
+      const intentIndex = EXPECTED_ARRIVAL_HEADERS.indexOf('意向度');
+      for (const row of rows) {
+        const cell = cellByIndex(row, intentIndex);
+        expect(cell.querySelector('.ant-tag')).toBeNull();
+        expect(cell.textContent?.trim()).toMatch(/^\d+$/);
+      }
+      // 数据区不出现"意向度N"前缀文本（表头列名"意向度"仍正常渲染）
+      const body = table.querySelector('tbody') as HTMLElement;
+      expect(body.textContent).not.toMatch(/意向度\d/);
+    });
+
+    it('拜访记录Tab列表意向度显示纯数字（与独立页同步）', async () => {
+      const table = await renderRecordTable('visit');
+      const rows = dataRows(table);
+      const intentIndex = EXPECTED_VISIT_HEADERS.indexOf('意向度');
+      for (const row of rows) {
+        const cell = cellByIndex(row, intentIndex);
+        expect(cell.querySelector('.ant-tag')).toBeNull();
+        expect(cell.textContent?.trim()).toMatch(/^\d+$/);
+      }
+      // 数据区不出现"意向度N"前缀文本（表头列名"意向度"仍正常渲染）
+      const body = table.querySelector('tbody') as HTMLElement;
+      expect(body.textContent).not.toMatch(/意向度\d/);
     });
   });
 });

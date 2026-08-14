@@ -7,7 +7,7 @@
  */
 import type { ColumnsType } from 'antd/es/table';
 import type { CallRecord } from './followUpTypes';
-import { RecordNameLink, RecordOperationVisual } from './followUpShared';
+import { RecordNameLink, RecordOperationVisual } from '../../../record-shared';
 
 /** 通话记录完整期望表头（13 列，顺序与 0011 §8 一致） */
 export const CALL_RECORD_HEADERS = [

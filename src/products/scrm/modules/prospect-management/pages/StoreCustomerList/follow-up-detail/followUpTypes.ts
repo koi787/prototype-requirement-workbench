@@ -21,63 +21,13 @@ export const FOLLOW_UP_TABS: FollowUpTabItem[] = [
   { key: 'assignment', label: '分配记录' },
 ];
 
-/** 到店记录（32 列，字段与 0011 §6 一一对应） */
-export interface ArrivalRecord {
-  key: string;
-  id: string;
-  userName: string;
-  userId: string;
-  wechatId: string;
-  phone: string;
-  source: string;
-  appointmentStore: string;
-  arrivalTime: string;
-  isArrived: string;
-  isDeal: string;
-  dealAmount: number | null;
-  courseType: string;
-  hasTrialClass: string;
-  trialClassStatus: string;
-  isSignedIn: string;
-  trialClassCoach: string;
-  trialClassEndTime: string;
-  contractNo: string;
-  trialClassCardContractStatus: string;
-  trialClassCard: string;
-  actualPaidAmount: number | null;
-  trialClassGetTime: string;
-  intentLevel: number;
-  improvementNeed: string;
-  intendedCourse: string;
-  appointmentRemark: string;
-  resultAnalysis: string;
-  creator: string;
-  createTime: string;
-  updater: string;
-  updateTime: string;
-}
-
-/** 拜访记录（18 列，字段与 0011 §7 一一对应） */
-export interface VisitRecord {
-  key: string;
-  id: string;
-  userName: string;
-  userId: string;
-  wechatId: string;
-  phone: string;
-  source: string;
-  appointmentStore: string;
-  visitWay: string;
-  intentLevel: number;
-  improvementNeed: string;
-  intendedCourse: string;
-  visitRemark: string;
-  visitTime: string;
-  creator: string;
-  createTime: string;
-  updater: string;
-  updateTime: string;
-}
+/**
+ * 到店记录 / 拜访记录的类型已迁移至独立业务模块（0012 Cycle A）：
+ * - ArrivalRecord → `prospect-management/arrival-record/arrivalRecordTypes`
+ * - VisitRecord → `prospect-management/visit-record/visitRecordTypes`
+ * - formatRecordAmount → `prospect-management/record-shared/recordFormatters`
+ * 跟进详情统一从上述共享模块消费，不在本文件保留第二套定义。
+ */
 
 /** 通话记录（13 列，字段与 0011 §8 一一对应） */
 export interface CallRecord {
@@ -137,10 +87,12 @@ export interface JourneyEvent {
   attachmentName?: string;
 }
 
-/** 单个客户的跟进详情 Mock 集合（通过稳定客户 key 关联当前列表客户） */
+/**
+ * 单个客户的跟进详情 Mock 集合（通过稳定客户 key 关联当前列表客户）。
+ * 到店/拜访记录已迁移至独立业务模块，按需通过
+ * getArrivalRecordsByCustomerKey / getVisitRecordsByCustomerKey 读取。
+ */
 export interface CustomerFollowUpData {
-  arrivalRecords: ArrivalRecord[];
-  visitRecords: VisitRecord[];
   callRecords: CallRecord[];
   assignmentRecords: AssignmentRecord[];
   journeyEvents: JourneyEvent[];
@@ -152,15 +104,4 @@ export interface CustomerFollowUpData {
   remainingValue: number;
   /** 总退款金额（元） */
   totalRefundAmount: number;
-}
-
-/**
- * 金额展示规则（0011 §10）：
- * - 空值显示 `--`；
- * - 数字统一保留两位小数，`0` 显示 `0.00`。
- */
-export function formatRecordAmount(value: number | null | undefined): string {
-  if (value === null || value === undefined) return '--';
-  if (!Number.isFinite(value)) return '--';
-  return value.toFixed(2);
 }

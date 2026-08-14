@@ -54,6 +54,23 @@ import {
 } from '../../../../shared/admin';
 import { FollowUpDetailDrawer } from './follow-up-detail/FollowUpDetailDrawer';
 import type { FollowUpTabKey } from './follow-up-detail/followUpTypes';
+import { ArrivalRecordPage, ArrivalRecordDrawer, ArrivalChangeRecordDrawer } from '../../arrival-record';
+import { VisitRecordPage, VisitRecordDrawer } from '../../visit-record';
+import {
+  RecordRuntimeStoreProvider,
+  useRecordRuntimeStore,
+  RecordEditActionsContext,
+} from '../../record-shared';
+import type {
+  RecordEditActions,
+  RecordUserContextInfo,
+  RecordCreateContext,
+} from '../../record-shared';
+import {
+  PROSPECT_NAV_ITEMS,
+  SWITCHABLE_PROSPECT_PAGES,
+} from '../../navigation/prospectManagementPages';
+import type { ProspectPageKey } from '../../navigation/prospectManagementPages';
 import './StoreCustomerList.css';
 
 const { RangePicker } = DatePicker;
@@ -105,17 +122,7 @@ const navItems: NavItem[] = [
     key: 'prospect',
     label: '潜客管理',
     icon: <NavServiceIcon />,
-    children: [
-      { key: 'store-customer', label: '门店客户' },
-      { key: 'employee-seat', label: '员工座席' },
-      { key: 'customer-sea', label: '客户公海' },
-      { key: 'invalid-sea', label: '无效公海' },
-      { key: 'my-responsible', label: '我负责的' },
-      { key: 'visit-record', label: '到店记录' },
-      { key: 'call-record', label: '通话记录' },
-      { key: 'tag-group', label: '标签分组' },
-      { key: 'visit-record-2', label: '拜访记录' },
-    ],
+    children: PROSPECT_NAV_ITEMS,
   },
 ];
 
@@ -278,6 +285,7 @@ function buildOperationMenuItems(params: {
   items.push({ key: 'transfer', label: '转让' });
   items.push({ key: 'set-tag', label: '设置标签' });
   items.push({ key: 'add-sharer', label: '添加共享人' });
+  items.push({ key: 'add-arrival', label: '添加到店' });
   items.push({ key: 'add-visit-record', label: '添加拜访记录' });
 
   // 审批相关菜单项（仅根据状态）
@@ -340,6 +348,24 @@ function buildOperationMenuItems(params: {
 }
 
 // ============================================================================
+// 新增记录客户上下文（Cycle B2：create 抽屉构建新建记录基础字段）
+// ============================================================================
+
+/** 由门店客户数据构建 create 模式客户上下文（只读用户信息 + 记录快照字段）。 */
+function toRecordCreateContext(customer: CustomerRecord): RecordCreateContext {
+  return {
+    customerKey: customer.key,
+    userName: customer.name,
+    userId: customer.userId,
+    wechatId: customer.wechatId,
+    phone: customer.phone,
+    source: customer.source,
+    appointmentStore: customer.appointmentStore,
+    registerTime: customer.createTime,
+  };
+}
+
+// ============================================================================
 // 筛选函数
 // ============================================================================
 function applyFilter(record: CustomerRecord, filters: FilterValues): boolean {
@@ -388,14 +414,51 @@ export interface StoreCustomerListProps {
     customerKey: string;
     tab?: FollowUpTabKey;
   };
+  /** 初始潜客管理页面（默认门店客户；用于 Story 稳定展示到店/拜访独立页） */
+  initialPage?: ProspectPageKey;
+  /** 到店记录独立页初始状态（Story/测试专用） */
+  arrivalInitialState?: 'normal' | 'empty';
+  /** 拜访记录独立页初始状态（Story/测试专用） */
+  visitInitialState?: 'normal' | 'empty';
+  /** 拜访记录下次拜访时间筛选视角（Story/测试专用） */
+  visitNextVisitTimeFilter?: 'all' | 'has-value' | 'empty';
+  /** 预设编辑记录抽屉初始打开状态（用于 Story/测试稳定展示编辑详情 Drawer） */
+  initialRecordEdit?: {
+    kind: 'arrival' | 'visit';
+    recordKey: string;
+  };
+  /** Cycle B2：预设新增记录抽屉初始打开状态（用于 Story/测试稳定展示
+      create 模式 Drawer；与 kind 匹配的抽屉以 create 打开）。 */
+  initialRecordCreate?: {
+    kind: 'arrival' | 'visit';
+    customerKey: string;
+    /** Story/测试专用：create 打开时预填字段（展示"已填写"的 create 状态，
+        不改变业务默认值与重置规则）。 */
+    draft?: { nextVisitTime?: string; resultAnalysis?: string };
+  };
+  /** Cycle B3：预设到店变更记录 Drawer 初始打开状态（Story/测试专用；
+      以到店记录 key 打开只读变更记录 Drawer）。 */
+  initialChangeRecordArrivalKey?: string;
+  /** Cycle B3：到店变更记录 Drawer 初始数据状态（Story/测试专用，
+      稳定展示空态）。 */
+  arrivalChangeRecordInitialState?: 'normal' | 'empty';
 }
 
 function StoreCustomerListInner({
   data: propData,
+
   initialState = 'normal',
   initialFilters,
   initialExportMessage,
   initialFollowUpDetail,
+  initialPage,
+  arrivalInitialState,
+  visitInitialState,
+  visitNextVisitTimeFilter,
+  initialRecordEdit,
+  initialRecordCreate,
+  initialChangeRecordArrivalKey,
+  arrivalChangeRecordInitialState,
 }: Omit<StoreCustomerListProps, 'initialRequirementMode'>) {
   const reqView = useRequirementView();
   // ---------- 审批状态管理 ----------
@@ -422,6 +485,11 @@ function StoreCustomerListInner({
   );
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
 
+  // ---------- 0012 潜客管理页面切换（到店记录/拜访记录/门店客户）----------
+  const [activePage, setActivePage] = useState<ProspectPageKey>(
+    initialPage ?? 'store-customer',
+  );
+
   // ---------- 抽屉状态 ----------
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
   const [drawerRecordKey, setDrawerRecordKey] = useState<string | null>(null);
@@ -437,6 +505,90 @@ function StoreCustomerListInner({
 
   // ---------- 数据 ----------
   const allData = useMemo(() => approval.customers, [approval.customers]);
+
+  // ---------- 0012 Cycle B：到店/拜访记录编辑与新增抽屉状态 ----------
+  const { getArrivalRecords, getVisitRecords } = useRecordRuntimeStore();
+  const [editArrivalKey, setEditArrivalKey] = useState<string | null>(
+    initialRecordEdit?.kind === 'arrival' ? initialRecordEdit.recordKey : null,
+  );
+  const [editVisitKey, setEditVisitKey] = useState<string | null>(
+    initialRecordEdit?.kind === 'visit' ? initialRecordEdit.recordKey : null,
+  );
+  // Cycle B2 新增：create 模式以稳定 customerKey 打开同一组抽屉
+  const [createArrivalCustomerKey, setCreateArrivalCustomerKey] = useState<string | null>(
+    initialRecordCreate?.kind === 'arrival' ? initialRecordCreate.customerKey : null,
+  );
+  const [createVisitCustomerKey, setCreateVisitCustomerKey] = useState<string | null>(
+    initialRecordCreate?.kind === 'visit' ? initialRecordCreate.customerKey : null,
+  );
+  // Cycle B3：到店变更记录 Drawer 打开状态（以到店记录 key 打开只读 Drawer）
+  const [changeRecordArrivalKey, setChangeRecordArrivalKey] = useState<string | null>(
+    initialChangeRecordArrivalKey ?? null,
+  );
+
+  const recordEditActions = useMemo<RecordEditActions>(
+    () => ({
+      openArrivalEdit: (recordKey) => setEditArrivalKey(recordKey),
+      openVisitEdit: (recordKey) => setEditVisitKey(recordKey),
+      openArrivalCreate: (customerKey) => setCreateArrivalCustomerKey(customerKey),
+      openVisitCreate: (customerKey) => setCreateVisitCustomerKey(customerKey),
+      openArrivalChangeRecord: (recordKey) => setChangeRecordArrivalKey(recordKey),
+    }),
+    [],
+  );
+
+  const editArrivalRecord = useMemo(() => {
+    if (!editArrivalKey) return null;
+    return getArrivalRecords().find((record) => record.key === editArrivalKey) ?? null;
+  }, [editArrivalKey, getArrivalRecords]);
+
+  const editVisitRecord = useMemo(() => {
+    if (!editVisitKey) return null;
+    return getVisitRecords().find((record) => record.key === editVisitKey) ?? null;
+  }, [editVisitKey, getVisitRecords]);
+
+  const editArrivalUser = useMemo<RecordUserContextInfo | null>(() => {
+    if (!editArrivalRecord) return null;
+    const customer = allData.find((item) => item.key === editArrivalRecord.customerKey);
+    if (!customer) return null;
+    return {
+      name: customer.name,
+      source: customer.source,
+      registerTime: customer.createTime,
+    };
+  }, [editArrivalRecord, allData]);
+
+  const editVisitUser = useMemo<RecordUserContextInfo | null>(() => {
+    if (!editVisitRecord) return null;
+    const customer = allData.find((item) => item.key === editVisitRecord.customerKey);
+    if (!customer) return null;
+    return {
+      name: customer.name,
+      source: customer.source,
+      registerTime: customer.createTime,
+    };
+  }, [editVisitRecord, allData]);
+
+  // Cycle B2：create 模式客户上下文（只读用户信息 + 新建记录基础字段）
+  const createArrivalCustomer = useMemo(() => {
+    if (!createArrivalCustomerKey) return null;
+    return allData.find((item) => item.key === createArrivalCustomerKey) ?? null;
+  }, [createArrivalCustomerKey, allData]);
+
+  const createVisitCustomer = useMemo(() => {
+    if (!createVisitCustomerKey) return null;
+    return allData.find((item) => item.key === createVisitCustomerKey) ?? null;
+  }, [createVisitCustomerKey, allData]);
+
+  const createArrivalContext = useMemo<RecordCreateContext | null>(
+    () => (createArrivalCustomer ? toRecordCreateContext(createArrivalCustomer) : null),
+    [createArrivalCustomer],
+  );
+
+  const createVisitContext = useMemo<RecordCreateContext | null>(
+    () => (createVisitCustomer ? toRecordCreateContext(createVisitCustomer) : null),
+    [createVisitCustomer],
+  );
 
   // ---------- 筛选逻辑（基于 appliedFilters，非 pendingFilters）----------
   const filteredData = useMemo(() => {
@@ -533,6 +685,16 @@ function StoreCustomerListInner({
       if (key === 'review-invalid') {
         setDrawerRecordKey(recordKey);
         setDrawerMode('review');
+        return;
+      }
+      if (key === 'add-arrival') {
+        // Cycle B2：行操作"添加到店" → create 模式抽屉（复用同一 ArrivalRecordDrawer）
+        setCreateArrivalCustomerKey(recordKey);
+        return;
+      }
+      if (key === 'add-visit-record') {
+        // Cycle B2：行操作"添加拜访记录" → create 模式抽屉（复用同一 VisitRecordDrawer）
+        setCreateVisitCustomerKey(recordKey);
         return;
       }
       // 其他菜单项：仅关闭菜单
@@ -1292,9 +1454,15 @@ function StoreCustomerListInner({
                   {item.children!.map((child) => (
                     <div
                       key={child.key}
+                      data-prospect-page-key={child.key}
                       className={`store-customer-nav-subitem ${
-                        child.key === 'store-customer' ? 'active' : ''
+                        child.key === activePage ? 'active' : ''
                       }`}
+                      onClick={
+                        (SWITCHABLE_PROSPECT_PAGES as readonly string[]).includes(child.key)
+                          ? () => setActivePage(child.key as ProspectPageKey)
+                          : undefined
+                      }
                     >
                       {child.label}
                     </div>
@@ -1309,9 +1477,15 @@ function StoreCustomerListInner({
   );
 
   return (
-    <>
-      <RequirementModeControl />
-      <RequirementDrawer getRequirementData={getRequirement} />
+    <RecordEditActionsContext.Provider value={recordEditActions}>
+      {/* 需求查看体系仅属于门店客户页面；到店/拜访独立页为 0012 新页面，
+          无既有需求锚点，进入时隐藏需求模式控件与抽屉。 */}
+      {activePage === 'store-customer' && (
+        <>
+          <RequirementModeControl />
+          <RequirementDrawer getRequirementData={getRequirement} />
+        </>
+      )}
 
       {/* 无效申请抽屉 */}
       <InvalidApplicationDrawer
@@ -1363,26 +1537,75 @@ function StoreCustomerListInner({
         topBar={renderTopBar()}
         tabs={renderTabs()}
         content={
-          <>
-            {/* V-01：隐藏独立大标题块但保留锚点 */}
-            <div className="store-customer-content-header" data-req-id="page-title-area" />
+          activePage === 'store-customer' ? (
+            <>
+              {/* V-01：隐藏独立大标题块但保留锚点 */}
+              <div className="store-customer-content-header" data-req-id="page-title-area" />
 
-            {renderFilter()}
+              {renderFilter()}
 
-            <div className="store-customer-table-wrapper" data-req-id="table-area">
-              <ColumnRequirementAnchorRegistry />
-              {renderTable()}
-            </div>
+              <div className="store-customer-table-wrapper" data-req-id="table-area">
+                <ColumnRequirementAnchorRegistry />
+                {renderTable()}
+              </div>
 
-            {renderPagination()}
+              {renderPagination()}
 
-            {exportMsg && (
-              <div className="store-customer-export-toast">{exportMsg}</div>
-            )}
-          </>
+              {exportMsg && (
+                <div className="store-customer-export-toast">{exportMsg}</div>
+              )}
+            </>
+          ) : activePage === 'arrival-record' ? (
+            <ArrivalRecordPage initialState={arrivalInitialState ?? 'normal'} />
+          ) : (
+            <VisitRecordPage
+              initialState={visitInitialState ?? 'normal'}
+              nextVisitTimeFilter={visitNextVisitTimeFilter ?? 'all'}
+            />
+          )
         }
       />
-    </>
+
+      {/* 0012 Cycle B：编辑/新增拜访、到店记录抽屉（同一组件 create/edit 复用，
+          挂载于产品层共同祖先；独立页/跟进详情/行菜单打开的是同一份运行时状态）。
+          多层 Drawer：跟进详情一级 70vw 保持在下层，create/edit 50vw 覆盖其上。 */}
+      <VisitRecordDrawer
+        open={editVisitKey !== null || createVisitCustomerKey !== null}
+        onClose={() => {
+          setEditVisitKey(null);
+          setCreateVisitCustomerKey(null);
+        }}
+        mode={createVisitCustomerKey !== null ? 'create' : 'edit'}
+        record={editVisitRecord}
+        userContext={editVisitUser}
+        createContext={createVisitContext}
+        initialCreateDraft={
+          initialRecordCreate?.kind === 'visit' ? (initialRecordCreate.draft ?? null) : null
+        }
+      />
+      <ArrivalRecordDrawer
+        open={editArrivalKey !== null || createArrivalCustomerKey !== null}
+        onClose={() => {
+          setEditArrivalKey(null);
+          setCreateArrivalCustomerKey(null);
+        }}
+        mode={createArrivalCustomerKey !== null ? 'create' : 'edit'}
+        record={editArrivalRecord}
+        userContext={editArrivalUser}
+        createContext={createArrivalContext}
+        initialCreateDraft={
+          initialRecordCreate?.kind === 'arrival' ? (initialRecordCreate.draft ?? null) : null
+        }
+      />
+      {/* 0012 Cycle B3：到店变更记录只读 Drawer（入口：到店独立页操作 → 变更记录；
+          独立只读 Mock，与运行时状态分离，不写入变更历史）。 */}
+      <ArrivalChangeRecordDrawer
+        open={changeRecordArrivalKey !== null}
+        recordKey={changeRecordArrivalKey}
+        onClose={() => setChangeRecordArrivalKey(null)}
+        initialState={arrivalChangeRecordInitialState ?? 'normal'}
+      />
+    </RecordEditActionsContext.Provider>
   );
 }
 
@@ -1395,7 +1618,11 @@ export function StoreCustomerList({
       initialMode={initialRequirementMode}
       initialControlExpanded={initialRequirementMode === 'requirement'}
     >
-      <StoreCustomerListInner {...rest} />
+      {/* 0012 Cycle B：到店/拜访记录单一运行时状态，挂在产品层共同祖先，
+          覆盖独立到店页、独立拜访页、跟进详情两个记录 Tab（§9.2）。 */}
+      <RecordRuntimeStoreProvider>
+        <StoreCustomerListInner {...rest} />
+      </RecordRuntimeStoreProvider>
     </RequirementViewProvider>
   );
 }

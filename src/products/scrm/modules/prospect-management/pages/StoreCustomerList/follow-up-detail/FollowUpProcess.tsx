@@ -19,10 +19,9 @@ import { Select, Tooltip } from 'antd';
 import type { CustomerRecord } from '../mockData';
 import { DealTag, VisitedTag } from '../StatusTags';
 import { AdminPagination } from '../../../../../shared/admin';
-import { formatRecordAmount } from './followUpTypes';
+import { formatRecordAmount, IntentLevelTag, useRecordEditActions } from '../../../record-shared';
 import type { JourneyEvent, JourneyEventType } from './followUpTypes';
 import { getCustomerOverview, getJourneyEvents } from './followUpMockData';
-import { IntentLevelTag } from './followUpShared';
 
 /** 跟进旅程固定六项筛选（顺序固定，不得动态变化） */
 const JOURNEY_FILTER_OPTIONS: Array<{ value: 'all' | JourneyEventType; label: string }> = [
@@ -56,6 +55,10 @@ export function FollowUpProcess({ customer }: FollowUpProcessProps) {
 // ============================================================================
 
 function FollowUpUserInfo({ customer }: { customer: CustomerRecord }) {
+  // Cycle B2：操作条"添加到店 / 添加拜访记录"→ 以稳定 customerKey 打开
+  // create 模式抽屉（复用 ArrivalRecordDrawer / VisitRecordDrawer）。
+  // 无上下文（独立渲染）时为空操作，不打开抽屉、不弹提示。
+  const recordEditActions = useRecordEditActions();
   return (
     <section className="store-customer-followup-section">
       <h3 className="store-customer-followup-module-title">
@@ -71,10 +74,18 @@ function FollowUpUserInfo({ customer }: { customer: CustomerRecord }) {
         <span className="store-customer-followup-op-text" data-req-id="followup-more-actions">
           更多操作
         </span>
-        <span className="store-customer-followup-op-btn-outline" data-req-id="followup-add-arrival">
+        <span
+          className="store-customer-followup-op-btn-outline"
+          data-req-id="followup-add-arrival"
+          onClick={() => recordEditActions?.openArrivalCreate(customer.key)}
+        >
           添加到店
         </span>
-        <span className="store-customer-followup-op-btn-outline" data-req-id="followup-add-visit">
+        <span
+          className="store-customer-followup-op-btn-outline"
+          data-req-id="followup-add-visit"
+          onClick={() => recordEditActions?.openVisitCreate(customer.key)}
+        >
           添加拜访记录
         </span>
       </div>

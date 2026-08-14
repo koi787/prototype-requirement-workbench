@@ -1,0 +1,263 @@
+/* ============================================================================
+   0012 Cycle B - 到店/拜访记录编辑抽屉共享样式（C 级截图级复刻）
+   参考真实系统：右侧 50vw Drawer（很宽，但表单只占左/中部一小块，右侧保留
+   大片留白）、关闭按钮固定 Drawer 右上角、轻量标题（14px/400）、窄表单不铺满、
+   蓝色短竖线 section 标题、横向 label|control 布局、意向度三键步进器、
+   确定/取消位于表单主体下方中间偏右（无 sticky footer，不贴 Drawer 最右）。
+   由到店/拜访两个编辑抽屉共用，单一来源；不新增 shared/admin 组件。
+   ============================================================================ */
+
+/* 正文：内边距 24px 左右、底部留白；表单内容自身不铺满 */
+.record-drawer-body {
+  padding: 8px 24px 40px;
+}
+
+/* 标题区：轻量标题（14px/400，非大标题，Header 整体轻薄）；
+   关闭按钮固定在 Drawer 最右上角（距顶部/右侧约 16px），标题保持左上 */
+.record-drawer-header {
+  position: relative;
+  padding: 12px 24px;
+}
+
+.record-drawer-header .ant-drawer-title {
+  font-size: 14px;
+  font-weight: 400;
+  color: #1f2329;
+  line-height: 20px;
+}
+
+.record-drawer-header .ant-drawer-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  margin: 0;
+}
+
+/* 分区：上下间距明显 */
+.record-drawer-section {
+  margin-bottom: 28px;
+}
+
+/* 蓝色短竖线 section 标题：宽 2px、高 15px、与文字间距 8px，不是大块标题条 */
+.record-drawer-section-title {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2329;
+  line-height: 20px;
+  margin-bottom: 18px;
+}
+
+.record-drawer-section-title::before {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 15px;
+  background: #1677ff;
+  margin-right: 8px;
+}
+
+/* 到店抽屉：section 标题行右侧挂只读状态 Tag（已到店/未到店 + 已成交/未成交） */
+.record-drawer-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.record-drawer-section-head .record-drawer-section-title {
+  margin-bottom: 0;
+}
+
+.record-drawer-status-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 到店抽屉：结果分析分区上方的浅灰分隔线（真实系统式），线两侧各留约 24~32px 垂直留白 */
+.record-drawer-section-divider {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 28px;
+}
+
+/* 用户信息：两行文本（第一行 姓名 | 客资来源，第二行 注册时间），简单文本 */
+.record-drawer-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.record-drawer-user-line {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.record-drawer-user-field {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.record-drawer-user-label {
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+.record-drawer-user-value {
+  font-size: 14px;
+  color: #1f2329;
+}
+
+.record-drawer-user-sep {
+  color: #c0c4cc;
+}
+
+/* 表单字段：横向 label|control，label 固定宽度右对齐，控件左对齐不铺满 */
+.record-drawer-field {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.record-drawer-field-label {
+  flex: 0 0 96px;
+  box-sizing: border-box;
+  padding-right: 12px;
+  text-align: right;
+  font-size: 13px;
+  color: #333;
+  line-height: 20px;
+}
+
+.record-drawer-required {
+  color: #ff4d4f;
+  margin-right: 2px;
+}
+
+/* 控件窄包装：宽度由下方各控件规则限定（160~210px），不铺满 Drawer */
+.record-drawer-field-control {
+  flex: 0 0 auto;
+}
+
+/* 控件宽度（单下拉 160px、多选 200px、日期时间 200px、备注/结果分析 170px） */
+.record-drawer-field-control .ant-select {
+  width: 160px;
+}
+
+.record-drawer-field-control .ant-select-multiple {
+  width: 200px;
+}
+
+.record-drawer-field-control .ant-input,
+.record-drawer-field-control .ant-input-affix-wrapper {
+  width: 200px;
+}
+
+.record-drawer-field-control textarea.ant-input {
+  width: 170px;
+  min-height: 60px;
+  resize: vertical;
+}
+
+/* 意向度三键步进器：[－] 值 [＋]，浅灰边框、中间白底、左右按钮浅灰底，范围 1–5 */
+.record-intent-stepper {
+  display: inline-flex;
+  align-items: stretch;
+  width: 200px;
+  height: 32px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background: #fff;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.record-intent-stepper-btn {
+  flex: 0 0 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #fafafa;
+  color: #333;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.record-intent-stepper-btn + .record-intent-stepper-btn {
+  border-left: 1px solid #d9d9d9;
+}
+
+.record-intent-stepper-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+  color: #1677ff;
+}
+
+.record-intent-stepper-btn:disabled {
+  color: #c0c4cc;
+  cursor: not-allowed;
+}
+
+.record-intent-stepper-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  text-align: center;
+  font-size: 14px;
+  color: #1f2329;
+  background: #fff;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+/* 体验课只读关联信息：一行文本 + 分隔符 + 蓝色链接，不是 Card/大输入框 */
+.record-drawer-trial-context {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 22px;
+}
+
+.record-drawer-trial-sep {
+  color: #c0c4cc;
+}
+
+.record-drawer-trial-context-link {
+  color: #1677ff;
+}
+
+/* 确定/取消：正文一部分，位于表单主体下方、中间偏右（无 sticky footer，
+   不贴 Drawer 最右；对齐控件列右侧，到店/拜访统一按钮对齐方式） */
+.record-drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 32px 0 0 200px;
+}
+
+/* 到店抽屉：紧邻结果分析分隔线的那组 确定/取消 与分隔线之间保留约 24px 呼吸空间
+   （根因：该按钮组与分隔线 section 相邻，二者上下边距折叠为 0 而压线）。
+   只作用于到店信息按钮组，不作用于拜访 Drawer 与结果分析自带按钮组。 */
+.record-drawer-actions:has(+ .record-drawer-section-divider) {
+  margin-bottom: 24px;
+}
+
+/* 日历浮层触发图标 */
+.record-datetime-calendar-trigger {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  color: #8c8c8c;
+}
+
+.record-datetime-calendar-trigger:hover {
+  color: #1677ff;
+}

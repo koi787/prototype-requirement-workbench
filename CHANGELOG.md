@@ -6,6 +6,46 @@
 
 ### 变更
 
+- 0012 Cycle B：编辑 Drawer C 级截图级视觉复刻修正（不新增业务）
+  - 产品经理真实页面验收结论：编辑 Drawer 视觉还原度不足，C 级不通过；本轮严格按真实系统截图复刻，两个 Drawer 统一视觉语言（共享 `record-shared/recordDrawer.css` 单一来源）。
+  - Drawer：宽度维持 50vw，白底、标题普通字重（15px/500）、右上角关闭、标题下方留白；正文 `padding: 8px 24px 40px`，表单只占左/中部一小块，右侧保留大片空白（50vw ≠ 控件占满）。
+  - Section 标题：2px × 15px 短蓝竖线 + 8px 间距、14px/500，非大块标题条；分区上下间距 28px。
+  - 用户信息：三列平铺改为两行文本（第一行 姓名 | 客资来源，第二行 注册时间），简单文本、行间留白，无 Card/Description/灰色信息框。
+  - 表单：横向 `label|control`，label 固定 96px 右对齐，每行独立、字段间距 20px；控件不铺满（单下拉 160px、多选 200px、日期时间 200px、备注 210px，约 360px 表单区）。
+  - 意向度：普通 InputNumber 改为三段式步进器 `[－] 值 [＋]`（新增 `record-shared/IntentLevelStepper`，浅灰边框、中间白底、左右浅灰按钮、范围 1–5，中间保留 `role=spinbutton` 可编辑输入）。
+  - 确定/取消：移除 sticky footer，改为表单主体下方正文按钮（对齐控件列、间距 36px），小按钮 确定 蓝 / 取消 白。
+  - 到店特殊：状态 Tag（已到店 蓝浅底 / 未成交 橙浅底）移至「到店信息」标题行右侧；体验课改为一行只读关联信息（状态 | 体验课编号 | 课程名称 | 合同课卡编号 蓝色链接），非 Card/大输入框；「结果分析」独立分区位于确定/取消按钮下方，保持较大间距。
+  - 测试：新增 `record-shared/__tests__/RecordDrawerLayout.test.tsx` 3 项结构断言（50vw、两行用户信息、横向 label|control、窄控件包装、步进器与边界 1~5、无 sticky footer、窄 textarea、状态 Tag、结果分析同抽屉），避免像素级硬断言；既有功能测试 20 项全部继续通过，全量 467 项通过；lint/typecheck/build/build-storybook/`git diff --check` 全部通过。
+  - 冻结项零改动：未修改 updateVisitRecord/updateArrivalRecord/Provider/store/下次拜访时间与结果分析业务逻辑/19 列/32 列/Mock 结构/操作菜单/菜单布局/筛选/分页；未新增 create 入口、未做变更记录 Drawer、未修改 `shared/admin`。
+  - 同步 `docs/task-specs/0012-arrival-visit-modules.md`（§22 追加「C 级截图级视觉复刻修正」执行记录）。
+
+- 0012 Cycle B 第一阶段：到店记录 / 拜访记录编辑详情 Drawer（edit，C 级 UI 口径）
+  - 编辑 Drawer：`VisitRecordDrawer` / `ArrivalRecordDrawer` 均右侧 Drawer、宽度 50vw、标题「编辑拜访记录」「编辑到店记录」、覆盖底部页面 + 遮罩、内容区独立纵向滚动、右上角关闭、页脚 取消/确定；保存原位写回运行时状态后关闭，取消仅关闭不保存，无路由跳转、无新 Modal。
+  - 拜访 Drawer「拜访信息」7 字段严格顺序（*拜访方式 *拜访时间 *意向度 *改善需求 *意向课程 下次拜访时间 拜访备注）；拜访方式选项 系统外呼/自主拨打/企微/微信；意向度 InputNumber 1–5 数字步进；改善需求 10 项多选、意向课程 7 项单选；下次拜访时间 可空 DateTime（回填/修改/清空，空值显示 `--`，格式 `YYYY-MM-DD HH:mm:ss`）；拜访备注多行。
+  - 到店 Drawer「到店信息」8 字段严格顺序（*预约门店 体验课 *到店时间 *意向度 *改善需求 *意向课程 预约备注，底部独立「结果分析」分区）；当前状态只读展示 已到店/未到店 + 已成交/未成交 Tag；体验课只读关联信息（状态/体验课编号/课程名称/合同课卡编号，仅用现有 Mock）；结果分析为普通业务字段，与其他到店字段一起保存（非独立实体/流程/子模块）。
+  - 用户信息只读：姓名/客资来源/注册时间，来自客户主数据（按记录 `customerKey` 关联），编辑不修改客户主数据。
+  - 单一运行时状态：`record-shared/recordRuntimeStore.tsx` 的 `RecordRuntimeStoreProvider` 挂在产品层共同祖先（`StoreCustomerList`），覆盖 独立到店页 / 独立拜访页 / 门店客户跟进详情两个记录 Tab（三消费者读同一 state 实例，禁止各页面自建 Provider）；提供 `getArrivalRecords/getVisitRecords/getArrivalRecordsByCustomerKey/getVisitRecordsByCustomerKey/updateArrivalRecord/updateVisitRecord`；刷新恢复初始 Mock，不落盘（无 LocalStorage/API/数据库/新依赖）；create 保留无入口（§8 冻结）。
+  - 编辑入口：`record-shared/RecordOperationCell` 将列表「操作」菜单的「编辑」项接入 `RecordEditActionsContext`（产品层提供），拜访/到店独立页与跟进详情 Tab 操作列均打开同一对编辑 Drawer；「变更记录」菜单项保留但本期不实现，无「开发中」提示。
+  - 日期时间无 dayjs 方案：`record-shared/DateTimeField` = 可编辑 Input（字符串）+ 后缀日历 Popover 内非受控 DatePicker（取 `dateString` 第二参），不引入 dayjs 依赖。
+  - Storybook：拜访 3 个编辑 Drawer 故事（默认回填 / 下次拜访时间有值 / 下次拜访时间为空）+ 到店 4 个（默认回填 / 已到店未成交 / 结果分析有值 / 结果分析为空），均渲染真实组件。
+  - 测试：新增 拜访编辑交互 11 项、到店编辑交互 9 项、store 5 项（含 修改/清空下次拜访时间、结果分析修改、独立页/跟进详情 Tab 两端同步、取消不保存、单一状态实例、无 Provider 严格抛错）；更新独立页/跟进详情测试接入 store Provider；全量 464 项测试通过；lint/typecheck/build/build-storybook/`git diff --check` 全部通过。
+  - 冻结项零改动：到店 32 列顺序、拜访 19 列顺序、下次拜访时间第 7 列、筛选区、导出、分页、菜单布局、Cycle A 页面骨架、跟进流程、跟进概览、跟进旅程、通话 13 列、分配 2 列、门店客户 52 列、Requirement、无效审批、新办成交金额、shared/admin 均未修改。
+  - 未实施：ArrivalChangeRecordDrawer、新增到店/新增拜访入口、提醒、今日待办、系统外呼联动、0010 Phase 2。
+  - 同步 `docs/task-specs/0012-arrival-visit-modules.md`（新增 §22 Cycle B 第一阶段执行记录）。
+
+- 0012 Cycle A：到店记录/拜访记录独立模块化（M3-S，C 级 UI 口径，未进入 Cycle B）
+  - 产品层菜单：潜客管理子菜单前三项为 门店客户 / 到店记录 / 拜访记录，可点击切换内容槽位；正式 key 沿用 `store-customer`、`arrival-record`、`visit-record`，不再使用 `visit-record-2` 等临时 key。
+  - 单一来源业务模块：新建 `prospect-management/record-shared/`（RecordCellVisuals、recordFormatters）、`arrival-record/`、`visit-record/`、`navigation/prospectManagementPages.ts`；一套到店/拜访 types、columns、mock、formatters 与状态视觉同时被独立页面与跟进详情 Tab 消费，不再保留第二套列定义。
+  - 拜访记录升级为 19 列：第 7 列"下次拜访时间"（字段名 `nextVisitTime`，`string | null`，格式 `YYYY-MM-DD HH:mm:ss`，空值显示 `--`，位于 客资来源 之后、预约门店 之前）；跟进详情拜访记录 Tab 与独立页同步升级。
+  - 独立页面：`ArrivalRecordPage`（12 筛选字段 + 搜索/重置/导出，32 列列表 + 分页）、`VisitRecordPage`（8 筛选字段 + 搜索/重置/导出，19 列列表 + 分页）；两页仅提供归集、查询、筛选、查看，不渲染任何 添加记录/新增/编辑 按钮。
+  - 数据迁移：`followUpShared.tsx` 迁移为 `record-shared/`；`followUpTypes.ts` 中的 ArrivalRecord/VisitRecord/formatRecordAmount 迁移至对应模块；`callRecordColumns.tsx` 仅改导入路径（13 列定义未动）；旧 `followUpShared.tsx`、旧到店/拜访 columns 文件删除。
+  - Storybook：新增 `SCRM/潜客管理/到店记录`（正常列表、空数据）、`SCRM/潜客管理/拜访记录`（正常列表、下次拜访时间有值、下次拜访时间为空、空数据）；0011 跟进详情拜访记录 Story 描述同步为 19 列。
+  - 测试：独立页真实 DOM 测试（到店 10 项、拜访 12 项）+ 菜单切换 6 项 + 既有 0011/全局回归保留，全量 421 项测试全部通过。
+  - 保护清单零改动：0011 用户信息、五个 Tab、操作条四入口、overview Tooltip/hover、旅程、客资有效性、通话 13 列、分配 2 列、门店客户 52 列、Requirement 体系、shared/admin API、StatusTags.tsx、requirements.json 等均有回归测试覆盖。
+  - 同步 `docs/task-specs/0012-arrival-visit-modules.md`（新增 §21 Cycle A 执行记录：已交付、说明与限定、待办）。
+  - C 级验收修正（3 项视觉）：是否成交 统一 Tag 风格（已成交 绿色 `#52c41a/#f6ffed/#b7eb8f`、未成交 橙色，新增 `record-shared/DealStatusTag`，未改 StatusTags.tsx 与字段值/业务判断）；到店/拜访列表"意向度"列改为纯数字文本（跟进旅程卡 `意向度N` 蓝色 Tag 保留不变）；操作列由蓝色"详情"链接改为 操作 按钮 + Dropdown（白色/极浅背景、浅灰边框、小尺寸后台按钮；到店菜单 编辑/变更记录，拜访菜单仅 编辑，顺序固定；点击为 Cycle B 占位 no-op，仅关闭菜单，不打开 Drawer/不 Mock 写回/不弹 toast）。通话记录操作列维持 0011 的"详情"链接不变；到店/拜访独立页与跟进详情 Tab 共享 columns 自然同步。测试新增 14 项真实 DOM 交互断言（到店 +5、拜访 +4、跟进详情 +5），全量 439 项通过；32/19 列顺序、第 7 列、52 列、shared/admin 零改动。
+  - 待产品经理 C 级修复后复验；验收确认后进入 Cycle B（单一运行时数据源、create/edit Drawer、ArrivalChangeRecordDrawer、新增入口）。
+
 - 0011 Cycle 1 用户信息顶部操作条去状态标签（产品经理最终页面验收修正，未进入 Cycle 2，未实施 Phase 2）
   - 从用户信息顶部操作条删除 已到店/未到店、已成交/未成交 业务状态标签（删除 VisitedTag/DealTag 在操作条中的渲染及对应 `.store-customer-followup-op-status-tags` 死样式）；顶部操作条最终为 手动变更 / 更多操作 / 添加到店 / 添加拜访记录 四项，顺序固定，操作条为操作区，不根据 isVisited/isDeal 自动添加任何状态标签。
   - 仅删除操作条这一处使用；VisitedTag/DealTag 组件本身、CustomerRecord 状态字段、到店旅程卡状态标签、到店记录 Tab 状态标签与既有业务逻辑零改动。

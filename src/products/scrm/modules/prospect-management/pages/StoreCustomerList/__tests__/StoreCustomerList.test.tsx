@@ -19,6 +19,8 @@ import {
 } from '../columns';
 import { getRequirement } from '../../../../../../../requirements/products/scrm/pages/store-customer';
 import { requirementViewEntrySchema } from '../../../../../../../requirements/schemas/requirement-view';
+import { ARRIVAL_RECORD_HEADERS } from '../../../arrival-record';
+import { VISIT_RECORD_HEADERS } from '../../../visit-record';
 import {
   RequirementDrawer,
   RequirementViewProvider,
@@ -2729,5 +2731,220 @@ describe('StoreCustomerList', () => {
         expect(document.querySelector('[data-req-id="invalid-approval-review-drawer"]')).toBeNull();
       });
     });
+  });
+});
+
+describe('0012 到店/拜访记录独立模块化 - 菜单与独立页面切换', () => {
+  /** 读取潜客管理子菜单（按 data-prospect-page-key 顺序） */
+  function navSubitems(): HTMLElement[] {
+    const nav = getByReqId('left-navigation');
+    return Array.from(nav.querySelectorAll('[data-prospect-page-key]')) as HTMLElement[];
+  }
+
+  /** 读取表格实际渲染表头（固定列可能重复渲染，按首次出现去重） */
+  function visibleHeaders(table: HTMLElement): string[] {
+    const seen = new Set<string>();
+    const headers: string[] = [];
+    for (const header of within(table).getAllByRole('columnheader')) {
+      const text = header.textContent?.trim() ?? '';
+      if (text && !seen.has(text)) {
+        seen.add(text);
+        headers.push(text);
+      }
+    }
+    return headers;
+  }
+
+  /** 当前选中子菜单的正式 key */
+  function activePageKey(): string | null {
+    return document.querySelector('.store-customer-nav-subitem.active')?.getAttribute(
+      'data-prospect-page-key',
+    ) ?? null;
+  }
+
+  it('潜客管理菜单包含正式三个 key，顺序正确且无 visit-record-2 临时 key', () => {
+    render(<StoreCustomerList initialState="normal" />);
+    const subitems = navSubitems();
+    const keys = subitems.map((item) => item.getAttribute('data-prospect-page-key'));
+    const labels = subitems.map((item) => item.textContent?.trim());
+    expect(keys).toEqual([
+      'store-customer',
+      'arrival-record',
+      'visit-record',
+      'employee-seat',
+      'customer-sea',
+      'invalid-sea',
+      'my-responsible',
+      'call-record',
+      'tag-group',
+    ]);
+    // "到店记录"不再占用 visit-record 临时 key，也没有 visit-record-2
+    expect(labels).toContain('到店记录');
+    expect(labels).toContain('拜访记录');
+    expect(keys).not.toContain('visit-record-2');
+    expect(keys.indexOf('visit-record')).toBe(2);
+  });
+
+  it('点击到店记录切换显示到店记录独立页，不发生路由跳转', async () => {
+    const user = userEvent.setup();
+    render(<StoreCustomerList initialState="normal" />);
+    // 默认显示门店客户列表
+    expect(getByReqId('customer-table')).toBeTruthy();
+
+    await user.click(within(getByReqId('left-navigation')).getByText('到店记录'));
+
+    // 切换到到店记录独立页，门店客户列表不再渲染
+    await waitFor(() => expect(getByReqId('arrival-record-filter')).toBeTruthy());
+    expect(getByReqId('arrival-record-table-area')).toBeTruthy();
+    expect(document.querySelector('[data-req-id="customer-table"]')).toBeNull();
+    // 当前激活子菜单为到店记录
+    const activeSubitem = document.querySelector('.store-customer-nav-subitem.active');
+    expect(activeSubitem?.getAttribute('data-prospect-page-key')).toBe('arrival-record');
+  });
+
+  it('点击拜访记录切换显示拜访记录独立页（19 列含下次拜访时间）', async () => {
+    const user = userEvent.setup();
+    render(<StoreCustomerList initialState="normal" />);
+    await user.click(within(getByReqId('left-navigation')).getByText('拜访记录'));
+
+    await waitFor(() => expect(getByReqId('visit-record-filter')).toBeTruthy());
+    expect(getByReqId('visit-record-table-area')).toBeTruthy();
+    expect(document.querySelector('[data-req-id="customer-table"]')).toBeNull();
+    // 独立页不允许新增
+    expect(screen.queryByText('添加拜访记录')).toBeNull();
+    expect(screen.queryByText('添加到店')).toBeNull();
+  });
+
+  it('到店/拜访独立页无新增按钮，行内操作无新增/编辑', async () => {
+    const user = userEvent.setup();
+    render(<StoreCustomerList initialState="normal" />);
+    await user.click(within(getByReqId('left-navigation')).getByText('到店记录'));
+    await waitFor(() => expect(getByReqId('arrival-record-filter')).toBeTruthy());
+    expect(screen.queryByText('添加到店')).toBeNull();
+    expect(screen.queryByText('添加拜访记录')).toBeNull();
+    const rows = getByReqId('arrival-record-table').querySelectorAll('tbody tr[data-row-key]');
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      expect(within(row as HTMLElement).queryByText('添加到店')).toBeNull();
+      expect(within(row as HTMLElement).queryByText('编辑')).toBeNull();
+    }
+  });
+
+  it('点击门店客户返回门店客户列表', async () => {
+    const user = userEvent.setup();
+    render(<StoreCustomerList initialState="normal" />);
+    await user.click(within(getByReqId('left-navigation')).getByText('到店记录'));
+    await waitFor(() => expect(getByReqId('arrival-record-filter')).toBeTruthy());
+
+    await user.click(within(getByReqId('left-navigation')).getByText('门店客户'));
+    await waitFor(() => expect(getByReqId('customer-table')).toBeTruthy());
+    expect(document.querySelector('[data-req-id="arrival-record-filter"]')).toBeNull();
+  });
+
+  it('不可切换的占位子菜单点击不改变当前页面', async () => {
+    const user = userEvent.setup();
+    render(<StoreCustomerList initialState="normal" />);
+    await user.click(within(getByReqId('left-navigation')).getByText('标签分组'));
+    // 标签分组为占位入口，点击后仍停留在门店客户列表
+    expect(getByReqId('customer-table')).toBeTruthy();
+  });
+
+  it('到店记录 Workspace 渲染完整潜客管理菜单与选中态（initialPage=arrival-record）', () => {
+    render(<StoreCustomerList initialState="normal" initialPage="arrival-record" />);
+    // 完整 SCRM 后台壳：左侧导航 + SCRM系统品牌
+    const nav = getByReqId('left-navigation');
+    expect(nav.textContent).toContain('SCRM系统');
+    // 潜客管理完整子菜单（9 项，正式 key 顺序，无 visit-record-2）
+    expect(
+      navSubitems().map((item) => item.getAttribute('data-prospect-page-key')),
+    ).toEqual([
+      'store-customer',
+      'arrival-record',
+      'visit-record',
+      'employee-seat',
+      'customer-sea',
+      'invalid-sea',
+      'my-responsible',
+      'call-record',
+      'tag-group',
+    ]);
+    // 选中态同步到到店记录
+    expect(activePageKey()).toBe('arrival-record');
+    // 内容区为到店记录独立页（32 列，与共享列定义一致）
+    expect(getByReqId('arrival-record-filter')).toBeTruthy();
+    expect(visibleHeaders(getByReqId('arrival-record-table'))).toEqual(ARRIVAL_RECORD_HEADERS);
+    expect(visibleHeaders(getByReqId('arrival-record-table'))).toHaveLength(32);
+    // 门店客户列表不渲染
+    expect(document.querySelector('[data-req-id="customer-table"]')).toBeNull();
+  });
+
+  it('拜访记录 Workspace 渲染完整潜客管理菜单与选中态（initialPage=visit-record）', () => {
+    render(<StoreCustomerList initialState="normal" initialPage="visit-record" />);
+    // 完整 SCRM 后台壳 + 完整潜客管理子菜单（9 项）
+    const nav = getByReqId('left-navigation');
+    expect(nav.textContent).toContain('SCRM系统');
+    expect(navSubitems()).toHaveLength(9);
+    // 选中态同步到拜访记录
+    expect(activePageKey()).toBe('visit-record');
+    // 内容区为拜访记录独立页（19 列，下次拜访时间为第 7 列）
+    expect(getByReqId('visit-record-filter')).toBeTruthy();
+    const headers = visibleHeaders(getByReqId('visit-record-table'));
+    expect(headers).toEqual(VISIT_RECORD_HEADERS);
+    expect(headers).toHaveLength(19);
+    expect(headers.indexOf('下次拜访时间')).toBe(6);
+    // 门店客户列表不渲染
+    expect(document.querySelector('[data-req-id="customer-table"]')).toBeNull();
+  });
+
+  it('不存在第二套重复菜单 DOM：全程仅一个后台壳与一份潜客管理菜单', () => {
+    render(<StoreCustomerList initialState="normal" initialPage="arrival-record" />);
+    // 仅一个左侧导航、一个系统品牌、一个潜客管理子菜单
+    expect(document.querySelectorAll('[data-req-id="left-navigation"]')).toHaveLength(1);
+    expect(document.querySelectorAll('.store-customer-nav-header')).toHaveLength(1);
+    expect(navSubitems()).toHaveLength(9);
+    const labels = navSubitems().map((item) => item.textContent?.trim());
+    expect(labels.filter((label) => label === '到店记录')).toHaveLength(1);
+    expect(labels.filter((label) => label === '拜访记录')).toHaveLength(1);
+    // 到店记录页业务内容也只渲染一份（不出现裸页 + 壳页两份表）
+    expect(document.querySelectorAll('[data-req-id="arrival-record-table"]')).toHaveLength(1);
+    expect(document.querySelectorAll('[data-req-id="arrival-record-filter"]')).toHaveLength(1);
+  });
+
+  it('门店客户 → 到店记录 → 拜访记录 切换正确，菜单选中态与业务内容同步', async () => {
+    const user = userEvent.setup();
+    render(<StoreCustomerList initialState="normal" />);
+    // 初始：门店客户列表 + 门店客户选中
+    expect(getByReqId('customer-table')).toBeTruthy();
+    expect(activePageKey()).toBe('store-customer');
+
+    // → 到店记录
+    await user.click(within(getByReqId('left-navigation')).getByText('到店记录'));
+    await waitFor(() => expect(getByReqId('arrival-record-filter')).toBeTruthy());
+    expect(activePageKey()).toBe('arrival-record');
+    expect(visibleHeaders(getByReqId('arrival-record-table'))).toHaveLength(32);
+    expect(document.querySelector('[data-req-id="customer-table"]')).toBeNull();
+
+    // → 拜访记录
+    await user.click(within(getByReqId('left-navigation')).getByText('拜访记录'));
+    await waitFor(() => expect(getByReqId('visit-record-filter')).toBeTruthy());
+    expect(activePageKey()).toBe('visit-record');
+    expect(visibleHeaders(getByReqId('visit-record-table'))).toHaveLength(19);
+    expect(document.querySelector('[data-req-id="arrival-record-filter"]')).toBeNull();
+
+    // → 门店客户（52 列无回退）
+    await user.click(within(getByReqId('left-navigation')).getByText('门店客户'));
+    await waitFor(() => expect(getByReqId('customer-table')).toBeTruthy());
+    expect(activePageKey()).toBe('store-customer');
+    expect(document.querySelector('[data-req-id="visit-record-filter"]')).toBeNull();
+    const seen = new Set<string>();
+    const storeTitles: string[] = [];
+    for (const header of screen.getAllByRole('columnheader')) {
+      const text = header.textContent?.trim() ?? '';
+      if (text && !seen.has(text)) {
+        seen.add(text);
+        storeTitles.push(text);
+      }
+    }
+    expect(storeTitles).toHaveLength(52);
   });
 });
