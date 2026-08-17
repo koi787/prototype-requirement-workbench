@@ -1,7 +1,8 @@
 /**
  * 0012 Cycle B - 到店/拜访记录编辑与新增入口上下文。
  *
- * 由产品层共同祖先（StoreCustomerListInner）提供，把操作列的"编辑"菜单项
+ * 由潜客管理业务根（ProspectManagementRoot，StoreCustomerList 兼容入口）提供，
+ * 把操作列的"编辑"菜单项
  * 接到对应记录编辑抽屉（编辑同一份运行时状态）。Cycle B2 新增"添加到店 /
  * 添加拜访记录"入口（跟进详情操作条 + 门店客户行操作菜单），通过
  * openArrivalCreate / openVisitCreate 以稳定 customerKey 打开同一组抽屉的
