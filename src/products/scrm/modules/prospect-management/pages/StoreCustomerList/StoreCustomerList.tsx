@@ -1,11 +1,11 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import {
   Input,
   Select,
   DatePicker,
   Button,
   Dropdown,
-  Space,
   InputNumber,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -14,7 +14,6 @@ import { ALL_COLUMNS, COLUMN_REQUIREMENT_ANCHORS } from './columns';
 import { REQUIREMENT_POINTS, getPointByNumber } from './requirementPoints';
 import { getRequirement } from '../../../../../../requirements/products/scrm/pages/store-customer';
 import {
-  RequirementViewProvider,
   useRequirementView,
   RequirementModeControl,
   RequirementMarker,
@@ -27,25 +26,8 @@ import { InvalidApprovalDetailDrawer } from './InvalidApprovalDetailDrawer';
 import type { AttachmentMeta, DrawerMode } from './approvalTypes';
 import { InvalidApprovalStatusTag } from './StatusTags';
 import type { InvalidApprovalStatus } from './approvalTypes';
+import { CaretDownIcon } from './IconComponents';
 import {
-  NavHomeIcon,
-  NavCalendarIcon,
-  NavShopIcon,
-  NavDollarIcon,
-  NavTeamIcon,
-  NavFileIcon,
-  NavStoreIcon,
-  NavContactsIcon,
-  NavServiceIcon,
-  UserIcon,
-  MenuIcon,
-  QrcodeIcon,
-  LogoutIcon,
-  CaretDownIcon,
-  FoldIcon,
-} from './IconComponents';
-import {
-  AdminShell,
   FilterBar,
   FilterField,
   FilterActions,
@@ -57,7 +39,6 @@ import type { FollowUpTabKey } from './follow-up-detail/followUpTypes';
 import { ArrivalRecordPage, ArrivalRecordDrawer, ArrivalChangeRecordDrawer } from '../../arrival-record';
 import { VisitRecordPage, VisitRecordDrawer } from '../../visit-record';
 import {
-  RecordRuntimeStoreProvider,
   useRecordRuntimeStore,
   RecordEditActionsContext,
 } from '../../record-shared';
@@ -66,11 +47,9 @@ import type {
   RecordUserContextInfo,
   RecordCreateContext,
 } from '../../record-shared';
-import {
-  PROSPECT_NAV_ITEMS,
-  SWITCHABLE_PROSPECT_PAGES,
-} from '../../navigation/prospectManagementPages';
 import type { ProspectPageKey } from '../../navigation/prospectManagementPages';
+import type { ScrmPageKey } from '../../../../navigation/scrmNavigationTypes';
+import { ScrmWorkspace } from '../../../../shell/ScrmWorkspace';
 import './StoreCustomerList.css';
 
 const { RangePicker } = DatePicker;
@@ -97,51 +76,6 @@ const ColumnRequirementAnchorRegistry = () => (
     ))}
   </div>
 );
-
-// ============================================================================
-// 左侧导航菜单配置
-// ============================================================================
-interface NavItem {
-  key: string;
-  label: string;
-  icon?: React.ReactNode;
-  children?: NavItem[];
-}
-
-const navItems: NavItem[] = [
-  { key: 'home', label: '首页', icon: <NavHomeIcon /> },
-  { key: 'appointment', label: '预约', icon: <NavCalendarIcon /> },
-  { key: 'product', label: '品项', icon: <NavShopIcon /> },
-  { key: 'cashier', label: '收银', icon: <NavDollarIcon /> },
-  { key: 'staff', label: '门店人员', icon: <NavTeamIcon /> },
-  { key: 'order', label: '订单', icon: <NavFileIcon /> },
-  { key: 'record', label: '记录', icon: <NavFileIcon /> },
-  { key: 'store', label: '门店', icon: <NavStoreIcon /> },
-  { key: 'customer', label: '客户', icon: <NavContactsIcon /> },
-  {
-    key: 'prospect',
-    label: '潜客管理',
-    icon: <NavServiceIcon />,
-    children: PROSPECT_NAV_ITEMS,
-  },
-];
-
-// ============================================================================
-// 顶部标签
-// ============================================================================
-const topTabs = [
-  { key: 'home', label: '首页', active: false },
-  { key: 'customer-list', label: '客户列表', active: false },
-  { key: 'store-list', label: '门店列表', active: false },
-  { key: 'store-customer', label: '门店客户', active: true },
-  { key: 'recruit', label: '人才招募', active: false },
-  { key: 'cashier-tab', label: '收银', active: false },
-  { key: 'product-category', label: '商品类目', active: false },
-  { key: 'store-room', label: '门店房间', active: false },
-  { key: 'employee-seat', label: '员工座席', active: false },
-  { key: 'contract-center', label: '合同中心', active: false },
-  { key: 'order-center', label: '订单中心', active: false },
-];
 
 // ============================================================================
 // 筛选选项
@@ -400,28 +334,25 @@ function applyFilter(record: CustomerRecord, filters: FilterValues): boolean {
 // 主组件
 // ============================================================================
 
-export interface StoreCustomerListProps {
+/**
+ * 潜客管理业务根（ProspectManagementRoot）props。
+ *
+ * 潜客管理业务域的业务编排输入。不含产品级 initialPage / initialRequirementMode
+ * （由产品壳 ScrmWorkspace 接管），也不含到店/拜访独立页初始状态（后者由兼容
+ * 入口接线到独立页组件，见 StoreCustomerListProps）。
+ */
+export type ProspectManagementRootProps = {
   data?: CustomerRecord[];
   initialState?: 'normal' | 'loading' | 'empty' | 'error' | 'noResults';
   /** 预设筛选条件（用于 Story 稳定展示筛选无结果） */
   initialFilters?: Partial<FilterValues>;
   /** 预设导出成功消息（用于 Story 稳定展示导出反馈） */
   initialExportMessage?: string;
-  /** 初始需求查看模式（默认 prototype） */
-  initialRequirementMode?: 'prototype' | 'requirement';
   /** 预设跟进详情抽屉初始打开状态（用于 Story 稳定展示跟进详情与记录 Tab） */
   initialFollowUpDetail?: {
     customerKey: string;
     tab?: FollowUpTabKey;
   };
-  /** 初始潜客管理页面（默认门店客户；用于 Story 稳定展示到店/拜访独立页） */
-  initialPage?: ProspectPageKey;
-  /** 到店记录独立页初始状态（Story/测试专用） */
-  arrivalInitialState?: 'normal' | 'empty';
-  /** 拜访记录独立页初始状态（Story/测试专用） */
-  visitInitialState?: 'normal' | 'empty';
-  /** 拜访记录下次拜访时间筛选视角（Story/测试专用） */
-  visitNextVisitTimeFilter?: 'all' | 'has-value' | 'empty';
   /** 预设编辑记录抽屉初始打开状态（用于 Story/测试稳定展示编辑详情 Drawer） */
   initialRecordEdit?: {
     kind: 'arrival' | 'visit';
@@ -442,30 +373,63 @@ export interface StoreCustomerListProps {
   /** Cycle B3：到店变更记录 Drawer 初始数据状态（Story/测试专用，
       稳定展示空态）。 */
   arrivalChangeRecordInitialState?: 'normal' | 'empty';
+};
+
+/**
+ * StoreCustomerList 兼容入口 props。
+ *
+ * 保留 0012 全部既有公共表面（Story args / 测试 / 已发布 Story URL 不变）：
+ * 除潜客业务根编排输入外，还含产品级 initialPage / initialRequirementMode，
+ * 以及到店/拜访独立页的初始状态透传（兼容入口接线到独立页组件）。
+ */
+export interface StoreCustomerListProps extends ProspectManagementRootProps {
+  /** 初始潜客管理页面（默认门店客户；用于 Story 稳定展示到店/拜访独立页） */
+  initialPage?: ProspectPageKey;
+  /** 初始需求查看模式（默认 prototype） */
+  initialRequirementMode?: 'prototype' | 'requirement';
+  /** 到店记录独立页初始状态（Story/测试专用） */
+  arrivalInitialState?: 'normal' | 'empty';
+  /** 拜访记录独立页初始状态（Story/测试专用） */
+  visitInitialState?: 'normal' | 'empty';
+  /** 拜访记录下次拜访时间筛选视角（Story/测试专用） */
+  visitNextVisitTimeFilter?: 'all' | 'has-value' | 'empty';
 }
 
-function StoreCustomerListInner({
+/**
+ * 潜客管理业务根：承接潜客管理三个页面的共享业务编排与跨页面生命周期
+ * （RecordEditActionsContext / 审批 / 跟进详情 / 到店 / 拜访 / 变更记录 Drawer）。
+ *
+ * - 只处理潜客管理业务域页面（prospect-*）；门店客户页为本根主页面，直接渲染
+ *   其业务内容（52 列/筛选/分页/导出）；到店/拜访独立页内容由产品级 pageRegistry
+ *   选择页面后经渲染上下文 slot 以 children 传入本根（独立页经 RecordEditActions
+ *   打开的到店/拜访/变更记录 Drawer 仍由本根统一挂载）。
+ * - 不查询全产品 pageRegistry（产品级页面出口已上移至产品壳 ScrmWorkspace），
+ *   不判断员工/其他业务域页面（未来 employee-management 页面不经过本组件）。
+ */
+export function ProspectManagementRoot({
   data: propData,
+  pageKey,
+  children,
 
   initialState = 'normal',
   initialFilters,
   initialExportMessage,
   initialFollowUpDetail,
-  initialPage,
-  arrivalInitialState,
-  visitInitialState,
-  visitNextVisitTimeFilter,
   initialRecordEdit,
   initialRecordCreate,
   initialChangeRecordArrivalKey,
   arrivalChangeRecordInitialState,
-}: Omit<StoreCustomerListProps, 'initialRequirementMode'>) {
+}: ProspectManagementRootProps & {
+  /** 当前潜客管理业务域页面（canonical key，由产品壳按 activePage 经 pageRegistry 选择）。 */
+  pageKey: ScrmPageKey;
+  /** 到店/拜访独立页内容（产品级注册表出口渲染后传入；门店客户页不使用）。 */
+  children?: ReactNode;
+}) {
   const reqView = useRequirementView();
   // ---------- 审批状态管理 ----------
   const approval = useApprovalState(propData);
 
   // ---------- 全局状态 ----------
-  const [navCollapsed, setNavCollapsed] = useState(false);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [pendingFilters, setPendingFilters] = useState<FilterValues>(() => ({
     ...defaultFilters,
@@ -486,9 +450,10 @@ function StoreCustomerListInner({
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
 
   // ---------- 0012 潜客管理页面切换（到店记录/拜访记录/门店客户）----------
-  const [activePage, setActivePage] = useState<ProspectPageKey>(
-    initialPage ?? 'store-customer',
-  );
+  // 0013：页面切换状态由产品壳 ScrmWorkspace 接管（active page 在壳内，经
+  // pageRegistry 选择页面内容）。本模块根只处理潜客管理业务域：门店客户页为
+  // 本根主页面；到店/拜访独立页内容经渲染上下文 slot 以 children 传入。
+  const isStoreCustomer = pageKey === 'prospect-store-customer';
 
   // ---------- 抽屉状态 ----------
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
@@ -806,53 +771,8 @@ function StoreCustomerListInner({
   // 渲染
   // ========================================================================
 
-  // ---------- 顶部系统栏（V-03：白色背景）----------
-  const renderTopBar = () => (
-    <div className="store-customer-topbar" data-req-id="top-system-bar">
-      <div className="store-customer-topbar-left">
-        <span className="store-customer-nav-toggle-icon">
-          <MenuIcon size={16} style={{ color: '#333' }} />
-        </span>
-        <span className="store-customer-system-name">SCRM管理系统</span>
-      </div>
-      <div className="store-customer-topbar-right">
-        <Space size="middle">
-          <span className="store-customer-topbar-icon" aria-label="助手">
-            <NavServiceIcon size={16} />
-          </span>
-          <span className="store-customer-topbar-icon" aria-label="二维码">
-            <QrcodeIcon size={16} />
-          </span>
-          <span className="store-customer-store-selector" data-req-id="store-selector">
-            <span className="store-customer-store-selector-label">示例旗舰店</span>
-            <CaretDownIcon size={10} style={{ color: '#595959' }} />
-          </span>
-          <span className="store-customer-topbar-icon" aria-label="退出">
-            <LogoutIcon size={16} />
-          </span>
-          <span className="store-customer-topbar-icon" aria-label="用户">
-            <UserIcon size={16} />
-          </span>
-          <span className="store-customer-topbar-text">管理员</span>
-        </Space>
-      </div>
-    </div>
-  );
-
-  // ---------- 顶部标签 ----------
-  const renderTabs = () => (
-    <div className="store-customer-tabs" data-req-id="top-tabs">
-      {topTabs.map((tab) => (
-        <div
-          key={tab.key}
-          className={`store-customer-tab-item ${tab.active ? 'active' : ''}`}
-        >
-          {tab.label}
-          {tab.active && <span className="store-customer-tab-close">×</span>}
-        </div>
-      ))}
-    </div>
-  );
+  // 产品壳（顶部系统栏/顶部页签/左侧导航）已迁移至产品级 ScrmWorkspace，
+  // 本模块根只渲染潜客管理业务内容与跨页面生命周期编排（Drawer/上下文）。
 
   // ---------- 筛选区 ----------
   const renderFilter = () => (
@@ -1411,76 +1331,16 @@ function StoreCustomerListInner({
     );
   };
 
-  // ---------- 左侧导航 ----------
-  const renderNav = () => (
-    <div
-      className={`store-customer-nav ${navCollapsed ? 'collapsed' : ''}`}
-      data-req-id="left-navigation"
-    >
-      <div className="store-customer-nav-header">
-        {!navCollapsed && (
-          <span className="store-customer-nav-title">
-            <span className="store-customer-nav-logo-dot" />
-            <span className="store-customer-nav-brand-text">SCRM系统</span>
-          </span>
-        )}
-        <span
-          className="store-customer-nav-toggle"
-          onClick={() => setNavCollapsed(!navCollapsed)}
-        >
-          <FoldIcon size={16} style={{ color: 'rgba(255,255,255,0.65)' }} />
-        </span>
-      </div>
-      <div className="store-customer-nav-menu">
-        {navItems.map((item) => {
-          const isExpanded = item.key === 'prospect';
-          const hasChildren = !!item.children;
-          // 只有子项被选中，父级不标蓝
-          const isParentExpanded = hasChildren && isExpanded;
-
-          return (
-            <div key={item.key}>
-              <div
-                className={`store-customer-nav-item ${isParentExpanded ? 'expanded' : ''}`}
-                title={item.label}
-              >
-                <span className="store-customer-nav-icon">{item.icon}</span>
-                {!navCollapsed && (
-                  <span className="store-customer-nav-label">{item.label}</span>
-                )}
-              </div>
-              {hasChildren && isExpanded && !navCollapsed && (
-                <div className="store-customer-nav-submenu">
-                  {item.children!.map((child) => (
-                    <div
-                      key={child.key}
-                      data-prospect-page-key={child.key}
-                      className={`store-customer-nav-subitem ${
-                        child.key === activePage ? 'active' : ''
-                      }`}
-                      onClick={
-                        (SWITCHABLE_PROSPECT_PAGES as readonly string[]).includes(child.key)
-                          ? () => setActivePage(child.key as ProspectPageKey)
-                          : undefined
-                      }
-                    >
-                      {child.label}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-
+  // ---------- 页面内容 ----------
+  // 0013：左侧导航/顶部系统栏/顶部页签已迁移至产品级 ScrmWorkspace（产品壳），
+  // 本模块根只渲染潜客管理业务内容与跨页面生命周期编排（Drawer/上下文）。
+  // 产品级页面出口在 ScrmWorkspace：门店客户页内容由本根直接组装（52 列/筛选/
+  // 分页/导出）；到店/拜访独立页内容由产品壳经渲染上下文 slot 以 children 传入。
   return (
     <RecordEditActionsContext.Provider value={recordEditActions}>
       {/* 需求查看体系仅属于门店客户页面；到店/拜访独立页为 0012 新页面，
           无既有需求锚点，进入时隐藏需求模式控件与抽屉。 */}
-      {activePage === 'store-customer' && (
+      {isStoreCustomer && (
         <>
           <RequirementModeControl />
           <RequirementDrawer getRequirementData={getRequirement} />
@@ -1532,39 +1392,31 @@ function StoreCustomerListInner({
         onTabChange={setFollowUpTab}
       />
 
-      <AdminShell
-        sidebar={renderNav()}
-        topBar={renderTopBar()}
-        tabs={renderTabs()}
-        content={
-          activePage === 'store-customer' ? (
-            <>
-              {/* V-01：隐藏独立大标题块但保留锚点 */}
-              <div className="store-customer-content-header" data-req-id="page-title-area" />
+      {/* 潜客管理业务域页面内容（产品级页面出口在 ScrmWorkspace，本根不再查询
+          全产品 pageRegistry）：
+          - 门店客户页为本根主页面：直接渲染业务内容（52 列/筛选/分页/导出）；
+          - 到店/拜访独立页：产品壳经 pageRegistry 选择页面后，把对应 slot 以
+            children 传入本根（独立页经 RecordEditActions 打开的到店/拜访/变更
+            记录 Drawer 由本根统一挂载，业务编排边界不泄漏到员工等未来业务域）。 */}
+      {isStoreCustomer ? (
+        <>
+          {/* V-01：隐藏独立大标题块但保留锚点 */}
+          <div className="store-customer-content-header" data-req-id="page-title-area" />
 
-              {renderFilter()}
+          {renderFilter()}
 
-              <div className="store-customer-table-wrapper" data-req-id="table-area">
-                <ColumnRequirementAnchorRegistry />
-                {renderTable()}
-              </div>
+          <div className="store-customer-table-wrapper" data-req-id="table-area">
+            <ColumnRequirementAnchorRegistry />
+            {renderTable()}
+          </div>
 
-              {renderPagination()}
+          {renderPagination()}
 
-              {exportMsg && (
-                <div className="store-customer-export-toast">{exportMsg}</div>
-              )}
-            </>
-          ) : activePage === 'arrival-record' ? (
-            <ArrivalRecordPage initialState={arrivalInitialState ?? 'normal'} />
-          ) : (
-            <VisitRecordPage
-              initialState={visitInitialState ?? 'normal'}
-              nextVisitTimeFilter={visitNextVisitTimeFilter ?? 'all'}
-            />
-          )
-        }
-      />
+          {exportMsg && <div className="store-customer-export-toast">{exportMsg}</div>}
+        </>
+      ) : (
+        children
+      )}
 
       {/* 0012 Cycle B：编辑/新增拜访、到店记录抽屉（同一组件 create/edit 复用，
           挂载于产品层共同祖先；独立页/跟进详情/行菜单打开的是同一份运行时状态）。
@@ -1610,20 +1462,43 @@ function StoreCustomerListInner({
 }
 
 export function StoreCustomerList({
+  initialPage,
   initialRequirementMode = 'prototype',
   ...rest
 }: StoreCustomerListProps) {
+  // 0013 兼容入口：既有 Story args / 测试 / 已发布 Story URL 继续走本入口。
+  // 产品壳 ScrmWorkspace 接管产品壳（顶部系统栏/顶部页签/左侧导航）、activePage、
+  // 产品级页面出口（pageRegistry 查询 + 渲染）与跨页面生命周期 Provider
+  // （RequirementViewProvider / RecordRuntimeStoreProvider 单实例，位于页面出口
+  // 之上）。initialPage 支持 0012 旧 key 或 canonical key（导航层一次性归一化）。
+  //
+  // 潜客管理三个页面的实际内容经渲染上下文 slot 接线（产品壳/注册表不解释其
+  // 内部业务）：到店/拜访独立页由本入口装配独立页组件并透传初始状态，门店客户
+  // 页由潜客业务根直接装配。三个 slot 均为同一 ProspectManagementRoot 组件类型，
+  // 切换页面时 React 调和同一实例，潜客业务根跨页面状态行为与 0012 一致。
   return (
-    <RequirementViewProvider
-      initialMode={initialRequirementMode}
-      initialControlExpanded={initialRequirementMode === 'requirement'}
-    >
-      {/* 0012 Cycle B：到店/拜访记录单一运行时状态，挂在产品层共同祖先，
-          覆盖独立到店页、独立拜访页、跟进详情两个记录 Tab（§9.2）。 */}
-      <RecordRuntimeStoreProvider>
-        <StoreCustomerListInner {...rest} />
-      </RecordRuntimeStoreProvider>
-    </RequirementViewProvider>
+    <ScrmWorkspace
+      {...(initialPage ? { initialPage } : {})}
+      initialRequirementMode={initialRequirementMode}
+      renderContext={{
+        prospectStoreCustomer: (
+          <ProspectManagementRoot pageKey="prospect-store-customer" {...rest} />
+        ),
+        prospectArrivalRecord: (
+          <ProspectManagementRoot pageKey="prospect-arrival-record" {...rest}>
+            <ArrivalRecordPage initialState={rest.arrivalInitialState ?? 'normal'} />
+          </ProspectManagementRoot>
+        ),
+        prospectVisitRecord: (
+          <ProspectManagementRoot pageKey="prospect-visit-record" {...rest}>
+            <VisitRecordPage
+              initialState={rest.visitInitialState ?? 'normal'}
+              nextVisitTimeFilter={rest.visitNextVisitTimeFilter ?? 'all'}
+            />
+          </ProspectManagementRoot>
+        ),
+      }}
+    />
   );
 }
 
