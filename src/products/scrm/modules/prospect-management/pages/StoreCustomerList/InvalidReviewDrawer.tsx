@@ -151,7 +151,7 @@ export function InvalidReviewDrawer({
             <span>{application?.applicationTime ?? '--'}</span>
           </div>
           <div className="invalid-approval-drawer-field">
-            <label>申请理由</label>
+            <label>备注</label>
             <span>{application?.remark || '--'}</span>
           </div>
           <div className="invalid-approval-drawer-field">

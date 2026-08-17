@@ -21,7 +21,7 @@ export interface ApprovalApplication {
   attachments: AttachmentMeta[];
 }
 
-/** 审核结果 */
+/** 审核意见（opinion：approved 通过 / rejected 退回） */
 export interface ApprovalReview {
   opinion: 'approved' | 'rejected';
   remark: string;

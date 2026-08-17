@@ -2121,6 +2121,12 @@ describe('StoreCustomerList', () => {
             document.querySelector('[data-req-id="invalid-approval-review-drawer"]'),
           ).toBeTruthy();
         });
+        const reviewDrawer = getByReqId('invalid-approval-review-drawer');
+        expect(
+          within(reviewDrawer).getByText('客户多次未按预约到店，申请标记无效。'),
+        ).toBeTruthy();
+        expect(within(reviewDrawer).getAllByText('备注').length).toBeGreaterThan(0);
+        expect(within(reviewDrawer).queryByText('申请理由')).toBeNull();
         const opinionContainer = document.querySelector(
           '[data-req-id="invalid-approval-opinion"]',
         )?.closest('.invalid-approval-drawer-field');
@@ -2582,6 +2588,9 @@ describe('StoreCustomerList', () => {
           expect(text).toContain('客户多次未按预约到店，申请标记无效。');
           expect(text).toContain('客户沟通记录.png');
           expect(text).toContain('待审核');
+          // 待审核、尚无审核意见时：审核意见展示 "--"
+          expect(text).toContain('审核意见');
+          expect(text).toContain('--');
           expect(text).not.toContain('系统管理员');
           expect(text).not.toContain('审核确认单.pdf');
           expect(text).not.toContain('审核退回说明.pdf');
@@ -2607,7 +2616,13 @@ describe('StoreCustomerList', () => {
           expect(text).toContain('2026-07-18 14:20:00');
           expect(text).toContain('客户明确表示近期无课程需求，申请标记无效。');
           expect(text).toContain('客户确认记录.pdf');
+          // 审核状态展示"审核通过"，审核意见展示"通过"（语义分离）；不再出现"审核结果/审核备注"
           expect(text).toContain('审核通过');
+          expect(text).toContain('通过');
+          expect(text).toContain('审核意见');
+          expect(text).toContain('备注');
+          expect(text).not.toContain('审核结果');
+          expect(text).not.toContain('审核备注');
           expect(text).toContain('系统管理员');
           expect(text).toContain('2026-07-18 16:00:00');
           expect(text).toContain('核实申请信息无误，同意标记为无效客资。');
@@ -2634,7 +2649,13 @@ describe('StoreCustomerList', () => {
           expect(text).toContain('2026-07-19 11:10:00');
           expect(text).toContain('多次联系未接通，申请标记无效。');
           expect(text).toContain('外呼记录.png');
+          // 审核状态展示"审核退回"，审核意见展示"退回"（语义分离）；不再出现"审核结果/审核备注"标签
           expect(text).toContain('审核退回');
+          expect(text).toContain('退回');
+          expect(text).toContain('审核意见');
+          expect(text).toContain('备注');
+          expect(text).not.toContain('审核结果');
+          expect(text).not.toContain('审核备注');
           expect(text).toContain('系统管理员');
           expect(text).toContain('2026-07-19 15:30:00');
           expect(text).toContain('申请依据不足，请补充近期沟通记录后重新提交。');

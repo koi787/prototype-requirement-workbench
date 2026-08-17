@@ -1,12 +1,13 @@
 /**
  * 0008 闭环二：无效标注详情抽屉（只读）
  *
- * 补全字段：无论待审核、审核通过还是审核退回，均使用一致的结构。
+ * 补全字段：无论待审核、通过还是退回，均使用一致的结构。
  * 没有值时展示 "--"。
  */
 import { Drawer } from 'antd';
 import type { ApprovalApplication, ApprovalReview, InvalidApprovalStatus } from './approvalTypes';
 
+// 审核状态与审核意见语义分离：状态展示 待审核 / 审核通过 / 审核退回；意见展示 通过 / 退回（待审核时无审核意见，显示 "--"）
 const STATUS_LABEL_MAP: Record<Exclude<InvalidApprovalStatus, null>, string> = {
   pending: '待审核',
   approved: '审核通过',
@@ -56,7 +57,7 @@ export function InvalidApprovalDetailDrawer({
             <span>{application?.applicationTime ?? '--'}</span>
           </div>
           <div className="invalid-approval-drawer-field">
-            <label>申请理由</label>
+            <label>备注</label>
             <span>{application?.remark || '--'}</span>
           </div>
           <div className="invalid-approval-drawer-field">
@@ -83,12 +84,12 @@ export function InvalidApprovalDetailDrawer({
             </span>
           </div>
           <div className="invalid-approval-drawer-field">
-            <label>审核结果</label>
+            <label>审核意见</label>
             <span>
               {review
                 ? review.opinion === 'approved'
-                  ? '审核通过'
-                  : '审核退回'
+                  ? '通过'
+                  : '退回'
                 : '--'}
             </span>
           </div>
@@ -101,7 +102,7 @@ export function InvalidApprovalDetailDrawer({
             <span>{review?.reviewTime ?? '--'}</span>
           </div>
           <div className="invalid-approval-drawer-field">
-            <label>审核备注</label>
+            <label>备注</label>
             <span>{review?.remark || '--'}</span>
           </div>
           <div className="invalid-approval-drawer-field">
