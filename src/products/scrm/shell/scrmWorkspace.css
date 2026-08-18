@@ -1,0 +1,256 @@
+/* SCRM 产品壳基础样式。
+ *
+ * 这些选择器属于产品级工作区，而不是某个业务页面；ScrmWorkspace 直接
+ * 持有本入口，确保 registry 选择任意业务域页面时产品壳仍有完整布局。
+ */
+.store-customer-page {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: #ebeef2;
+}
+
+.store-customer-nav {
+  width: 196px;
+  min-width: 196px;
+  background: #2c3e4e;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.2s ease, min-width 0.2s ease;
+  overflow: hidden;
+}
+
+.store-customer-nav.collapsed {
+  width: 60px;
+  min-width: 60px;
+}
+
+.store-customer-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  height: 48px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.store-customer-nav-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.store-customer-nav-logo-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e74c3c;
+  flex-shrink: 0;
+}
+
+.store-customer-nav-brand-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.store-customer-nav-toggle {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.store-customer-nav-menu {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.store-customer-nav-item {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 16px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.store-customer-nav-item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.store-customer-nav-item.expanded {
+  color: rgba(255, 255, 255, 0.7);
+  background: none;
+}
+
+.store-customer-nav-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.store-customer-nav-label {
+  margin-left: 8px;
+  font-size: 13px;
+}
+
+.store-customer-nav-submenu {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.store-customer-nav-subitem {
+  padding: 8px 16px 8px 44px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.store-customer-nav-subitem:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.store-customer-nav-subitem.active {
+  color: #66b1ff;
+  background: rgba(24, 144, 255, 0.12);
+}
+
+.store-customer-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.store-customer-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 16px;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  flex-shrink: 0;
+}
+
+.store-customer-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.store-customer-nav-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.store-customer-system-name {
+  font-size: 19px;
+  font-weight: 600;
+  color: #1f2329;
+  letter-spacing: 0.5px;
+}
+
+.store-customer-topbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.store-customer-topbar-text {
+  font-size: 13px;
+  color: #595959;
+}
+
+.store-customer-topbar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #595959;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+}
+
+.store-customer-store-selector {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  min-width: 250px;
+  max-width: 310px;
+  height: 34px;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  font-size: 13px;
+  color: #595959;
+  background: #fff;
+  cursor: pointer;
+}
+
+.store-customer-store-selector-label {
+  white-space: nowrap;
+}
+
+.store-customer-tabs {
+  display: flex;
+  height: 46px;
+  background: #ebeef2;
+  border-bottom: 1px solid #d9d9d9;
+  padding: 0 4px;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.store-customer-tab-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #595959;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-bottom: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-right: 2px;
+  border-radius: 2px 2px 0 0;
+}
+
+.store-customer-tab-item:hover {
+  color: #1677ff;
+}
+
+.store-customer-tab-item.active {
+  color: #1677ff;
+  background: #fff;
+  font-weight: 500;
+  border-bottom: 2px solid #1677ff;
+  border-left-color: #d9d9d9;
+  border-right-color: #d9d9d9;
+}
+
+.store-customer-tab-close {
+  font-size: 14px;
+  line-height: 1;
+  color: #999;
+  cursor: pointer;
+  margin-left: 2px;
+}

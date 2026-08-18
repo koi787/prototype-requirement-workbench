@@ -9,9 +9,8 @@
  * 顺序是否同步由产品验收另行决定，不在本基础设施任务内改变三个已实现页面的
  * key / 可进入性 / 业务内容）。未注册页面保持 enabled: false 且不渲染空页。
  *
- * 业务域边界：ScrmModuleKey 已在类型层支持 employee-management（0014 员工 →
- * 组织架构）；测试验证第二业务域可注册。但生产左侧导航暂不展示"员工 → 组织架构"
- * 菜单，0014 实现真实页面后再启用（§7.4 / 硬约束二）。
+ * 业务域边界：0014 已正式启用第二业务域"员工 → 组织架构"（employee-management /
+ * employee-organization），角色列表属 0015，不提前作为可见入口（§2）。
  *
  * icon 复用既有图标能力（IconComponents，无依赖），0013 不设计图标注册系统。
  */
@@ -27,6 +26,17 @@ import {
   NavContactsIcon,
   NavServiceIcon,
 } from '../modules/prospect-management/pages/StoreCustomerList/IconComponents';
+
+/** 员工子菜单（0014：组织架构为唯一真实页面；角色列表属 0015，不提前作为可见入口）。 */
+const employeeChildren: ScrmMenuNode[] = [
+  {
+    key: 'organization',
+    label: '组织架构',
+    moduleKey: 'employee-management',
+    pageKey: 'employee-organization',
+    enabled: true,
+  },
+];
 
 /** 潜客管理子菜单（0012 §2.2 顺序，机械迁移；三个真实页面可进入，其余为占位）。 */
 const prospectChildren: ScrmMenuNode[] = [
@@ -66,6 +76,15 @@ export const SCRM_MENU: readonly ScrmMenuNode[] = [
     defaultPageKey: 'prospect-store-customer',
     icon: NavServiceIcon,
     children: prospectChildren,
+  },
+  {
+    key: 'employee',
+    label: '员工',
+    moduleKey: 'employee-management',
+    enabled: true,
+    defaultPageKey: 'employee-organization',
+    icon: NavTeamIcon,
+    children: employeeChildren,
   },
 ];
 

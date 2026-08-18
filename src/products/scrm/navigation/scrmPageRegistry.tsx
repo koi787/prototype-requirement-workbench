@@ -8,10 +8,13 @@
  *
  * 0013 首批注册三个既有页面，全部归潜客管理业务域。三个页面的实际页面内容由
  * 潜客管理模块入口经渲染上下文 slot 机械接线提供（注册表不解释其内部业务，
- * 也不依赖潜客业务组件——员工/组织架构页（0014）注册后同样只经产品壳
- * ScrmWorkspace 出口渲染，不进入潜客业务根）。
+ * 也不依赖潜客业务组件）。0014 新增"员工 → 组织架构"：employee-management 为
+ * 自包含业务页，直接注册并渲染 OrganizationPage（依赖单向 navigation →
+ * employee-management，无运行时循环），同样只经产品壳 ScrmWorkspace 出口渲染，
+ * 绝不进入潜客业务根。
  */
 import type { ScrmPageKey, ScrmPageRegistration } from './scrmNavigationTypes';
+import { OrganizationPage } from '../modules/employee-management/organization';
 
 export const SCRM_PAGE_REGISTRY: readonly ScrmPageRegistration[] = [
   {
@@ -28,6 +31,11 @@ export const SCRM_PAGE_REGISTRY: readonly ScrmPageRegistration[] = [
     pageKey: 'prospect-visit-record',
     moduleKey: 'prospect-management',
     render: (context) => context.prospectVisitRecord ?? null,
+  },
+  {
+    pageKey: 'employee-organization',
+    moduleKey: 'employee-management',
+    render: (context) => context.employeeOrganization ?? <OrganizationPage />,
   },
 ];
 

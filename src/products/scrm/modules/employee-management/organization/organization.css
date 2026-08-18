@@ -1,0 +1,354 @@
+/**
+ * 0014 Cycle A - 组织架构页样式（员工 / 组织架构业务专用）。
+ *
+ * C 级视觉以产品经理提供的真实后台截图为基线。本文件只在 employee-management
+ * 内部做业务专用布局，不修改 shared/admin，不搬动潜客稳定 CSS（0014 §16/§22）。
+ * 纯视觉校正（纯视觉轮）不改业务逻辑。
+ */
+
+/* ---------- 页面整体：内容区内部双栏，唯一 SCRM 壳 ---------- */
+.organization-page {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  padding: 8px;
+  min-height: 100%;
+  box-sizing: border-box;
+  /* 无自身背景：露出 SCRM 内容区灰底（#ebeef2），形成左/右面板间明确留白 */
+}
+
+/* ---------- 左栏：独立有边框窄面板（组织架构树） ---------- */
+.organization-tree-panel {
+  width: 260px;
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid #e5e6eb;
+  border-radius: 4px;
+  padding: 10px 8px 12px;
+  overflow-y: auto;
+}
+
+/* 顶部公司/组织展示框（Mock 展示，无切换业务、无后端数据源） */
+.organization-company-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  background: #f7f8fa;
+  border: 1px solid #e9eaee;
+  border-radius: 4px;
+}
+
+.organization-company-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.organization-company-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: #1f2329;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 组织树：紧凑层级 + 弱选中态（降低整行强蓝） ---------- */
+.organization-tree-panel .ant-tree {
+  font-size: 14px;
+  color: #333;
+}
+
+.organization-tree-panel .ant-tree-indent-unit {
+  width: 18px;
+}
+
+.organization-tree-panel .ant-tree-treenode {
+  padding-bottom: 0;
+}
+
+.organization-tree-panel .ant-tree-switcher {
+  width: 20px;
+  color: #8a8f99;
+}
+
+.organization-tree-panel .ant-tree-node-content-wrapper {
+  min-height: 28px;
+  line-height: 28px;
+  padding-inline: 6px;
+  border-radius: 3px;
+}
+
+.organization-tree-panel .ant-tree-node-content-wrapper:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* 选中态：很浅的灰蓝替代 antd 默认强蓝整行背景 */
+.organization-tree-panel .ant-tree-node-selected > .ant-tree-node-content-wrapper {
+  background: #eef3f9 !important;
+  color: #1f2329;
+  font-weight: 500;
+}
+
+/* ---------- 右栏：独立有边框白色主卡片 ---------- */
+.organization-main {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px 16px;
+  background: #fff;
+  border: 1px solid #e5e6eb;
+  border-radius: 4px;
+}
+
+/* ---------- 筛选区：独立空间，按真实后台两行布局 ---------- */
+.organization-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 2px 0 18px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.organization-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.organization-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.organization-filter-item > label {
+  font-size: 14px;
+  color: #595959;
+  white-space: nowrap;
+}
+
+.organization-search-input {
+  width: 220px;
+}
+
+.organization-select {
+  width: 150px;
+}
+
+.organization-filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- 新增员工入口（主列表右上方蓝色主按钮，独立于筛选区） ---------- */
+.organization-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.organization-add-button {
+  min-width: 96px;
+}
+
+/* ---------- 员工 10 列表格：表头密度与行高接近截图 ---------- */
+.organization-table-wrapper .ant-table-thead > tr > th.ant-table-cell {
+  background: #f3f4f5 !important;
+  color: #595959 !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  padding: 14px 12px !important;
+  line-height: 22px !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+.organization-table-wrapper .ant-table-tbody > tr > td.ant-table-cell {
+  padding: 15px 12px !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+  color: #333 !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  white-space: normal;
+  word-break: break-word;
+  vertical-align: middle !important;
+}
+
+.organization-table-wrapper .ant-table-tbody > tr:nth-child(even) > td {
+  background: #fafbfc;
+}
+
+/* ---------- 启用状态绿色 Switch（截图风格；仅本页 Switch 生效） ---------- */
+.organization-switch.ant-switch-checked {
+  background-color: #52c41a;
+}
+
+/* ---------- 岗位多值标签（截图密度） ---------- */
+.organization-position-tag {
+  margin-inline-end: 4px;
+  font-size: 12px;
+  line-height: 20px;
+  padding-inline: 6px;
+  border-radius: 2px;
+}
+
+/* ---------- 操作按钮：白底浅灰边框矩形 Button（截图样式，非蓝色文字） ---------- */
+.organization-operation-btn {
+  height: 26px;
+  min-width: 64px;
+  padding-inline: 10px;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+  border-color: #d9d9d9;
+}
+
+/* 分页区（复用 AdminPagination 布局，公共组件不接管员工数据切片） */
+.organization-main .store-customer-pagination {
+  margin-top: 12px;
+}
+
+/* ---------- Cycle B：EmployeeDrawer（0014 §16 C 级视觉） ---------- */
+
+/* Drawer 头部：白底、浅灰下边框、标题与关闭按钮保持 antd 默认密度 */
+.employee-drawer-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.employee-drawer-header .ant-drawer-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+/* Drawer 主体：可纵向滚动，表单字段保持 120px 左侧定宽标签 + 弹性控件 */
+.employee-drawer-body {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.employee-drawer-form .ant-form-item {
+  margin-bottom: 24px;
+}
+
+/* 可登录门店 / 绑定角色 区前后留白（传统长表单节奏，非卡片式） */
+.employee-drawer-form-transfer.ant-form-item {
+  margin-top: 4px;
+  margin-bottom: 28px;
+}
+
+.employee-drawer-form-roles.ant-form-item {
+  margin-top: 10px;
+}
+
+.employee-drawer-form .ant-form-item-label > label {
+  font-size: 14px;
+  color: #333;
+}
+
+.employee-drawer-form .ant-input,
+.employee-drawer-form .ant-select {
+  min-height: 32px;
+  /* 基础输入/下拉保持窄列（约 360px），不随加宽后的 Drawer 横向铺满 */
+  max-width: 360px;
+}
+
+.employee-drawer-form .ant-select-selector {
+  min-height: 32px;
+}
+
+/* Transfer 内部搜索框等不受基础输入宽度限制，按面板自适应 */
+.employee-drawer-form .ant-transfer .ant-input {
+  max-width: none;
+}
+
+/* 人脸照片：140px 正方形虚线区域，本地预览或"相机图标 + 选择照片"占位（截图风格） */
+.employee-face-photo {
+  width: 140px;
+  height: 140px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 4px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+.employee-face-photo:hover {
+  border-color: #1677ff;
+}
+
+.employee-face-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.employee-face-photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #8a8f99;
+}
+
+.employee-face-photo-text {
+  font-size: 13px;
+}
+
+/* 岗位 Checkbox：横向间距适中，Label 与第一项对齐（截图密度） */
+.employee-position-checkbox-group .ant-checkbox-wrapper {
+  margin-inline-end: 20px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+/* 三个业务 Switch：关闭态为明显红色（截图风格），打开态保持 antd 系统默认 */
+.employee-drawer-form .ant-switch:not(.ant-switch-checked) {
+  background: #f5222d;
+}
+
+/* 绑定角色 Checkbox：2 列网格 + 较大横向留白 + Drawer 长滚动（还原截图多列密度） */
+.employee-role-checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 48px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.employee-role-checkbox-group .ant-checkbox-wrapper {
+  margin-inline-end: 0;
+  font-size: 14px;
+}
+
+/* Transfer 中间移动按钮：蓝色方形箭头按钮（截图风格，无"右移/左移"文字） */
+.employee-transfer-action-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Footer：右侧 确定/取消，上边框与正文区隔，按钮间距按 antd 默认 */
+.employee-drawer-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 24px;
+  border-top: 1px solid #f0f0f0;
+}

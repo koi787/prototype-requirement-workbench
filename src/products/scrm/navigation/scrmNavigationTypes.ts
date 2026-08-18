@@ -1,11 +1,11 @@
 /**
- * 0013 - SCRM 产品级导航与页面注册类型。
+ * 0013/0014 - SCRM 产品级导航与页面注册类型。
  *
  * 产品级菜单（menuConfig）、页面注册表（pageRegistry）与产品壳（ScrmWorkspace）
  * 共享的类型边界。仅放稳定类型与最小契约，不放业务实现。
  *
- * - ScrmModuleKey：SCRM 一级业务域（模块）。employee-management 为 0014 预留；
- *   0013 仅类型支持并由测试验证可注册，生产左侧导航不展示未开发业务域。
+ * - ScrmModuleKey：SCRM 一级业务域（模块）。0013 仅类型支持并由测试验证可注册；
+ *   0014 正式启用 employee-management（员工 → 组织架构），生产左侧导航展示该业务域。
  * - ScrmPageKey：产品级页面 canonical key（带业务域前缀）。
  * - ScrmLegacyPageKey：0012 及更早的既有 pageKey，继续兼容，仅在导航层归一化。
  * - 旧 key 与 canonical key 的映射只放在导航层（scrmMenuConfig.normalizePageKey），
@@ -22,7 +22,7 @@ export interface ScrmMenuIconProps {
 /** SCRM 一级业务域（模块）稳定 key。 */
 export type ScrmModuleKey = 'prospect-management' | 'employee-management';
 
-/** 产品级页面 canonical key（带业务域前缀）；employee-organization 为 0014 预留。 */
+/** 产品级页面 canonical key（带业务域前缀）；employee-organization 为 0014 生产页面。 */
 export type ScrmPageKey =
   | 'prospect-store-customer'
   | 'prospect-arrival-record'
@@ -55,7 +55,8 @@ export interface ScrmMenuNode {
  * 注册表只负责 pageKey → 实际页面内容（§8）。潜客管理三个页面的实际页面内容由
  * 潜客管理模块入口（StoreCustomerList 兼容入口）以不透明 ReactNode slot 接线提供
  * （产品壳与注册表不解释其内部业务）。员工/组织架构页（0014）为自包含页面，
- * 注册后可直接渲染，不需要额外 slot。
+ * 注册后默认直接渲染；Story 初始化状态可通过同一产品级 renderContext 传入
+ * 不透明 ReactNode，不绕过注册表出口。
  */
 export interface ScrmPageRenderContext {
   /** 门店客户页面内容（潜客管理模块入口接线提供）。 */
@@ -64,6 +65,8 @@ export interface ScrmPageRenderContext {
   prospectArrivalRecord?: ReactNode;
   /** 拜访记录独立页内容（潜客管理模块入口接线提供）。 */
   prospectVisitRecord?: ReactNode;
+  /** 员工组织架构页面内容（产品级 Story setup 可提供初始化状态）。 */
+  employeeOrganization?: ReactNode;
 }
 
 /**

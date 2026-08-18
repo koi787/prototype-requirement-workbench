@@ -44,6 +44,7 @@ import {
   UserIcon,
   FoldIcon,
 } from '../modules/prospect-management/pages/StoreCustomerList/IconComponents';
+import './scrmWorkspace.css';
 
 /** 产品壳注入给活动页面出口的组合上下文。 */
 export interface ScrmShellContext {
@@ -217,9 +218,16 @@ export function ScrmWorkspace({
 
           return (
             <div key={item.key}>
+              {/* 0014 §3.3：一级节点 enabled 且存在 defaultPageKey 时，点击调用现有
+                  navigate(defaultPageKey)，激活业务域并展开其子菜单（不重写菜单/壳）。 */}
               <div
                 className={`store-customer-nav-item ${isParentExpanded ? 'expanded' : ''}`}
                 title={item.label}
+                onClick={
+                  item.enabled && item.defaultPageKey
+                    ? () => navigate(item.defaultPageKey!)
+                    : undefined
+                }
               >
                 <span className="store-customer-nav-icon">
                   {item.icon && <item.icon />}

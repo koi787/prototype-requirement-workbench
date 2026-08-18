@@ -1,10 +1,10 @@
 /**
- * 0013 - SCRM 产品级导航 / 页面注册表 / 产品壳测试。
+ * 0013/0014 - SCRM 产品级导航 / 页面注册表 / 产品壳测试。
  *
  * 覆盖任务单 §15 的产品级骨架项：
- * 1. 菜单配置可表达多一级业务域（prospect-management / employee-management），
- *    未注册节点不可点击且不生成空页。
- * 2. 页面注册表对三个现有 canonical pageKey 返回正确页面；未知 key 不静默映射。
+ * 1. 菜单配置可表达多一级业务域（prospect-management / employee-management）；
+ *    0014 正式启用"员工"业务域（组织架构），未注册节点不可点击且不生成空页。
+ * 2. 页面注册表对四个 canonical pageKey 返回正确页面；未知 key 不静默映射。
  * 3. 旧 initialPage key 兼容：旧 key → canonical 归一化；未知 initialPage 不落错误页。
  * 5. 页面出口不产生第二套 Sidebar / 顶部栏（产品壳单一实例）。
  * 6. Provider 仅挂载一次：跨内容出口组件类型变化后 create / update 运行时记录保留。
@@ -12,8 +12,9 @@
  * 8. Requirement 控件只在门店客户页面显示；切到到店/拜访独立页不显示需求控件。
  * 9. 产品级页面出口在 ScrmWorkspace：activePage 经 pageRegistry 选择页面内容
  *    （Blocking 修复：页面选择链位于产品壳，不经过潜客业务根）。
- * 10. employee-management 注册页（测试 fixture）由产品壳直接出口渲染，绕过
- *    潜客业务根（不挂载潜客 DOM / 上下文 / Drawer 副作用）。
+ * 10. employee-management 生产注册页（0014 组织架构）由产品壳直接出口渲染，
+ *    绕过潜客业务根（不挂载潜客 DOM / Drawer 副作用）；一级"员工"菜单点击
+ *    调用现有 navigate(defaultPageKey) 激活员工域并展开组织架构。
  *
  * 真实业务页面（52 / 32 / 19 列、切换、跟进详情、审批、新增/编辑/变更记录）
  * 的回归继续由既有 StoreCustomerList / ArrivalRecordPage / VisitRecordPage 测试
@@ -27,11 +28,7 @@ import userEvent from '@testing-library/user-event';
 import { ScrmWorkspace } from '../../shell/ScrmWorkspace';
 import { SCRM_MENU, normalizePageKey } from '../scrmMenuConfig';
 import { SCRM_PAGE_REGISTRY, getPageRegistration } from '../scrmPageRegistry';
-import type {
-  ScrmModuleKey,
-  ScrmPageKey,
-  ScrmPageRegistration,
-} from '../scrmNavigationTypes';
+import type { ScrmModuleKey, ScrmPageKey } from '../scrmNavigationTypes';
 import {
   PROSPECT_NAV_ITEMS,
   SWITCHABLE_PROSPECT_PAGES,
@@ -58,25 +55,30 @@ class GuardErrorBoundary extends Component<{ children: ReactNode }, { error: Err
 }
 
 describe('0013 SCRM 产品级导航与页面注册', () => {
-  it('菜单配置可表达多一级业务域；生产菜单不展示未开发业务域，未注册节点不生成空页', () => {
-    // 类型层：ScrmModuleKey 支持 employee-management（0014 预留，编译期可表达）
+  it('菜单配置可表达多一级业务域；0014 启用员工域，未注册节点不生成空页', () => {
+    // 类型层：ScrmModuleKey 支持 employee-management（编译期可表达）
     const employeeModuleKey: ScrmModuleKey = 'employee-management';
     expect(employeeModuleKey).toBe('employee-management');
 
-    // 生产菜单只含潜客管理一个启用业务域；不出现"员工/组织架构"空页入口（硬约束二）
+    // 生产菜单启用两个业务域：潜客管理 + 员工（0014 组织架构）
     const enabledModules = new Set(
       SCRM_MENU.filter((node) => node.enabled).map((node) => node.moduleKey),
     );
-    expect(enabledModules).toEqual(new Set(['prospect-management']));
+    expect(enabledModules).toEqual(new Set(['prospect-management', 'employee-management']));
 
-    // 只有潜客管理一级节点可点击；其余为占位入口（enabled: false，无 pageKey，不生成空页）
+    // 只有潜客管理/员工一级节点可点击；其余为占位入口（enabled: false，无 pageKey，不生成空页）
     const clickable = SCRM_MENU.filter((node) => node.enabled);
-    expect(clickable.map((node) => node.key)).toEqual(['prospect']);
+    expect(clickable.map((node) => node.key)).toEqual(['prospect', 'employee']);
     for (const node of SCRM_MENU) {
       if (!node.enabled) {
         expect(node.pageKey).toBeUndefined();
       }
     }
+
+    // 员工域：一级节点携带 defaultPageKey 指向组织架构（0014 §3.3）
+    const employee = SCRM_MENU.find((node) => node.key === 'employee');
+    expect(employee?.enabled).toBe(true);
+    expect(employee?.defaultPageKey).toBe('employee-organization');
 
     // 二级占位子菜单同样不可点击且不注册 pageKey（不生成空页）
     const prospect = SCRM_MENU.find((node) => node.key === 'prospect');
@@ -88,11 +90,12 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
     }
   });
 
-  it('页面注册表对三个现有 canonical pageKey 返回正确页面；未知 key 不静默映射', () => {
+  it('页面注册表对四个 canonical pageKey 返回正确页面；未知 key 不静默映射', () => {
     expect(SCRM_PAGE_REGISTRY.map((registration) => registration.pageKey)).toEqual([
       'prospect-store-customer',
       'prospect-arrival-record',
       'prospect-visit-record',
+      'employee-organization',
     ]);
     expect(getPageRegistration('prospect-store-customer')).toBeDefined();
 
@@ -114,8 +117,9 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
       visitRegistration!.render({ prospectVisitRecord: <VisitRecordPage /> }),
     ).not.toBeNull();
 
-    // 未知 / 0014 预留但未注册的 key 不静默映射到错误页面
-    expect(getPageRegistration('employee-organization')).toBeUndefined();
+    // employee-organization 为 0014 生产注册项（员工域自包含页，由产品壳出口渲染）
+    expect(getPageRegistration('employee-organization')).toBeDefined();
+    // 未知 key 不静默映射到错误页面
     expect(getPageRegistration('unknown-page' as ScrmPageKey)).toBeUndefined();
   });
 
@@ -134,32 +138,21 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
     expect(screen.queryByTestId('store-slot')).toBeNull();
   });
 
-  it('employee-management 注册页由产品壳直接出口渲染，绕过潜客业务根（不挂载潜客 DOM/上下文/Drawer）', () => {
-    // 测试内 registry fixture：仅注册员工组织架构页（0014 预留类型的自包含页面）。
-    // 不加入生产 SCRM_MENU，不新增生产注册项。
-    const employeeFixture: ScrmPageRegistration[] = [
-      {
-        pageKey: 'employee-organization',
-        moduleKey: 'employee-management',
-        render: () => <div data-testid="employee-page">组织架构（测试 fixture）</div>,
-      },
-    ];
-    render(
-      <ScrmWorkspace
-        initialPage="employee-organization"
-        pageRegistry={employeeFixture}
-        renderContext={{
-          prospectStoreCustomer: <div data-testid="prospect-store-marker" />,
-        }}
-      />,
-    );
-    // 产品壳经 pageRegistry 出口渲染员工页面（页面选择发生在产品壳，不经过潜客根）
-    expect(screen.getByTestId('employee-page')).toBeTruthy();
-    // 员工页面不进入潜客业务根：不渲染潜客页面内容 slot / 门店客户 DOM
-    expect(screen.queryByTestId('prospect-store-marker')).toBeNull();
+  it('employee-management 生产注册页由产品壳直接出口渲染，绕过潜客业务根（不挂载潜客 DOM/Drawer）', () => {
+    // 0014 生产注册项：调用链 ScrmWorkspace → employee-organization → OrganizationPage
+    render(<ScrmWorkspace initialPage="employee-organization" />);
+    // 产品壳经 pageRegistry 出口渲染真实组织架构页（页面选择发生在产品壳，不经过潜客根）
+    expect(document.querySelector('[data-req-id="organization-page"]')).toBeTruthy();
+    expect(document.querySelector('[data-req-id="employee-table"]')).toBeTruthy();
+    // 不进入潜客业务根：不渲染潜客页面标题区 / 门店客户内容 DOM
     expect(document.querySelector('[data-req-id="page-title-area"]')).toBeNull();
     // 不挂载任何 Drawer（潜客业务根未挂载，无 Drawer 编排副作用）
     expect(document.querySelector('.ant-drawer')).toBeNull();
+    // 不渲染"查看需求"需求控件（仅在门店客户页显示）
+    expect(screen.queryByRole('button', { name: '查看需求' })).toBeNull();
+    // 产品壳单一实例：不产生第二套导航/顶部栏
+    expect(document.querySelectorAll('[data-req-id="left-navigation"]')).toHaveLength(1);
+    expect(document.querySelectorAll('[data-req-id="top-system-bar"]')).toHaveLength(1);
   });
 
   it('旧 initialPage key 兼容：旧 key → canonical 归一化，未知 initialPage 不落错误页', () => {
@@ -187,6 +180,34 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
     expect(screen.getByTestId('active-page-fallback').textContent).toBe(
       'prospect-store-customer',
     );
+  });
+
+  it('点击一级菜单"员工"调用现有 navigate(defaultPageKey)：激活员工域并展开组织架构', async () => {
+    const user = userEvent.setup();
+    render(
+      <ScrmWorkspace initialPage="prospect-store-customer">
+        {({ activePage }) => <div data-testid="active-page">{activePage}</div>}
+      </ScrmWorkspace>,
+    );
+    // 初始为潜客管理域（门店客户）
+    expect(screen.getByTestId('active-page').textContent).toBe('prospect-store-customer');
+
+    // 点击一级"员工"：enabled 且携带 defaultPageKey，调用现有 navigate(defaultPageKey)
+    await user.click(screen.getByTitle('员工'));
+    expect(screen.getByTestId('active-page').textContent).toBe('employee-organization');
+
+    // 员工域激活：组织架构子菜单展开且选中（active 类与 activePage 同步）
+    const subitem = document.querySelector(
+      '.store-customer-nav-subitem[data-prospect-page-key="organization"]',
+    );
+    expect(subitem).toBeTruthy();
+    expect(subitem!.className).toContain('active');
+    // 潜客管理子菜单收拢（当前活动业务域已切换为员工域，不渲染潜客子项）
+    expect(
+      document.querySelector(
+        '.store-customer-nav-subitem[data-prospect-page-key="store-customer"]',
+      ),
+    ).toBeNull();
   });
 
   it('潜客管理既有导航兼容导出派生自产品菜单（三个真实页面 key 顺序不变）', () => {
@@ -217,7 +238,7 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
             <div data-testid="active-page">{activePage}</div>
             <button
               data-testid="goto-unknown"
-              onClick={() => navigate('employee-organization')}
+              onClick={() => navigate('unknown-page' as ScrmPageKey)}
             >
               unknown
             </button>

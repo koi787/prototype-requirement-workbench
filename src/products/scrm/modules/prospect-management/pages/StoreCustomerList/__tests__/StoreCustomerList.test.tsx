@@ -29,7 +29,11 @@ import {
 import rawCustomers from '../mockData';
 import type { CustomerRecord } from '../mockData';
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.clearAllTimers();
+  vi.useRealTimers();
+});
 
 /**
  * 门店客户列表组件测试。
