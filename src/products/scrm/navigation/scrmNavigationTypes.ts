@@ -27,6 +27,7 @@ export type ScrmPageKey =
   | 'prospect-store-customer'
   | 'prospect-arrival-record'
   | 'prospect-visit-record'
+  | 'employee-role-list'
   | 'employee-organization';
 
 /** 0012 及更早的既有 pageKey（Story args / data-prospect-page-key / 既有测试继续使用）。 */
@@ -67,6 +68,8 @@ export interface ScrmPageRenderContext {
   prospectVisitRecord?: ReactNode;
   /** 员工组织架构页面内容（产品级 Story setup 可提供初始化状态）。 */
   employeeOrganization?: ReactNode;
+  /** 员工角色列表页面内容（产品级 Story setup 可提供初始化状态）。 */
+  employeeRoleList?: ReactNode;
 }
 
 /**

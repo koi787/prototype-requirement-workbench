@@ -15,6 +15,7 @@
  */
 import type { ScrmPageKey, ScrmPageRegistration } from './scrmNavigationTypes';
 import { OrganizationPage } from '../modules/employee-management/organization';
+import { RoleListPage } from '../modules/employee-management/role-management';
 
 export const SCRM_PAGE_REGISTRY: readonly ScrmPageRegistration[] = [
   {
@@ -31,6 +32,11 @@ export const SCRM_PAGE_REGISTRY: readonly ScrmPageRegistration[] = [
     pageKey: 'prospect-visit-record',
     moduleKey: 'prospect-management',
     render: (context) => context.prospectVisitRecord ?? null,
+  },
+  {
+    pageKey: 'employee-role-list',
+    moduleKey: 'employee-management',
+    render: (context) => context.employeeRoleList ?? <RoleListPage />,
   },
   {
     pageKey: 'employee-organization',

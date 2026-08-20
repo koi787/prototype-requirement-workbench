@@ -75,10 +75,14 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
       }
     }
 
-    // 员工域：一级节点携带 defaultPageKey 指向组织架构（0014 §3.3）
+    // 员工域：一级节点默认落点为角色列表（0015 Cycle A）
     const employee = SCRM_MENU.find((node) => node.key === 'employee');
     expect(employee?.enabled).toBe(true);
-    expect(employee?.defaultPageKey).toBe('employee-organization');
+    expect(employee?.defaultPageKey).toBe('employee-role-list');
+    expect(employee?.children?.map((child) => child.pageKey)).toEqual([
+      'employee-role-list',
+      'employee-organization',
+    ]);
 
     // 二级占位子菜单同样不可点击且不注册 pageKey（不生成空页）
     const prospect = SCRM_MENU.find((node) => node.key === 'prospect');
@@ -90,11 +94,12 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
     }
   });
 
-  it('页面注册表对四个 canonical pageKey 返回正确页面；未知 key 不静默映射', () => {
+  it('页面注册表对五个 canonical pageKey 返回正确页面；未知 key 不静默映射', () => {
     expect(SCRM_PAGE_REGISTRY.map((registration) => registration.pageKey)).toEqual([
       'prospect-store-customer',
       'prospect-arrival-record',
       'prospect-visit-record',
+      'employee-role-list',
       'employee-organization',
     ]);
     expect(getPageRegistration('prospect-store-customer')).toBeDefined();
@@ -119,6 +124,7 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
 
     // employee-organization 为 0014 生产注册项（员工域自包含页，由产品壳出口渲染）
     expect(getPageRegistration('employee-organization')).toBeDefined();
+    expect(getPageRegistration('employee-role-list')).toBeDefined();
     // 未知 key 不静默映射到错误页面
     expect(getPageRegistration('unknown-page' as ScrmPageKey)).toBeUndefined();
   });
@@ -138,7 +144,7 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
     expect(screen.queryByTestId('store-slot')).toBeNull();
   });
 
-  it('employee-management 生产注册页由产品壳直接出口渲染，绕过潜客业务根（不挂载潜客 DOM/Drawer）', () => {
+  it('employee-management 组织架构生产注册页由产品壳直接出口渲染，绕过潜客业务根（不挂载潜客 DOM/Drawer）', () => {
     // 0014 生产注册项：调用链 ScrmWorkspace → employee-organization → OrganizationPage
     render(<ScrmWorkspace initialPage="employee-organization" />);
     // 产品壳经 pageRegistry 出口渲染真实组织架构页（页面选择发生在产品壳，不经过潜客根）
@@ -153,6 +159,15 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
     // 产品壳单一实例：不产生第二套导航/顶部栏
     expect(document.querySelectorAll('[data-req-id="left-navigation"]')).toHaveLength(1);
     expect(document.querySelectorAll('[data-req-id="top-system-bar"]')).toHaveLength(1);
+  });
+
+  it('employee-role-list 生产注册页由产品壳直接出口渲染，不经过潜客根或组织架构页', () => {
+    render(<ScrmWorkspace initialPage="employee-role-list" />);
+    expect(document.querySelector('[data-req-id="role-list-page"]')).toBeTruthy();
+    expect(document.querySelector('[data-req-id="organization-page"]')).toBeNull();
+    expect(document.querySelector('[data-req-id="page-title-area"]')).toBeNull();
+    expect(document.querySelectorAll('[data-req-id="left-navigation"]')).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: '查看需求' })).toBeNull();
   });
 
   it('旧 initialPage key 兼容：旧 key → canonical 归一化，未知 initialPage 不落错误页', () => {
@@ -182,7 +197,7 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
     );
   });
 
-  it('点击一级菜单"员工"调用现有 navigate(defaultPageKey)：激活员工域并展开组织架构', async () => {
+  it('点击一级菜单"员工"调用现有 navigate(defaultPageKey)：激活员工域并展开角色列表', async () => {
     const user = userEvent.setup();
     render(
       <ScrmWorkspace initialPage="prospect-store-customer">
@@ -194,11 +209,10 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
 
     // 点击一级"员工"：enabled 且携带 defaultPageKey，调用现有 navigate(defaultPageKey)
     await user.click(screen.getByTitle('员工'));
-    expect(screen.getByTestId('active-page').textContent).toBe('employee-organization');
-
-    // 员工域激活：组织架构子菜单展开且选中（active 类与 activePage 同步）
+    // 员工域激活：角色列表子菜单展开且选中（active 类与 activePage 同步）
+    expect(screen.getByTestId('active-page').textContent).toBe('employee-role-list');
     const subitem = document.querySelector(
-      '.store-customer-nav-subitem[data-prospect-page-key="organization"]',
+      '.store-customer-nav-subitem[data-prospect-page-key="role-list"]',
     );
     expect(subitem).toBeTruthy();
     expect(subitem!.className).toContain('active');

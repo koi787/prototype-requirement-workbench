@@ -1,0 +1,41 @@
+.role-list-page { min-height: 100%; padding: 8px; box-sizing: border-box; background: #ebeef2; }
+.role-list-main { min-height: calc(100vh - 112px); padding: 16px; box-sizing: border-box; background: #fff; border: 1px solid #e5e6eb; border-radius: 4px; }
+.role-list-filter-bar { display: flex; align-items: center; gap: 24px; padding: 2px 0 18px; border-bottom: 1px solid #f0f0f0; }
+.role-list-filter-field { display: flex; align-items: center; gap: 8px; color: #595959; font-size: 14px; white-space: nowrap; }
+.role-list-filter-field .ant-input { width: 220px; }
+.role-list-filter-actions { display: flex; gap: 8px; }
+.role-list-toolbar { display: flex; justify-content: flex-end; padding: 16px 0; }
+.role-list-table .ant-table-thead > tr > th { padding: 14px 12px; color: #595959; font-size: 14px; font-weight: 500; line-height: 22px; white-space: nowrap; background: #f3f4f5; border-bottom: 1px solid #e0e0e0; }
+.role-list-table .ant-table-tbody > tr > td { padding: 15px 12px; color: #333; font-size: 14px; line-height: 22px; border-bottom: 1px solid #f0f0f0; }
+.role-list-table .ant-table-tbody > tr:nth-child(even) > td { background: #fafbfc; }
+.role-list-actions { display: inline-flex; gap: 16px; }
+.role-list-action { padding: 0; border: 0; background: transparent; font-size: 14px; cursor: pointer; }
+.role-list-action-edit { color: #1677ff; }
+.role-list-action-delete { color: #f5222d; }
+.role-list-action:hover { text-decoration: underline; }
+.role-list-empty { padding: 48px 0; color: #8c8c8c; }
+.role-list-pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 0 4px; color: #595959; font-size: 13px; }
+.role-list-pagination-controls { display: flex; align-items: center; gap: 8px; }
+.role-list-page-buttons { display: inline-flex; align-items: center; gap: 4px; }
+.role-list-page-button { min-width: 24px; height: 24px; padding: 0 6px; color: #595959; border: 1px solid transparent; border-radius: 2px; background: transparent; font-size: 13px; cursor: pointer; }
+.role-list-page-button:hover { color: #1677ff; border-color: #1677ff; }
+.role-list-page-button.active { color: #fff; border-color: #1677ff; background: #1677ff; }
+.role-list-jump-input { width: 42px; }
+@media (max-width: 900px) { .role-list-filter-bar { align-items: flex-start; flex-wrap: wrap; gap: 12px 20px; } .role-list-pagination { align-items: flex-start; flex-direction: column; gap: 10px; } }
+
+.role-drawer .ant-drawer-header { padding: 16px 24px; border-bottom: 1px solid #f0f0f0; }
+.role-drawer .ant-drawer-title { color: #1f2329; font-size: 16px; font-weight: 600; }
+.role-drawer .ant-drawer-body { padding: 0; overflow: hidden; }
+.role-drawer-body { height: 100%; padding: 24px; overflow-y: auto; box-sizing: border-box; }
+.role-drawer-field { display: grid; grid-template-columns: 112px minmax(0, 1fr); column-gap: 12px; align-items: start; margin-bottom: 24px; }
+.role-drawer-field > label { grid-column: 1; margin-top: 5px; color: #333; font-size: 14px; line-height: 22px; }
+.role-drawer-required { margin-right: 4px; color: #ff4d4f; }
+.role-drawer-field .ant-input { width: 100%; max-width: none; }
+.role-drawer-error { grid-column: 2; margin-top: 4px; color: #ff4d4f; font-size: 12px; line-height: 20px; }
+.role-drawer-permission-field { margin-bottom: 0; }
+.role-drawer-permission-panel { grid-column: 2; min-width: 0; min-height: 320px; max-height: 460px; padding: 12px 8px; overflow-y: auto; border: 1px solid #d9d9d9; border-radius: 2px; background: #fff; }
+.role-drawer-permission-panel.has-error { border-color: #ff4d4f; }
+.role-drawer-permission-panel .ant-tree { font-size: 14px; }
+.role-drawer-permission-panel .ant-tree-treenode { min-height: 32px; padding-bottom: 0; }
+.role-drawer-permission-panel .ant-tree-node-content-wrapper { min-height: 32px; line-height: 32px; }
+.role-drawer-footer { display: flex; justify-content: center; gap: 8px; }
