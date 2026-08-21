@@ -1,39 +1,140 @@
-.workbench-overview {
+.requirement-history-page {
   min-height: 100vh;
-  padding: 40px;
-  background:
-    radial-gradient(circle at top right, rgb(22 119 255 / 10%), transparent 32%),
-    #f6f8fb;
+  padding: 28px 36px 48px;
+  background: #f7f8fa;
 }
 
-.workbench-stack {
-  width: min(1040px, 100%);
+.requirement-history-content {
+  width: min(1320px, 100%);
+  margin: 0 auto;
 }
 
-.workbench-overview h1.ant-typography {
-  margin: 14px 0 8px;
+.requirement-history-list-header {
+  max-width: 900px;
 }
 
-.workbench-lead {
-  max-width: 760px;
+.requirement-history-eyebrow {
+  color: #1677ff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.requirement-history-list-header h1.ant-typography {
+  margin: 8px 0 10px;
+}
+
+.requirement-history-summary {
+  max-width: 820px;
+  margin: 0;
   color: #667085;
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.7;
 }
 
-.boundary-card {
-  height: 100%;
-  border: 1px solid #e8edf3;
-  box-shadow: 0 8px 24px rgb(15 23 42 / 5%);
+.requirement-history-search {
+  max-width: 620px;
+  margin: 20px 0 14px;
 }
 
-.boundary-card h3.ant-typography {
-  margin: 8px 0 0;
+.requirement-history-table-wrap {
+  overflow: auto;
+  border: 1px solid #e7ebf0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.requirement-history-table {
+  width: 100%;
+  min-width: 1160px;
+  border-collapse: collapse;
+  color: #344054;
+  font-size: 13px;
+  table-layout: fixed;
+}
+
+.requirement-history-table th,
+.requirement-history-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #f0f1f3;
+  text-align: left;
+  vertical-align: top;
+}
+
+.requirement-history-table th {
+  color: #667085;
+  background: #fafafa;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.requirement-history-table th:nth-child(1) { width: 112px; }
+.requirement-history-table th:nth-child(2) { width: 100px; }
+.requirement-history-table th:nth-child(3) { width: 160px; }
+.requirement-history-table th:nth-child(4) { width: 38%; }
+.requirement-history-table th:nth-child(5) { width: 100px; }
+
+.requirement-history-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.requirement-history-date-id {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.requirement-history-date-id strong {
+  color: #1677ff;
+  font-size: 13px;
+}
+
+.requirement-history-title-cell {
+  display: block;
+  color: #1f2329;
+  line-height: 1.55;
+}
+
+.requirement-history-content-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  line-height: 1.55;
+}
+
+.requirement-history-content-detail {
+  display: block;
+  line-height: 1.5;
+}
+
+.requirement-history-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+}
+
+.requirement-history-story-link {
+  color: #1677ff;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.requirement-history-empty {
+  padding: 36px 0;
+}
+
+.requirement-history-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
 
 @media (max-width: 600px) {
-  .workbench-overview {
-    padding: 24px 16px;
+  .requirement-history-page {
+    padding: 24px 16px 40px;
   }
 }
-
