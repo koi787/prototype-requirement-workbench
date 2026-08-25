@@ -1,0 +1,633 @@
+/* 客户业务域只使用本地样式；不改变 prospect-management/shared/admin 的既有 CSS。 */
+.store-customer-content {
+  flex: 1;
+  padding: 8px 12px;
+  overflow: auto;
+  background: #ebeef2;
+}
+
+.customer-list-page {
+  min-width: 0;
+  min-height: 100%;
+  padding: 0;
+  color: #333;
+}
+
+.customer-list-main {
+  min-width: 0;
+  min-height: calc(100vh - 120px);
+  padding: 12px 16px 16px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
+}
+
+.customer-filter-card {
+  padding: 10px 12px 8px;
+  margin-bottom: 10px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+}
+
+.customer-filter-row {
+  display: grid;
+  grid-template-columns: 1.1fr 0.85fr 1fr 1.3fr 1.3fr;
+  gap: 8px 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.customer-filter-row:first-child {
+  grid-template-columns: 1.2fr 0.85fr 1.1fr 1.35fr 1.35fr;
+}
+
+.customer-filter-row:last-of-type {
+  grid-template-columns: 1.1fr 1.3fr 1.3fr auto;
+  margin-bottom: 0;
+}
+
+.customer-filter-field {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  color: #595959;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.customer-filter-field > label {
+  flex-shrink: 0;
+}
+
+.customer-filter-field .ant-input,
+.customer-filter-field .ant-select,
+.customer-filter-field .ant-select-selector {
+  min-width: 0;
+  width: 100%;
+}
+
+.customer-filter-date-range {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 4px;
+}
+
+.customer-filter-date-range .ant-input {
+  min-width: 0;
+  width: 50%;
+  padding-inline: 6px;
+  font-size: 12px;
+}
+
+.customer-filter-date-separator {
+  color: #bfbfbf;
+}
+
+.customer-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.customer-filter-actions .ant-btn-primary,
+.customer-toolbar .ant-btn-primary {
+  background: #1677ff;
+  border-color: #1677ff;
+}
+
+.customer-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 0 12px;
+}
+
+.customer-toolbar .ant-btn {
+  min-width: 96px;
+}
+
+.customer-table-wrapper {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+
+.customer-table-wrapper .ant-table {
+  font-size: 13px;
+}
+
+.customer-table-wrapper .ant-table-container {
+  min-width: 0;
+}
+
+.customer-table-wrapper .ant-table-thead > tr > th {
+  padding: 12px 10px;
+  color: #595959;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  background: #f3f4f5;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.customer-table-wrapper .ant-table-tbody > tr > td {
+  height: 52px;
+  padding: 10px;
+  color: #333;
+  line-height: 20px;
+  white-space: nowrap;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.customer-table-wrapper .ant-table-tbody > tr:nth-child(even) > td {
+  background: #fafbfc;
+}
+
+.customer-table-wrapper .ant-table-cell-fix-left,
+.customer-table-wrapper .ant-table-cell-fix-right {
+  background: inherit;
+}
+
+.customer-table-wrapper .ant-table-tbody > tr:hover > td {
+  background: #f5faff;
+}
+
+.customer-avatar {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  color: #9aa0a6;
+  background: #f0f2f5;
+  border: 1px solid #d9d9d9;
+  border-radius: 50%;
+}
+
+.customer-name-cell {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.customer-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.customer-row-action {
+  padding: 0;
+  font-size: 13px;
+}
+
+.customer-row-action.is-danger {
+  color: #f5222d;
+}
+
+.customer-pagination {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #595959;
+  font-size: 13px;
+}
+
+.customer-pagination-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.customer-pagination-pages {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.customer-page-button {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  color: #595959;
+  background: #fff;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.customer-page-button:hover,
+.customer-page-button.is-current {
+  color: #1677ff;
+  border-color: #1677ff;
+}
+
+.customer-page-button.is-current {
+  color: #fff;
+  background: #1677ff;
+}
+
+.customer-page-button:disabled {
+  color: #bfbfbf;
+  cursor: not-allowed;
+}
+
+.customer-page-ellipsis {
+  padding: 0 2px;
+  color: #8c8c8c;
+}
+
+.customer-page-jump-input {
+  width: 48px;
+  height: 26px;
+  padding: 2px 6px;
+  text-align: center;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+}
+
+/* ---------- 用户详情：按截图 04 的大右侧白色详情层 ---------- */
+.customer-detail-drawer .ant-drawer-header {
+  min-height: 56px;
+  padding: 16px 22px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.customer-detail-drawer .ant-drawer-title {
+  color: #595959;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.customer-detail-drawer .ant-drawer-extra {
+  display: flex;
+  align-items: center;
+}
+
+.customer-detail-close {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: #595959;
+  font-size: 22px;
+  line-height: 26px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.customer-detail-close:hover {
+  color: #1677ff;
+}
+
+.customer-detail-drawer .ant-drawer-body {
+  padding: 0;
+  overflow: hidden;
+}
+
+.customer-detail-body {
+  height: 100%;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.customer-detail-tabs {
+  display: flex;
+  min-width: max-content;
+  min-height: 44px;
+  align-items: stretch;
+  padding: 0 14px;
+  background: #f7f8fa;
+  border: 1px solid #dfe3e8;
+}
+
+.customer-detail-tab {
+  padding: 0 18px;
+  color: #8c8c8c;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid transparent;
+  cursor: default;
+}
+
+.customer-detail-tab.is-active {
+  color: #1677ff;
+  background: #fff;
+  border-right-color: #dfe3e8;
+  box-shadow: inset 0 -2px 0 #1677ff;
+}
+
+.customer-basic-info {
+  padding: 32px 28px 54px;
+}
+
+.customer-detail-section-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 18px;
+  color: #1f2329;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.customer-detail-section-mark {
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: #1677ff;
+  border-radius: 2px;
+}
+
+.customer-basic-info-content {
+  display: flex;
+  gap: 48px;
+  padding: 22px 14px 0 74px;
+}
+
+.customer-detail-avatar-column {
+  display: flex;
+  width: 118px;
+  flex: 0 0 118px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.customer-detail-avatar {
+  display: flex;
+  width: 108px;
+  height: 108px;
+  align-items: center;
+  justify-content: center;
+  color: #c7cbd1;
+  background: #f4f5f6;
+  border-radius: 10px;
+}
+
+.customer-detail-fields {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  column-gap: 42px;
+  row-gap: 28px;
+  align-items: baseline;
+}
+
+.customer-detail-field {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  color: #1f2329;
+  font-size: 14px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+.customer-detail-label {
+  flex: 0 0 auto;
+  color: #595959;
+}
+
+.customer-detail-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.customer-detail-action {
+  height: auto;
+  padding: 0 4px;
+  font-size: 14px;
+}
+
+/* ---------- 体测美容记录：沿用 SCRM 后台详情密度 ---------- */
+.customer-assessment-panel {
+  min-height: 100%;
+  padding: 24px 28px 48px;
+  background: #fff;
+}
+
+.customer-assessment-subtabs {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.customer-assessment-subtabs button {
+  position: relative;
+  padding: 0 4px 12px;
+  color: #8c8c8c;
+  font-size: 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.customer-assessment-subtabs button.is-active {
+  color: #1677ff;
+  font-weight: 600;
+}
+
+.customer-assessment-subtabs button.is-active::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: #1677ff;
+  content: '';
+}
+
+.customer-assessment-source-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.customer-assessment-source-filters button {
+  min-width: 64px;
+  padding: 4px 14px;
+  color: #595959;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.customer-assessment-source-filters button.is-active {
+  color: #1677ff;
+  background: #eaf3ff;
+  border-color: #1677ff;
+}
+
+.customer-assessment-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e0e0e0;
+}
+
+.customer-assessment-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  color: #333;
+  font-size: 13px;
+  table-layout: fixed;
+}
+
+.customer-assessment-table th,
+.customer-assessment-table td {
+  height: 48px;
+  padding: 10px 14px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.customer-assessment-table th {
+  color: #595959;
+  font-weight: 500;
+  background: #f3f4f5;
+}
+
+.customer-assessment-table tbody tr:nth-child(even) td {
+  background: #fafbfc;
+}
+
+.customer-assessment-view-action {
+  padding: 0;
+  color: #1677ff;
+  font-size: 13px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.customer-assessment-empty-state {
+  display: flex;
+  min-height: 260px;
+  align-items: center;
+  justify-content: center;
+  color: #8c8c8c;
+  font-size: 14px;
+  border: 1px solid #f0f0f0;
+}
+
+.customer-assessment-detail-drawer .ant-drawer-body {
+  padding: 0;
+  overflow: hidden;
+}
+
+.customer-assessment-detail-body {
+  height: 100%;
+  padding: 22px 28px 48px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.customer-assessment-detail-context {
+  display: flex;
+  gap: 28px;
+  padding-bottom: 16px;
+  color: #595959;
+  font-size: 13px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.customer-assessment-detail-section {
+  padding: 22px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.customer-assessment-detail-section h3 {
+  margin: 0 0 16px;
+  padding-left: 10px;
+  color: #1f2329;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  border-left: 4px solid #1677ff;
+}
+
+.customer-assessment-detail-grid,
+.customer-assessment-segment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 14px 36px;
+}
+
+.customer-assessment-detail-metric {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 8px;
+  color: #595959;
+  font-size: 14px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+.customer-assessment-detail-metric span {
+  flex: 0 0 auto;
+}
+
+.customer-assessment-detail-metric strong {
+  overflow: hidden;
+  color: #1f2329;
+  font-weight: 500;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1100px) {
+  .customer-assessment-panel,
+  .customer-assessment-detail-body {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .customer-assessment-detail-grid,
+  .customer-assessment-segment-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .customer-filter-row,
+  .customer-filter-row:last-of-type {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .customer-filter-actions {
+    justify-content: flex-start;
+  }
+
+  .customer-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 0;
+  }
+
+  .customer-basic-info-content {
+    padding-left: 0;
+  }
+
+  .customer-detail-fields {
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
+  }
+}

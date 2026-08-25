@@ -2,9 +2,9 @@
  * 0013/0014 - SCRM 产品级导航 / 页面注册表 / 产品壳测试。
  *
  * 覆盖任务单 §15 的产品级骨架项：
- * 1. 菜单配置可表达多一级业务域（prospect-management / employee-management）；
- *    0014 正式启用"员工"业务域（组织架构），未注册节点不可点击且不生成空页。
- * 2. 页面注册表对四个 canonical pageKey 返回正确页面；未知 key 不静默映射。
+ * 1. 菜单配置可表达多一级业务域（prospect-management / employee-management /
+ *    customer-management）；0014/0016 正式启用员工域与客户域，未注册节点不可点击且不生成空页。
+ * 2. 页面注册表对六个 canonical pageKey 返回正确页面；未知 key 不静默映射。
  * 3. 旧 initialPage key 兼容：旧 key → canonical 归一化；未知 initialPage 不落错误页。
  * 5. 页面出口不产生第二套 Sidebar / 顶部栏（产品壳单一实例）。
  * 6. Provider 仅挂载一次：跨内容出口组件类型变化后 create / update 运行时记录保留。
@@ -55,20 +55,24 @@ class GuardErrorBoundary extends Component<{ children: ReactNode }, { error: Err
 }
 
 describe('0013 SCRM 产品级导航与页面注册', () => {
-  it('菜单配置可表达多一级业务域；0014 启用员工域，未注册节点不生成空页', () => {
-    // 类型层：ScrmModuleKey 支持 employee-management（编译期可表达）
+  it('菜单配置可表达多一级业务域；0014/0016 启用员工与客户域，未注册节点不生成空页', () => {
+    // 类型层：ScrmModuleKey 支持 employee-management/customer-management（编译期可表达）
     const employeeModuleKey: ScrmModuleKey = 'employee-management';
+    const customerModuleKey: ScrmModuleKey = 'customer-management';
     expect(employeeModuleKey).toBe('employee-management');
+    expect(customerModuleKey).toBe('customer-management');
 
-    // 生产菜单启用两个业务域：潜客管理 + 员工（0014 组织架构）
+    // 生产菜单启用三个业务域：潜客管理 + 客户 + 员工
     const enabledModules = new Set(
       SCRM_MENU.filter((node) => node.enabled).map((node) => node.moduleKey),
     );
-    expect(enabledModules).toEqual(new Set(['prospect-management', 'employee-management']));
+    expect(enabledModules).toEqual(
+      new Set(['prospect-management', 'customer-management', 'employee-management']),
+    );
 
-    // 只有潜客管理/员工一级节点可点击；其余为占位入口（enabled: false，无 pageKey，不生成空页）
+    // 潜客管理/客户/员工一级节点可点击；其余为占位入口（enabled: false，无 pageKey，不生成空页）
     const clickable = SCRM_MENU.filter((node) => node.enabled);
-    expect(clickable.map((node) => node.key)).toEqual(['prospect', 'employee']);
+    expect(clickable.map((node) => node.key)).toEqual(['customer', 'prospect', 'employee']);
     for (const node of SCRM_MENU) {
       if (!node.enabled) {
         expect(node.pageKey).toBeUndefined();
@@ -84,6 +88,11 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
       'employee-organization',
     ]);
 
+    const customer = SCRM_MENU.find((node) => node.key === 'customer');
+    expect(customer?.enabled).toBe(true);
+    expect(customer?.defaultPageKey).toBe('customer-list');
+    expect(customer?.children?.map((child) => child.pageKey)).toEqual(['customer-list']);
+
     // 二级占位子菜单同样不可点击且不注册 pageKey（不生成空页）
     const prospect = SCRM_MENU.find((node) => node.key === 'prospect');
     expect(prospect?.children).toBeDefined();
@@ -94,13 +103,14 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
     }
   });
 
-  it('页面注册表对五个 canonical pageKey 返回正确页面；未知 key 不静默映射', () => {
+  it('页面注册表对六个 canonical pageKey 返回正确页面；未知 key 不静默映射', () => {
     expect(SCRM_PAGE_REGISTRY.map((registration) => registration.pageKey)).toEqual([
       'prospect-store-customer',
       'prospect-arrival-record',
       'prospect-visit-record',
       'employee-role-list',
       'employee-organization',
+      'customer-list',
     ]);
     expect(getPageRegistration('prospect-store-customer')).toBeDefined();
 
@@ -125,6 +135,7 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
     // employee-organization 为 0014 生产注册项（员工域自包含页，由产品壳出口渲染）
     expect(getPageRegistration('employee-organization')).toBeDefined();
     expect(getPageRegistration('employee-role-list')).toBeDefined();
+    expect(getPageRegistration('customer-list')).toBeDefined();
     // 未知 key 不静默映射到错误页面
     expect(getPageRegistration('unknown-page' as ScrmPageKey)).toBeUndefined();
   });
@@ -168,6 +179,24 @@ describe('0013 SCRM 产品级导航与页面注册', () => {
     expect(document.querySelector('[data-req-id="page-title-area"]')).toBeNull();
     expect(document.querySelectorAll('[data-req-id="left-navigation"]')).toHaveLength(1);
     expect(screen.queryByRole('button', { name: '查看需求' })).toBeNull();
+  });
+
+  it('customer-list 生产注册页由产品壳直接出口渲染，不经过潜客/员工业务根', () => {
+    render(<ScrmWorkspace initialPage="customer-list" />);
+    expect(document.querySelector('[data-req-id="customer-list-page"]')).toBeTruthy();
+    expect(document.querySelector('[data-req-id="page-title-area"]')).toBeNull();
+    expect(document.querySelector('[data-req-id="organization-page"]')).toBeNull();
+    expect(document.querySelectorAll('[data-req-id="left-navigation"]')).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: '查看需求' })).toBeNull();
+    expect(screen.getAllByText('客户列表').length).toBeGreaterThan(0);
+    expect(document.querySelector('.store-customer-tab-item.active')).toHaveTextContent('客户列表');
+    expect(document.querySelector('.store-customer-tab-item.active')).not.toHaveTextContent('门店客户');
+  });
+
+  it('潜客管理门店客户页面继续高亮门店客户顶部 Tab', () => {
+    render(<ScrmWorkspace initialPage="store-customer" />);
+    expect(document.querySelector('.store-customer-tab-item.active')).toHaveTextContent('门店客户');
+    expect(document.querySelector('.store-customer-tab-item.active')).not.toHaveTextContent('客户列表');
   });
 
   it('旧 initialPage key 兼容：旧 key → canonical 归一化，未知 initialPage 不落错误页', () => {

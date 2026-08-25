@@ -9,7 +9,8 @@
  * 顺序是否同步由产品验收另行决定，不在本基础设施任务内改变三个已实现页面的
  * key / 可进入性 / 业务内容）。未注册页面保持 enabled: false 且不渲染空页。
  *
- * 业务域边界：0014 已正式启用 employee-management，0015 Cycle A 增加员工 → 角色列表。
+ * 业务域边界：0014 已正式启用 employee-management，0015 增加员工 → 角色列表，
+ * 0016 Cycle C 增加 customer-management（客户 → 客户列表）。
  *
  * icon 复用既有图标能力（IconComponents，无依赖），0013 不设计图标注册系统。
  */
@@ -57,6 +58,17 @@ const prospectChildren: ScrmMenuNode[] = [
   { key: 'tag-group', label: '标签分组', moduleKey: 'prospect-management', enabled: false },
 ];
 
+/** 客户业务域子菜单（0016 Cycle C：完整客户列表）。 */
+const customerChildren: ScrmMenuNode[] = [
+  {
+    key: 'customer-list',
+    label: '客户列表',
+    moduleKey: 'customer-management',
+    pageKey: 'customer-list',
+    enabled: true,
+  },
+];
+
 /**
  * SCRM 产品级一级菜单（当前实际展示结构）。
  *
@@ -73,7 +85,15 @@ export const SCRM_MENU: readonly ScrmMenuNode[] = [
   { key: 'order', label: '订单', moduleKey: 'prospect-management', enabled: false, icon: NavFileIcon },
   { key: 'record', label: '记录', moduleKey: 'prospect-management', enabled: false, icon: NavFileIcon },
   { key: 'store', label: '门店', moduleKey: 'prospect-management', enabled: false, icon: NavStoreIcon },
-  { key: 'customer', label: '客户', moduleKey: 'prospect-management', enabled: false, icon: NavContactsIcon },
+  {
+    key: 'customer',
+    label: '客户',
+    moduleKey: 'customer-management',
+    enabled: true,
+    defaultPageKey: 'customer-list',
+    icon: NavContactsIcon,
+    children: customerChildren,
+  },
   {
     key: 'prospect',
     label: '潜客管理',

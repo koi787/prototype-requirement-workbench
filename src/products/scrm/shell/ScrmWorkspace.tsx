@@ -84,17 +84,17 @@ export interface ScrmWorkspaceProps {
 
 // 顶部页签（产品壳 chrome；自 StoreCustomerList 原样迁移）
 const topTabs = [
-  { key: 'home', label: '首页', active: false },
-  { key: 'customer-list', label: '客户列表', active: false },
-  { key: 'store-list', label: '门店列表', active: false },
-  { key: 'store-customer', label: '门店客户', active: true },
-  { key: 'recruit', label: '人才招募', active: false },
-  { key: 'cashier-tab', label: '收银', active: false },
-  { key: 'product-category', label: '商品类目', active: false },
-  { key: 'store-room', label: '门店房间', active: false },
-  { key: 'employee-seat', label: '员工座席', active: false },
-  { key: 'contract-center', label: '合同中心', active: false },
-  { key: 'order-center', label: '订单中心', active: false },
+  { key: 'home', label: '首页' },
+  { key: 'customer-list', label: '客户列表' },
+  { key: 'store-list', label: '门店列表' },
+  { key: 'store-customer', label: '门店客户' },
+  { key: 'recruit', label: '人才招募' },
+  { key: 'cashier-tab', label: '收银' },
+  { key: 'product-category', label: '商品类目' },
+  { key: 'store-room', label: '门店房间' },
+  { key: 'employee-seat', label: '员工座席' },
+  { key: 'contract-center', label: '合同中心' },
+  { key: 'order-center', label: '订单中心' },
 ];
 
 export function ScrmWorkspace({
@@ -181,10 +181,18 @@ export function ScrmWorkspace({
       {topTabs.map((tab) => (
         <div
           key={tab.key}
-          className={`store-customer-tab-item ${tab.active ? 'active' : ''}`}
+          className={`store-customer-tab-item ${
+            (activePage === 'customer-list' && tab.key === 'customer-list') ||
+            (activePage !== 'customer-list' && tab.key === 'store-customer')
+              ? 'active'
+              : ''
+          }`}
         >
           {tab.label}
-          {tab.active && <span className="store-customer-tab-close">×</span>}
+          {((activePage === 'customer-list' && tab.key === 'customer-list') ||
+            (activePage !== 'customer-list' && tab.key === 'store-customer')) && (
+            <span className="store-customer-tab-close">×</span>
+          )}
         </div>
       ))}
     </div>

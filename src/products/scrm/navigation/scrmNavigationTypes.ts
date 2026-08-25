@@ -20,7 +20,10 @@ export interface ScrmMenuIconProps {
 }
 
 /** SCRM 一级业务域（模块）稳定 key。 */
-export type ScrmModuleKey = 'prospect-management' | 'employee-management';
+export type ScrmModuleKey =
+  | 'prospect-management'
+  | 'employee-management'
+  | 'customer-management';
 
 /** 产品级页面 canonical key（带业务域前缀）；employee-organization 为 0014 生产页面。 */
 export type ScrmPageKey =
@@ -28,7 +31,8 @@ export type ScrmPageKey =
   | 'prospect-arrival-record'
   | 'prospect-visit-record'
   | 'employee-role-list'
-  | 'employee-organization';
+  | 'employee-organization'
+  | 'customer-list';
 
 /** 0012 及更早的既有 pageKey（Story args / data-prospect-page-key / 既有测试继续使用）。 */
 export type ScrmLegacyPageKey = 'store-customer' | 'arrival-record' | 'visit-record';
@@ -70,6 +74,8 @@ export interface ScrmPageRenderContext {
   employeeOrganization?: ReactNode;
   /** 员工角色列表页面内容（产品级 Story setup 可提供初始化状态）。 */
   employeeRoleList?: ReactNode;
+  /** 客户列表与基本信息详情页面内容（产品级 Story setup 可提供初始化状态）。 */
+  customerList?: ReactNode;
 }
 
 /**

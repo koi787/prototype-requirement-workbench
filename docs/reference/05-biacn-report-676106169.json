@@ -1,0 +1,360 @@
+{
+    "data": {
+        "measurement": {
+            "id": 676106169,
+            "ca_id": 0,
+            "device_sn": "6610312629352",
+            "device_measure_id": "491c4ed1-5a17-4e22-87f4-aad884fb8539",
+            "device_data_id": "",
+            "pro_name": "biacn-f30",
+            "version_no": null,
+            "third_uid": "",
+            "extend_data": "",
+            "member_id": "",
+            "attachment_id": "",
+            "attachment_rom": "",
+            "phone": "18344639949",
+            "email": "",
+            "height": 170,
+            "weight": 75.2,
+            "gender": 1,
+            "birthday": "2000-08-20",
+            "age": 25,
+            "score": 70,
+            "outline": {
+                "is_matting": 1,
+                "figure": 7,
+                "bmi": 26,
+                "smm_control": 1.4,
+                "bfm_control": 11.6,
+                "smm": 30.7,
+                "pbf": 26,
+                "muscle": 51.8,
+                "bfm": 19.6,
+                "vfi": 8,
+                "bmr": 1572,
+                "cbc": 2515,
+                "body_age": 26.3,
+                "ffmi": 19.3,
+                "ffmi.star": 2,
+                "whfr": 0.89,
+                "tbw": 40.3,
+                "ai_shape_pic": "https://static03.youjiuhealth.com/MINI/3T/images/report/composition/SomatotypeSimulation/man/7.png"
+            },
+            "inclusion": 1,
+            "login_type": 12,
+            "start_time": "2026-08-20 12:02:51",
+            "score_constitute": {
+                "composition": 70,
+                "pelvis": 0,
+                "postpartum": 0,
+                "posture": 0,
+                "score": 70
+            }
+        },
+        "comprehensive_assessment": null,
+        "composition": {
+            "weight": {
+                "value": 75.2,
+                "grade": 3,
+                "prv": [
+                    57.2,
+                    69.9
+                ]
+            },
+            "fat": {
+                "value": 19.6,
+                "grade": 3,
+                "prv": [
+                    6.4,
+                    12.7
+                ]
+            },
+            "ffm": {
+                "value": 55.6,
+                "grade": 2,
+                "prv": [
+                    50.9,
+                    57.2
+                ]
+            },
+            "mineral": {
+                "value": 3.9,
+                "grade": 2,
+                "prv": [
+                    3.6,
+                    4
+                ]
+            },
+            "muscle": {
+                "value": 51.8,
+                "grade": 2,
+                "prv": [
+                    47.3,
+                    53.2
+                ]
+            },
+            "protein": {
+                "value": 11.5,
+                "grade": 3,
+                "prv": [
+                    10.2,
+                    11.4
+                ]
+            },
+            "tbw": {
+                "value": 40.3,
+                "grade": 2,
+                "prv": [
+                    37.1,
+                    41.8
+                ]
+            },
+            "segmental_muscle": {
+                "la": {
+                    "value": 2.9,
+                    "grade": 2,
+                    "prv": [
+                        2.6,
+                        3.1
+                    ]
+                },
+                "ll": {
+                    "value": 8.8,
+                    "grade": 2,
+                    "prv": [
+                        7.8,
+                        9.5
+                    ]
+                },
+                "ra": {
+                    "value": 3,
+                    "grade": 2,
+                    "prv": [
+                        2.6,
+                        3.1
+                    ]
+                },
+                "rl": {
+                    "value": 9.1,
+                    "grade": 2,
+                    "prv": [
+                        7.8,
+                        9.5
+                    ]
+                },
+                "tr": {
+                    "value": 24.2,
+                    "grade": 2,
+                    "prv": [
+                        21.3,
+                        26.1
+                    ]
+                }
+            },
+            "segmental_fat": {
+                "la": {
+                    "value": 0.89,
+                    "grade": 3,
+                    "prv": [
+                        0.38,
+                        0.76
+                    ]
+                },
+                "ll": {
+                    "value": 3.1,
+                    "grade": 3,
+                    "prv": [
+                        1.1,
+                        2.2
+                    ]
+                },
+                "ra": {
+                    "value": 0.78,
+                    "grade": 3,
+                    "prv": [
+                        0.38,
+                        0.76
+                    ]
+                },
+                "rl": {
+                    "value": 3.2,
+                    "grade": 3,
+                    "prv": [
+                        1.1,
+                        2.2
+                    ]
+                },
+                "tr": {
+                    "value": 10.4,
+                    "grade": 3,
+                    "prv": [
+                        3.4,
+                        6.7
+                    ]
+                }
+            },
+            "whfr": {
+                "value": 0.89,
+                "grade": 2,
+                "prv": [
+                    0.8,
+                    0.9
+                ]
+            },
+            "pbf": {
+                "value": 26,
+                "grade": 3,
+                "prv": [
+                    10,
+                    20
+                ]
+            },
+            "smm": {
+                "value": 30.7,
+                "grade": 2,
+                "prv": [
+                    26.1,
+                    31.9
+                ]
+            },
+            "vfi": {
+                "value": 8,
+                "grade": 2,
+                "prv": [
+                    1,
+                    9
+                ]
+            },
+            "strong_index": {
+                "value": 19.3,
+                "grade": 1,
+                "prv": [
+                    19.5,
+                    21.5
+                ],
+                "stars": 2
+            },
+            "bmr": {
+                "value": 1572,
+                "grade": 2,
+                "prv": [
+                    1469,
+                    1606
+                ]
+            },
+            "tee": {
+                "value": 2515
+            },
+            "bmi": {
+                "value": 26,
+                "grade": 3,
+                "prv": [
+                    18.5,
+                    24
+                ]
+            },
+            "body_age": {
+                "value": 26.3
+            },
+            "body_age_offset": {
+                "value": 1.3
+            },
+            "figure": {
+                "value": 7,
+                "map": [
+                    15,
+                    17.5,
+                    21.5,
+                    24,
+                    6,
+                    12,
+                    22,
+                    33,
+                    41,
+                    19.3,
+                    26
+                ]
+            },
+            "evaluation": {
+                "fat": {
+                    "grade": 3
+                },
+                "abdominal_fat": {
+                    "grade": 3
+                },
+                "weakness": {
+                    "grade": 3
+                },
+                "nutrition": {
+                    "grade": 1
+                }
+            },
+            "muscle_control": {
+                "value": 1.4,
+                "water_drop": 1
+            },
+            "fat_control": {
+                "value": 11.6,
+                "water_drop": 4
+            },
+            "body_score": {
+                "value": 70
+            },
+            "score": {
+                "value": 3
+            },
+            "calcium": {
+                "value": 1.42,
+                "grade": 2,
+                "prv": [
+                    1.31,
+                    1.47
+                ]
+            },
+            "segmental_smm_control": {
+                "la": {
+                    "value": 0
+                },
+                "ll": {
+                    "value": 0
+                },
+                "ra": {
+                    "value": 0
+                },
+                "rl": {
+                    "value": 0
+                },
+                "tr": {
+                    "value": 0
+                }
+            },
+            "ideal": {
+                "bmr": {
+                    "value": 1603.4
+                },
+                "muscle": {
+                    "value": 53.2
+                },
+                "smm": {
+                    "value": 32.1
+                },
+                "vfi": {
+                    "value": 3
+                },
+                "strong_index": {
+                    "value": 19.5
+                },
+                "pbf": {
+                    "value": 17
+                },
+                "tee": {
+                    "value": 2565.4
+                },
+                "fat": {
+                    "value": 8
+                }
+            }
+        }
+    }
+}

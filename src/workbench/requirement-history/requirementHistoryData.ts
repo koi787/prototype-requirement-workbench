@@ -21,6 +21,28 @@ export interface RequirementHistoryRecord {
 
 export const REQUIREMENT_HISTORY_RECORDS = [
   {
+    id: '0016',
+    name: '硬件检测数据接入——体测仪一期',
+    type: 'mixed',
+    module: '奥本运动 / SCRM',
+    status: '已发布',
+    completedAt: '2026-08-25',
+    summary: '完成体测仪一期跨端接入原型。奥本运动复刻用户中心并接通体测入口，新增统一体测报告，使用同一套页面兼容 InBody 与 BIACN 两种数据来源；SCRM 新增客户业务域，完整复刻客户列表与客户基本信息，并在客户详情新增体测美容记录，支持 InBody / BIACN 历史体测筛选及详情查看，美容检测暂保留入口与空状态。',
+    implementedItems: [
+      '奥本运动复刻用户中心并接通体测入口，提供统一体测报告。',
+      '统一体测报告兼容 InBody 与 BIACN 两种数据来源。',
+      'SCRM 新增客户业务域，完整复刻客户列表与客户基本信息。',
+      '客户详情新增体测美容记录，支持历史体测筛选及详情查看，美容检测暂保留入口与空状态。',
+    ],
+    storyLinks: [
+      { label: '奥本运动用户中心', storyId: '移动端｜奥本运动-我的-用户中心--默认状态' },
+      { label: 'InBody报告', storyId: '移动端｜奥本运动-体测-inbody报告--默认报告' },
+      { label: 'BIACN报告', storyId: '移动端｜奥本运动-体测-biacn报告--默认报告' },
+      { label: 'SCRM客户列表', storyId: 'scrm-客户-客户列表--正常列表' },
+      { label: '体测美容记录', storyId: 'scrm-客户-客户详情-体测美容记录--全部记录' },
+    ],
+  },
+  {
     id: '0015',
     name: '员工角色管理',
     type: 'replica',
