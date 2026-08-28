@@ -1,8 +1,8 @@
 /**
  * 0012 Cycle A - 拜访记录（19 列）业务模块列定义。
  *
- * 在 0011 §7 的 18 列基础上插入"下次拜访时间"为第 7 列（客资来源之后、
- * 预约门店之前）。独立页（拜访记录）与跟进详情"拜访记录"Tab 共用同一份
+ * 在 0011 §7 的 18 列基础上插入"下次拜访时间"。0017 将跟进判断最常用的
+ * 7 个字段前置。独立页（拜访记录）与跟进详情"拜访记录"Tab 共用同一份
  * 列定义，禁止出现第二套拜访 columns。用户姓名使用蓝色链接视觉；意向度
  * 按真实系统显示纯数字（不消费 IntentLevelTag，该标签仅跟进旅程卡使用）；
  * 金额统一两位小数、空值显示 `--`；操作列固定在右侧，为 操作 按钮 +
@@ -14,21 +14,21 @@ import { NEXT_VISIT_TIME_EMPTY_TEXT } from './visitRecordTypes';
 import { RecordNameLink, RecordOperationCell } from '../record-shared';
 import type { RecordOperationItem } from '../record-shared';
 
-/** 拜访记录完整期望表头（19 列，0012 §7.3 顺序：下次拜访时间为第 7 列） */
+/** 拜访记录完整期望表头（19 列，0017 前 7 列为跟进重点字段） */
 export const VISIT_RECORD_HEADERS = [
-  'ID',
   '用户姓名',
-  '用户ID',
-  '微信号',
   '手机号',
-  '客资来源',
   '下次拜访时间',
-  '预约门店',
-  '拜访方式',
   '意向度',
   '改善需求',
   '意向课程',
   '拜访备注',
+  'ID',
+  '用户ID',
+  '微信号',
+  '客资来源',
+  '预约门店',
+  '拜访方式',
   '拜访时间',
   '创建人',
   '创建时间',
@@ -43,7 +43,6 @@ export const VISIT_OPERATION_ITEMS: readonly RecordOperationItem[] = [
 ];
 
 export const VISIT_RECORD_COLUMNS: ColumnsType<VisitRecord> = [
-  { title: 'ID', dataIndex: 'id', key: 'id', width: 70 },
   {
     title: '用户姓名',
     dataIndex: 'userName',
@@ -51,10 +50,7 @@ export const VISIT_RECORD_COLUMNS: ColumnsType<VisitRecord> = [
     width: 110,
     render: (v: string) => <RecordNameLink name={v} />,
   },
-  { title: '用户ID', dataIndex: 'userId', key: 'userId', width: 100 },
-  { title: '微信号', dataIndex: 'wechatId', key: 'wechatId', width: 130 },
   { title: '手机号', dataIndex: 'phone', key: 'phone', width: 120 },
-  { title: '客资来源', dataIndex: 'source', key: 'source', width: 100 },
   {
     title: '下次拜访时间',
     dataIndex: 'nextVisitTime',
@@ -62,8 +58,6 @@ export const VISIT_RECORD_COLUMNS: ColumnsType<VisitRecord> = [
     width: 150,
     render: (v: string | null | undefined) => v ?? NEXT_VISIT_TIME_EMPTY_TEXT,
   },
-  { title: '预约门店', dataIndex: 'appointmentStore', key: 'appointmentStore', width: 120 },
-  { title: '拜访方式', dataIndex: 'visitWay', key: 'visitWay', width: 110 },
   {
     title: '意向度',
     dataIndex: 'intentLevel',
@@ -74,6 +68,12 @@ export const VISIT_RECORD_COLUMNS: ColumnsType<VisitRecord> = [
   { title: '改善需求', dataIndex: 'improvementNeed', key: 'improvementNeed', width: 140 },
   { title: '意向课程', dataIndex: 'intendedCourse', key: 'intendedCourse', width: 140 },
   { title: '拜访备注', dataIndex: 'visitRemark', key: 'visitRemark', width: 130 },
+  { title: 'ID', dataIndex: 'id', key: 'id', width: 70 },
+  { title: '用户ID', dataIndex: 'userId', key: 'userId', width: 100 },
+  { title: '微信号', dataIndex: 'wechatId', key: 'wechatId', width: 130 },
+  { title: '客资来源', dataIndex: 'source', key: 'source', width: 100 },
+  { title: '预约门店', dataIndex: 'appointmentStore', key: 'appointmentStore', width: 120 },
+  { title: '拜访方式', dataIndex: 'visitWay', key: 'visitWay', width: 110 },
   { title: '拜访时间', dataIndex: 'visitTime', key: 'visitTime', width: 150 },
   { title: '创建人', dataIndex: 'creator', key: 'creator', width: 90 },
   { title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 150 },

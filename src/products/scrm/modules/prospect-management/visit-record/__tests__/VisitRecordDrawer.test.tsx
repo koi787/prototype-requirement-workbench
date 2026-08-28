@@ -44,21 +44,21 @@ function cellByIndex(row: HTMLElement, index: number): HTMLElement {
   return cell as HTMLElement;
 }
 
-/** 拜访记录独立页 19 列表头（下次拜访时间为第 7 列，索引 6） */
+/** 拜访记录独立页 19 列表头（0017 前 7 列为跟进重点字段） */
 const EXPECTED_VISIT_HEADERS = [
-  'ID',
   '用户姓名',
-  '用户ID',
-  '微信号',
   '手机号',
-  '客资来源',
   '下次拜访时间',
-  '预约门店',
-  '拜访方式',
   '意向度',
   '改善需求',
   '意向课程',
   '拜访备注',
+  'ID',
+  '用户ID',
+  '微信号',
+  '客资来源',
+  '预约门店',
+  '拜访方式',
   '拜访时间',
   '创建人',
   '创建时间',

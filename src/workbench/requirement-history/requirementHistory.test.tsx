@@ -7,11 +7,12 @@ import { REQUIREMENT_HISTORY_RECORDS } from './requirementHistoryData';
 describe('requirement history list', () => {
   afterEach(() => cleanup());
 
-  it('keeps the five confirmed records and sorts them by completed date descending', () => {
+  it('keeps the six confirmed records and sorts them by completed date descending', () => {
     render(<RequirementHistoryListPage />);
 
-    expect(REQUIREMENT_HISTORY_RECORDS.map((record) => record.id)).toEqual(['0016', '0015', '0014', '0013', '0012']);
+    expect(REQUIREMENT_HISTORY_RECORDS.map((record) => record.id)).toEqual(['0017', '0016', '0015', '0014', '0013', '0012']);
     expect(screen.getAllByTestId(/requirement-history-row-/).map((row) => row.getAttribute('data-testid'))).toEqual([
+      'requirement-history-row-0017',
       'requirement-history-row-0016',
       'requirement-history-row-0015',
       'requirement-history-row-0014',
@@ -48,6 +49,21 @@ describe('requirement history list', () => {
     await user.clear(input);
     await user.type(input, 'BIACN');
     expect(screen.getByTestId('requirement-history-row-0016')).toBeInTheDocument();
+
+    await user.clear(input);
+    await user.type(input, '拜访');
+    expect(screen.getByTestId('requirement-history-row-0017')).toBeInTheDocument();
+    expect(screen.queryByTestId('requirement-history-row-0016')).toBeNull();
+
+    await user.clear(input);
+    await user.type(input, '下次拜访时间');
+    expect(screen.getByTestId('requirement-history-row-0017')).toBeInTheDocument();
+    expect(screen.queryByTestId('requirement-history-row-0016')).toBeNull();
+
+    await user.clear(input);
+    await user.type(input, '未来7天');
+    expect(screen.getByTestId('requirement-history-row-0017')).toBeInTheDocument();
+    expect(screen.queryByTestId('requirement-history-row-0016')).toBeNull();
   });
 
   it('shows the required empty state when there is no match', async () => {
@@ -61,6 +77,12 @@ describe('requirement history list', () => {
 
   it('renders direct links to the real Storybook stories', () => {
     render(<RequirementHistoryListPage />);
+
+    const visitRecordRow = screen.getByTestId('requirement-history-row-0017');
+    expect(within(visitRecordRow).getByText('需求改动')).toBeInTheDocument();
+    expect(within(visitRecordRow).getAllByRole('link')).toHaveLength(2);
+    expect(within(visitRecordRow).getByRole('link', { name: '门店客户跟进详情' })).toHaveAttribute('href', expect.stringContaining(encodeURIComponent('scrm-潜客管理-门店客户-跟进详情--拜访记录')));
+    expect(within(visitRecordRow).getByRole('link', { name: '拜访记录列表' })).toHaveAttribute('href', expect.stringContaining(encodeURIComponent('scrm-潜客管理-拜访记录-列表--正常列表')));
 
     const bodyAssessmentRow = screen.getByTestId('requirement-history-row-0016');
     expect(within(bodyAssessmentRow).getByText('混合')).toBeInTheDocument();

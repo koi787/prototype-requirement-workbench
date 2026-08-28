@@ -21,6 +21,27 @@ export interface RequirementHistoryRecord {
 
 export const REQUIREMENT_HISTORY_RECORDS = [
   {
+    id: '0017',
+    name: '拜访记录重点字段前置与下次拜访时间筛选',
+    type: 'change',
+    module: 'SCRM / 潜客管理 / 拜访记录',
+    status: '已发布',
+    completedAt: '2026-08-28',
+    summary: '优化拜访记录信息查看与后续跟进效率。',
+    implementedItems: [
+      '门店客户跟进详情及独立拜访记录列表统一前置用户姓名、手机号、下次拜访时间、意向度、改善需求、意向课程、拜访备注等重点字段。',
+      '独立拜访记录新增“下次拜访时间”范围筛选，支持今天、未来7天、未来30天、未来半年快捷查询。',
+    ],
+    changes: [
+      '将拜访记录中最常用于跟进判断的重点字段前置，提升信息查看效率。',
+      '新增下次拜访时间范围筛选，支持按未来跟进计划快速查询。',
+    ],
+    storyLinks: [
+      { label: '门店客户跟进详情', storyId: 'scrm-潜客管理-门店客户-跟进详情--拜访记录' },
+      { label: '拜访记录列表', storyId: 'scrm-潜客管理-拜访记录-列表--正常列表' },
+    ],
+  },
+  {
     id: '0016',
     name: '硬件检测数据接入——体测仪一期',
     type: 'mixed',

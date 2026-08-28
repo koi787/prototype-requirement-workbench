@@ -24,7 +24,7 @@ export interface VisitRecord {
   wechatId: string;
   phone: string;
   source: string;
-  /** 下次拜访时间（第 7 列，客资来源之后、预约门店之前）；可空，空值显示 `--`。 */
+  /** 下次拜访时间（0017 前 7 列中的第 3 列）；可空，空值显示 `--`。 */
   nextVisitTime: string | null;
   appointmentStore: string;
   visitWay: string;

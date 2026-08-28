@@ -131,19 +131,19 @@ const EXPECTED_ARRIVAL_HEADERS = [
 ];
 
 const EXPECTED_VISIT_HEADERS = [
-  'ID',
   '用户姓名',
-  '用户ID',
-  '微信号',
   '手机号',
-  '客资来源',
   '下次拜访时间',
-  '预约门店',
-  '拜访方式',
   '意向度',
   '改善需求',
   '意向课程',
   '拜访备注',
+  'ID',
+  '用户ID',
+  '微信号',
+  '客资来源',
+  '预约门店',
+  '拜访方式',
   '拜访时间',
   '创建人',
   '创建时间',
@@ -794,13 +794,21 @@ describe('StoreCustomerList 跟进详情（0011 Cycle 1）', () => {
       expect(ARRIVAL_RECORD_COLUMNS).toHaveLength(32);
     });
 
-    it('拜访记录19列（0012 §7.3，含下次拜访时间）', () => {
+    it('拜访记录19列（0017 前7列为跟进重点字段）', () => {
       expect(EXPECTED_VISIT_HEADERS).toHaveLength(19);
       expect(VISIT_RECORD_HEADERS).toEqual(EXPECTED_VISIT_HEADERS);
       expect(VISIT_RECORD_COLUMNS).toHaveLength(19);
-      // 下次拜访时间为第 7 列：客资来源之后、预约门店之前
-      expect(EXPECTED_VISIT_HEADERS.indexOf('下次拜访时间')).toBe(6);
-      expect(VISIT_RECORD_COLUMNS[6]).toMatchObject({
+      expect(EXPECTED_VISIT_HEADERS.slice(0, 7)).toEqual([
+        '用户姓名',
+        '手机号',
+        '下次拜访时间',
+        '意向度',
+        '改善需求',
+        '意向课程',
+        '拜访备注',
+      ]);
+      expect(EXPECTED_VISIT_HEADERS.indexOf('下次拜访时间')).toBe(2);
+      expect(VISIT_RECORD_COLUMNS[2]).toMatchObject({
         title: '下次拜访时间',
         dataIndex: 'nextVisitTime',
       });

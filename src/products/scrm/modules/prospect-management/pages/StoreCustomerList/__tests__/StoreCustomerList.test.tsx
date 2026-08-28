@@ -2911,12 +2911,12 @@ describe('0012 到店/拜访记录独立模块化 - 菜单与独立页面切换'
     expect(navSubitems()).toHaveLength(9);
     // 选中态同步到拜访记录
     expect(activePageKey()).toBe('visit-record');
-    // 内容区为拜访记录独立页（19 列，下次拜访时间为第 7 列）
+    // 内容区为拜访记录独立页（19 列，前 7 列为跟进重点字段）
     expect(getByReqId('visit-record-filter')).toBeTruthy();
     const headers = visibleHeaders(getByReqId('visit-record-table'));
     expect(headers).toEqual(VISIT_RECORD_HEADERS);
     expect(headers).toHaveLength(19);
-    expect(headers.indexOf('下次拜访时间')).toBe(6);
+    expect(headers.indexOf('下次拜访时间')).toBe(2);
     // 门店客户列表不渲染
     expect(document.querySelector('[data-req-id="customer-table"]')).toBeNull();
   });

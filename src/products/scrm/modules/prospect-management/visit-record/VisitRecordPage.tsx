@@ -2,7 +2,7 @@
  * 0012 Cycle A - 拜访记录独立页。
  *
  * 通过产品层菜单切换进入，仅提供归集、查询、筛选、查看能力：
- * 8 个筛选字段 + 搜索/重置/导出，19 列列表（含下次拜访时间）+ 分页。
+ * 9 个筛选字段 + 搜索/重置/导出，19 列列表（含下次拜访时间）+ 分页。
  * Cycle A 不提供添加拜访记录 / 新增 / 编辑等录入能力，页面不渲染任何
  * 新增按钮。
  */
@@ -23,10 +23,20 @@ import {
   VISIT_SOURCE_OPTIONS,
   VISIT_STORE_OPTIONS,
   VISIT_WAY_OPTIONS,
+  getNextVisitTimeRange,
+  normalizeNextVisitTimeRange,
 } from './visitRecordFilters';
 import type { VisitRecordFilterValues } from './visitRecordFilters';
+import { NativeDateRangePicker, parseLocalDate } from './visitRecordDatePicker';
 
 const { RangePicker } = DatePicker;
+
+const NEXT_VISIT_PRESETS = [
+  { key: 'today', label: '今天' },
+  { key: 'future7', label: '未来7天' },
+  { key: 'future30', label: '未来30天' },
+  { key: 'futureHalfYear', label: '未来半年' },
+] as const;
 
 export interface VisitRecordPageProps {
   /** 稳定复现空态：不加载任何拜访记录（Story/测试专用）。 */
@@ -49,6 +59,7 @@ export function VisitRecordPage({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [exportMsg, setExportMsg] = useState<string | null>(null);
+  const [nextVisitPickerOpen, setNextVisitPickerOpen] = useState(false);
   const exportTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updatePending = <K extends keyof VisitRecordFilterValues>(
@@ -85,6 +96,7 @@ export function VisitRecordPage({
     setPendingFilters({ ...VISIT_RECORD_DEFAULT_FILTERS });
     setAppliedFilters({ ...VISIT_RECORD_DEFAULT_FILTERS });
     setCurrentPage(1);
+    setNextVisitPickerOpen(false);
   }, []);
 
   // ---------- 导出（沿用 0011 单一反馈方式，定时器可控）----------
@@ -153,6 +165,47 @@ export function VisitRecordPage({
               onChange={(v) => updatePending('visitWay', v ?? null)}
               options={VISIT_WAY_OPTIONS}
               allowClear
+            />
+          </FilterField>
+          <FilterField
+            label="下次拜访时间"
+            className="store-customer-filter-item--date-range"
+            dataReqId="filter-visit-next-time-range"
+          >
+            <NativeDateRangePicker
+              value={
+                pendingFilters.nextVisitTimeRange
+                  ? (pendingFilters.nextVisitTimeRange.map((value) => parseLocalDate(value)) as [Date, Date])
+                  : null
+              }
+              open={nextVisitPickerOpen}
+              onOpenChange={setNextVisitPickerOpen}
+              separator="至"
+              format="YYYY-MM-DD"
+              allowClear
+              onChange={(_dates, dateStrings) => {
+                updatePending('nextVisitTimeRange', normalizeNextVisitTimeRange(dateStrings));
+              }}
+              panelRender={(panel) => (
+                <div className="visit-record-next-range-panel">
+                  <div className="visit-record-next-range-presets" role="group" aria-label="快捷范围">
+                    {NEXT_VISIT_PRESETS.map((preset) => (
+                      <button
+                        key={preset.key}
+                        type="button"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => {
+                          updatePending('nextVisitTimeRange', getNextVisitTimeRange(preset.key));
+                          setNextVisitPickerOpen(false);
+                        }}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                  {panel}
+                </div>
+              )}
             />
           </FilterField>
           <FilterField label="创建人" dataReqId="filter-visit-creator">

@@ -10,6 +10,14 @@ import userEvent from '@testing-library/user-event';
 import type { ReactElement } from 'react';
 import { VisitRecordPage } from '../VisitRecordPage';
 import { VISIT_RECORD_HEADERS, VISIT_RECORD_COLUMNS } from '../visitRecordColumns';
+import {
+  applyVisitRecordFilter,
+  getNextVisitTimeRange,
+  VISIT_RECORD_DEFAULT_FILTERS,
+  normalizeNextVisitTimeRange,
+} from '../visitRecordFilters';
+import { getAllVisitRecords } from '../visitRecordMockData';
+import { formatLocalDate } from '../visitRecordDatePicker';
 import { RecordRuntimeStoreProvider } from '../../record-shared';
 
 afterEach(() => cleanup());
@@ -62,21 +70,21 @@ function cellByIndex(row: HTMLElement, index: number): HTMLElement {
   return cell as HTMLElement;
 }
 
-/** 拜访记录独立页 19 列表头（0012 §7.3：下次拜访时间为第 7 列） */
+/** 拜访记录独立页 19 列表头（0017：前 7 列为跟进重点字段） */
 const EXPECTED_VISIT_HEADERS = [
-  'ID',
   '用户姓名',
-  '用户ID',
-  '微信号',
   '手机号',
-  '客资来源',
   '下次拜访时间',
-  '预约门店',
-  '拜访方式',
   '意向度',
   '改善需求',
   '意向课程',
   '拜访备注',
+  'ID',
+  '用户ID',
+  '微信号',
+  '客资来源',
+  '预约门店',
+  '拜访方式',
   '拜访时间',
   '创建人',
   '创建时间',
@@ -95,9 +103,18 @@ describe('拜访记录独立页', () => {
     expect(VISIT_RECORD_COLUMNS).toHaveLength(19);
   });
 
-  it('下次拜访时间为第 7 列（客资来源之后、预约门店之前）', () => {
-    expect(EXPECTED_VISIT_HEADERS.indexOf('下次拜访时间')).toBe(6);
-    expect(VISIT_RECORD_COLUMNS[6]).toMatchObject({
+  it('前 7 列为跟进重点字段，且下次拜访时间位于第 3 列', () => {
+    expect(EXPECTED_VISIT_HEADERS.slice(0, 7)).toEqual([
+      '用户姓名',
+      '手机号',
+      '下次拜访时间',
+      '意向度',
+      '改善需求',
+      '意向课程',
+      '拜访备注',
+    ]);
+    expect(EXPECTED_VISIT_HEADERS.indexOf('下次拜访时间')).toBe(2);
+    expect(VISIT_RECORD_COLUMNS[2]).toMatchObject({
       title: '下次拜访时间',
       dataIndex: 'nextVisitTime',
     });
@@ -122,7 +139,7 @@ describe('拜访记录独立页', () => {
     expect(cellByIndex(rows[2]!, nextVisitIndex).textContent).toBe('2026-08-05 15:00:00');
   });
 
-  it('筛选结构为 11 项：8 个筛选字段 + 搜索/重置/导出', () => {
+  it('筛选结构为 12 项：9 个筛选字段 + 搜索/重置/导出', () => {
     renderPage(<VisitRecordPage />);
     const filter = getByReqId('visit-record-filter');
     const labels = [
@@ -132,6 +149,7 @@ describe('拜访记录独立页', () => {
       '预约门店',
       '拜访方式',
       '拜访时间',
+      '下次拜访时间',
       '创建人',
       '创建时间',
     ];
@@ -172,6 +190,102 @@ describe('拜访记录独立页', () => {
     await waitFor(() => {
       expect(dataRows(getByReqId('visit-record-table'))).toHaveLength(3);
     });
+  });
+
+  it('下次拜访时间快捷范围只更新待搜索条件，点击搜索后按闭区间过滤', async () => {
+    const user = userEvent.setup();
+    renderPage(<VisitRecordPage />);
+    const range = getByReqId('filter-visit-next-time-range');
+    const startInput = within(range).getAllByRole('textbox')[0]!;
+    await user.click(startInput);
+    await user.click(screen.getByRole('button', { name: '今天' }));
+    expect(dataRows(getByReqId('visit-record-table'))).toHaveLength(3);
+    expect((startInput as HTMLInputElement).value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    await user.click(getByReqId('visit-record-search-button'));
+    await waitFor(() => {
+      expect(dataRows(getByReqId('visit-record-table'))).toHaveLength(0);
+    });
+  });
+
+  it('下次拜访时间支持手动输入开始日和结束日，点击搜索后才过滤', async () => {
+    const user = userEvent.setup();
+    renderPage(<VisitRecordPage />);
+    const range = getByReqId('filter-visit-next-time-range');
+    const [startInput, endInput] = within(range).getAllByRole('textbox');
+    await user.type(startInput!, '2026-07-25');
+    await user.type(endInput!, '2026-08-05');
+    expect(dataRows(getByReqId('visit-record-table'))).toHaveLength(3);
+    await user.click(getByReqId('visit-record-search-button'));
+    await waitFor(() => {
+      expect(dataRows(getByReqId('visit-record-table'))).toHaveLength(2);
+    });
+    expect(dataRows(getByReqId('visit-record-table')).map((row) => row.getAttribute('data-row-key'))).toEqual([
+      'v1',
+      'v3',
+    ]);
+  });
+
+  it('日期范围工具按本地自然日生成四种快捷范围并规范化手动边界', () => {
+    const now = new Date(2026, 6, 21, 15, 30, 0);
+    expect(getNextVisitTimeRange('today', now)).toEqual([
+      '2026-07-21 00:00:00',
+      '2026-07-21 23:59:59',
+    ]);
+    expect(getNextVisitTimeRange('future7', now)).toEqual([
+      '2026-07-21 00:00:00',
+      '2026-07-27 23:59:59',
+    ]);
+    expect(getNextVisitTimeRange('future30', now)).toEqual([
+      '2026-07-21 00:00:00',
+      '2026-08-19 23:59:59',
+    ]);
+    expect(getNextVisitTimeRange('futureHalfYear', now)).toEqual([
+      '2026-07-21 00:00:00',
+      '2027-01-21 23:59:59',
+    ]);
+    expect(normalizeNextVisitTimeRange(['2026-07-21', '2026-07-25'])).toEqual([
+      '2026-07-21 00:00:00',
+      '2026-07-25 23:59:59',
+    ]);
+    expect(getNextVisitTimeRange('future7', new Date(2026, 7, 28))).toEqual([
+      '2026-08-28 00:00:00',
+      '2026-09-03 23:59:59',
+    ]);
+  });
+
+  it('日期 adapter 支持 Ant Design 日历使用的短日期 token', () => {
+    expect(formatLocalDate(new Date(2026, 7, 28), 'D')).toBe('28');
+    expect(formatLocalDate(new Date(2026, 7, 29), 'D')).toBe('29');
+    expect(formatLocalDate(new Date(2026, 8, 1), 'D')).toBe('1');
+    expect(formatLocalDate(new Date(2026, 7, 28), 'YYYY-MM-DD')).toBe('2026-08-28');
+  });
+
+  it('真实 RangePicker 双月面板的日期格显示日期号而不是格式 token', async () => {
+    const user = userEvent.setup();
+    renderPage(<VisitRecordPage />);
+    const range = getByReqId('filter-visit-next-time-range');
+    await user.click(within(range).getAllByRole('textbox')[0]!);
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const todayCell = screen.getByTitle(todayKey);
+    expect(todayCell.textContent?.trim()).toBe(String(today.getDate()));
+    expect(todayCell.textContent).not.toContain('D');
+  });
+
+  it('下次拜访时间按闭区间命中开始日、结束日和结束日中间时间，空值不命中', () => {
+    const records = getAllVisitRecords();
+    const filtered = applyVisitRecordFilter(records, {
+      ...VISIT_RECORD_DEFAULT_FILTERS,
+      nextVisitTimeRange: ['2026-07-25 00:00:00', '2026-08-05 23:59:59'],
+    });
+    expect(filtered.map((record) => record.key)).toEqual(['v1', 'v3']);
+    expect(
+      applyVisitRecordFilter(records, {
+        ...VISIT_RECORD_DEFAULT_FILTERS,
+        namePhone: '陈晨',
+        nextVisitTimeRange: ['2026-08-05 00:00:00', '2026-08-05 23:59:59'],
+      }).map((record) => record.key),
+    ).toEqual(['v3']);
   });
 
   it('搜索无结果时显示空表格与 0 条记录', async () => {
