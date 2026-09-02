@@ -13,7 +13,7 @@ import type {
 } from './bodyAssessmentTypes';
 
 // Cycle C 客户列表建立的稳定客户主键；不得使用 BIACN measurement.id。
-const CUSTOMER_ID = 'customer-53395';
+export const BODY_ASSESSMENT_CUSTOMER_ID = 'customer-53395';
 
 const metric = (value: number | null, unit: string | null): AssessmentMetric => ({ value, unit });
 
@@ -68,7 +68,7 @@ export function adaptInBody(snapshot: InBodyLegacySnapshot = INBODY_LEGACY_SNAPS
   return {
     source: 'INBODY',
     recordId: 'inbody-legacy-27311',
-    customerId: CUSTOMER_ID,
+    customerId: BODY_ASSESSMENT_CUSTOMER_ID,
     measuredAt: snapshot.measuredAt,
     profile: {
       displayId: snapshot.displayId,
@@ -164,7 +164,7 @@ export function adaptBiacn(source: BiacnReportSource = BIACN_REPORT_SOURCE): Bod
   return {
     source: 'BIACN',
     recordId: `biacn-${measurement.id}`,
-    customerId: CUSTOMER_ID,
+    customerId: BODY_ASSESSMENT_CUSTOMER_ID,
     measuredAt: measurement.start_time,
     profile: {
       displayId: '',

@@ -1,15 +1,14 @@
-import { useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { ProfileAvatar } from '../../shell/mobileIcons';
 import {
-  BODY_ASSESSMENT_REPORTS,
   formatAbsoluteAssessmentMetric,
   formatAssessmentMetric,
 } from '../../../../shared/body-assessment';
 import type {
   AssessmentMetric,
   BodyAssessmentReport as BodyAssessmentReportModel,
-  BodyAssessmentSource,
 } from '../../../../shared/body-assessment';
+import { HistoryBottomSheet } from './HistoryBottomSheet';
 import './bodyAssessment.css';
 
 const SEGMENT_LABELS: readonly { key: keyof BodyAssessmentReportModel['muscleContent']; label: string }[] = [
@@ -73,20 +72,36 @@ function ReportSection({ title, children, className = '' }: { title: string; chi
 }
 
 export interface BodyAssessmentReportProps {
-  initialSource?: BodyAssessmentSource;
+  report: BodyAssessmentReportModel | null;
+  records: readonly BodyAssessmentReportModel[];
+  currentRecordId: string | null;
+  historyOpen?: boolean;
   onBack?: () => void;
+  onHistoryOpen?: () => void;
+  onHistoryClose?: () => void;
+  onHistorySelect?: (recordId: string) => void;
 }
 
-export function BodyAssessmentReport({ initialSource = 'INBODY', onBack }: BodyAssessmentReportProps) {
-  const [source, setSource] = useState<BodyAssessmentSource>(initialSource);
-  const report = BODY_ASSESSMENT_REPORTS[source];
-  const scoreMetric: AssessmentMetric = report.score.precision === undefined
-    ? { value: report.score.value, unit: '分' }
-    : { value: report.score.value, unit: '分', precision: report.score.precision };
-  const excessWeight = formatAbsoluteAssessmentMetric(report.recommendations.weightControl, 2, 'kg');
+export function BodyAssessmentReport({
+  report,
+  records,
+  currentRecordId,
+  historyOpen = false,
+  onBack,
+  onHistoryOpen,
+  onHistoryClose,
+  onHistorySelect,
+}: BodyAssessmentReportProps) {
+  const source = report?.source;
+  const scoreMetric: AssessmentMetric = report === null
+    ? { value: null, unit: '分' }
+    : report.score.precision === undefined
+      ? { value: report.score.value, unit: '分' }
+      : { value: report.score.value, unit: '分', precision: report.score.precision };
+  const excessWeight = report ? formatAbsoluteAssessmentMetric(report.recommendations.weightControl, 2, 'kg') : '';
 
   return (
-    <div className="aoben-mobile-story-stage aoben-report-stage" data-testid="aoben-report-root" data-report-source={source}>
+    <div className="aoben-mobile-story-stage aoben-report-stage" data-testid="aoben-report-root" data-report-source={source ?? ''} data-report-record-id={currentRecordId ?? ''}>
       <div className="aoben-mobile-viewport aoben-report-viewport">
         <div className="aoben-mobile-scroll-area aoben-report-scroll-area" data-testid="aoben-report-scroll-area">
           <main className="aoben-report-page">
@@ -95,48 +110,60 @@ export function BodyAssessmentReport({ initialSource = 'INBODY', onBack }: BodyA
               <h1>身体数据</h1>
             </header>
 
-            <section className="aoben-report-hero" aria-label="评分与核心数据">
-              <div className="aoben-report-profile"><span className="aoben-report-avatar"><ProfileAvatar /></span><span>ID：{report.profile.displayId}<br />{report.profile.age}岁 | {report.profile.height}cm</span></div>
-              <button type="button" className="aoben-report-score" aria-label="切换体测报告来源" onClick={() => setSource(source === 'INBODY' ? 'BIACN' : 'INBODY')}>
-                <span className="aoben-report-score-arc" aria-hidden="true" />
-                <strong>{report.score.label}<b><MetricText metric={scoreMetric} /></b></strong>
-              </button>
-              <div className="aoben-report-illustration" aria-hidden="true"><span className="aoben-report-figure-head" /><i /><b /><em /></div>
-              <time>{report.measuredAt}</time>
-              <div className="aoben-report-core-grid">
-                {([
-                  ['体重', report.core.weight],
-                  ['体脂率', report.core.bodyFatPercentage],
-                  ['骨骼肌', report.core.skeletalMuscle],
-                  ['总水分', report.core.totalWater],
-                ] as readonly [string, AssessmentMetric][]).map(([label, item]) => <div key={label}><strong><MetricText metric={item} /></strong><span>{label}</span></div>)}
-              </div>
-            </section>
+            {report ? (
+              <>
+                <div className="aoben-report-history-bar">
+                  <button type="button" className="aoben-report-history-trigger" aria-label="打开历史记录" onClick={onHistoryOpen}>历史记录 <span aria-hidden="true">›</span></button>
+                </div>
+                <section className="aoben-report-hero" aria-label="评分与核心数据">
+                  <div className="aoben-report-profile"><span className="aoben-report-avatar"><ProfileAvatar /></span><span>ID：{report.profile.displayId}<br />{report.profile.age}岁 | {report.profile.height}cm</span></div>
+                  <div className="aoben-report-score" aria-label="身体评分">
+                    <span className="aoben-report-score-arc" aria-hidden="true" />
+                    <strong>{report.score.label}<b><MetricText metric={scoreMetric} /></b></strong>
+                  </div>
+                  <div className="aoben-report-illustration" aria-hidden="true"><span className="aoben-report-figure-head" /><i /><b /><em /></div>
+                  <div className="aoben-report-date-row">
+                    <time>{report.measuredAt}</time>
+                  </div>
+                  <div className="aoben-report-core-grid">
+                    {([
+                      ['体重', report.core.weight],
+                      ['体脂率', report.core.bodyFatPercentage],
+                      ['骨骼肌', report.core.skeletalMuscle],
+                      ['总水分', report.core.totalWater],
+                    ] as readonly [string, AssessmentMetric][]).map(([label, item]) => <div key={label}><strong><MetricText metric={item} /></strong><span>{label}</span></div>)}
+                  </div>
+                </section>
 
-            <ReportSection title="肌肉含量"><div className="aoben-report-legend"><span>低标准</span><span>标准</span><span>超标准</span></div><SegmentRows segments={report.muscleContent} /></ReportSection>
-            <ReportSection title="身体成分" className="aoben-report-composition"><ReportFigure report={report} /></ReportSection>
-            <ReportSection title="脂肪含量"><div className="aoben-report-legend"><span>低标准</span><span>标准</span><span>超标准</span></div><SegmentRows segments={report.fatContent} /></ReportSection>
+                <ReportSection title="肌肉含量"><div className="aoben-report-legend"><span>低标准</span><span>标准</span><span>超标准</span></div><SegmentRows segments={report.muscleContent} /></ReportSection>
+                <ReportSection title="身体成分" className="aoben-report-composition"><ReportFigure report={report} /></ReportSection>
+                <ReportSection title="脂肪含量"><div className="aoben-report-legend"><span>低标准</span><span>标准</span><span>超标准</span></div><SegmentRows segments={report.fatContent} /></ReportSection>
 
-            <section className="aoben-report-recommendation" aria-label="调节建议">
-              <div className="aoben-report-recommendation-art" aria-hidden="true">
-                <span>加油～</span>
-                <b><span>您高于标准体重</span><strong>{excessWeight}</strong></b>
-              </div>
-              <div className="aoben-report-recommendation-grid">
-                {([
-                  ['BMI', report.recommendations.bmi],
-                  ['去脂体重', report.recommendations.fatFreeMass],
-                  ['目标体重', report.recommendations.targetWeight],
-                  ['体重控制', report.recommendations.weightControl],
-                  ['脂肪控制', report.recommendations.fatControl],
-                  ['肌肉控制', report.recommendations.muscleControl],
-                ] as readonly [string, AssessmentMetric][]).map(([label, item]) => <div key={label}><span>{label}</span><strong><MetricText metric={item} signed={label === '肌肉控制'} /></strong></div>)}
-                <div className="aoben-report-calorie"><span>建议的热量摄入</span><strong><MetricText metric={report.recommendations.recommendedCalories} emptyValue={source === 'BIACN' ? '—' : ''} /></strong></div>
-              </div>
-            </section>
+                <section className="aoben-report-recommendation" aria-label="调节建议">
+                  <div className="aoben-report-recommendation-art" aria-hidden="true">
+                    <span>加油～</span>
+                    <b><span>您高于标准体重</span><strong>{excessWeight}</strong></b>
+                  </div>
+                  <div className="aoben-report-recommendation-grid">
+                    {([
+                      ['BMI', report.recommendations.bmi],
+                      ['去脂体重', report.recommendations.fatFreeMass],
+                      ['目标体重', report.recommendations.targetWeight],
+                      ['体重控制', report.recommendations.weightControl],
+                      ['脂肪控制', report.recommendations.fatControl],
+                      ['肌肉控制', report.recommendations.muscleControl],
+                    ] as readonly [string, AssessmentMetric][]).map(([label, item]) => <div key={label}><span>{label}</span><strong><MetricText metric={item} signed={label === '肌肉控制'} /></strong></div>)}
+                    <div className="aoben-report-calorie"><span>建议的热量摄入</span><strong><MetricText metric={report.recommendations.recommendedCalories} emptyValue={source === 'BIACN' ? '—' : ''} /></strong></div>
+                  </div>
+                </section>
+              </>
+            ) : <div className="aoben-report-empty-state">暂无历史记录</div>}
           </main>
         </div>
         <div className="aoben-window-controls" aria-hidden="true"><span>•••</span><i /><b /></div>
+        {historyOpen && onHistoryClose && onHistorySelect && (
+          <HistoryBottomSheet records={records} currentRecordId={currentRecordId} onClose={onHistoryClose} onSelect={onHistorySelect} />
+        )}
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ export {
   adaptBiacn,
   adaptInBody,
   BODY_ASSESSMENT_REPORTS,
+  BODY_ASSESSMENT_CUSTOMER_ID,
 } from './bodyAssessmentAdapters';
 export { BIACN_REPORT_SOURCE, INBODY_LEGACY_SNAPSHOT } from './bodyAssessmentSources';
 export {
@@ -24,6 +25,12 @@ export type {
   SegmentStatus,
 } from './bodyAssessmentTypes';
 export type { BiacnReportSource, InBodyLegacySnapshot } from './bodyAssessmentSources';
+export { getBodyAssessmentScoreMeta } from './bodyAssessmentScoreMeta';
+export type { BodyAssessmentScoreMeta } from './bodyAssessmentScoreMeta';
+export {
+  BODY_ASSESSMENT_HISTORY_FIXTURES,
+  createPrototypeHistoryRecords,
+} from './bodyAssessmentHistoryFixtures';
 
 import { BODY_ASSESSMENT_REPORTS } from './bodyAssessmentAdapters';
 import type { BodyAssessmentReport } from './bodyAssessmentTypes';
