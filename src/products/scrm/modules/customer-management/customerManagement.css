@@ -535,62 +535,394 @@
 
 .customer-assessment-detail-body {
   height: 100%;
-  padding: 22px 28px 48px;
+  padding: 18px 30px 40px;
   overflow-y: auto;
-  background: #fff;
+  background: #f7f8fa;
 }
 
 .customer-assessment-detail-context {
   display: flex;
   gap: 28px;
-  padding-bottom: 16px;
+  padding: 0 2px 12px;
   color: #595959;
   font-size: 13px;
   border-bottom: 1px solid #f0f0f0;
 }
 
 .customer-assessment-detail-section {
-  padding: 22px 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 18px 0 20px;
 }
 
 .customer-assessment-detail-section h3 {
-  margin: 0 0 16px;
-  padding-left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 10px;
+  padding: 0;
   color: #1f2329;
   font-size: 16px;
   font-weight: 600;
-  line-height: 20px;
-  border-left: 4px solid #1677ff;
+  line-height: 22px;
 }
 
-.customer-assessment-detail-grid,
-.customer-assessment-segment-grid {
+.customer-assessment-detail-section h3::before {
+  width: 4px;
+  height: 20px;
+  content: '';
+  background: #1677ff;
+  border-radius: 2px;
+}
+
+.customer-assessment-summary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
-  gap: 14px 36px;
+  grid-template-columns: minmax(170px, 0.85fr) minmax(0, 3fr);
+  gap: 0;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 8px;
 }
 
-.customer-assessment-detail-metric {
-  display: flex;
+.customer-assessment-score-card,
+.customer-assessment-metric-card {
   min-width: 0;
-  align-items: baseline;
-  gap: 8px;
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 8px;
+}
+
+.customer-assessment-score-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-content: center;
+  column-gap: 8px;
+  min-height: 82px;
+  padding: 12px 20px 12px 8px;
+  color: #1677ff;
+  border: 0;
+  border-right: 1px solid #eef1f5;
+  border-radius: 0;
+}
+
+.customer-assessment-score-card .customer-assessment-metric-icon {
+  grid-row: span 2;
+  align-self: center;
+}
+
+.customer-assessment-score-card span {
   color: #595959;
   font-size: 14px;
-  line-height: 22px;
+}
+
+.customer-assessment-score-card strong {
+  color: #1677ff;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 42px;
+}
+
+.customer-assessment-score-card small {
+  position: absolute;
+  right: 20px;
+  bottom: 14px;
+  color: #1677ff;
+  font-size: 13px;
+}
+
+.customer-assessment-metric-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.customer-assessment-core-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+}
+
+.customer-assessment-core-grid .customer-assessment-metric-card {
+  min-height: 82px;
+  padding: 10px 14px;
+  border: 0;
+  border-left: 1px solid #eef1f5;
+  border-radius: 0;
+}
+
+.customer-assessment-metric-card {
+  display: grid;
+  min-height: 76px;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+  align-items: center;
+  column-gap: 9px;
+  padding: 11px 14px;
+}
+
+.customer-assessment-metric-card span {
+  align-self: end;
+  color: #737b87;
+  font-size: 14px;
   white-space: nowrap;
 }
 
-.customer-assessment-detail-metric span {
-  flex: 0 0 auto;
-}
-
-.customer-assessment-detail-metric strong {
+.customer-assessment-metric-card strong {
+  grid-column: 2;
+  align-self: start;
   overflow: hidden;
   color: #1f2329;
-  font-weight: 500;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-assessment-metric-icon {
+  width: 22px;
+  height: 22px;
+  grid-row: span 2;
+  flex: 0 0 22px;
+  fill: none;
+  stroke: #1677ff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.4;
+}
+
+.customer-assessment-obesity-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 8px;
+}
+
+.customer-assessment-composition-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 8px;
+}
+
+.customer-assessment-composition-grid .customer-assessment-metric-card,
+.customer-assessment-obesity-grid .customer-assessment-metric-card,
+.customer-assessment-control-grid .customer-assessment-metric-card {
+  min-height: 72px;
+  padding: 10px 14px;
+  border: 0;
+  border-right: 1px solid #eef1f5;
+  border-bottom: 1px solid #eef1f5;
+  border-radius: 0;
+}
+
+.customer-assessment-composition-grid .customer-assessment-metric-card:nth-child(4n),
+.customer-assessment-obesity-grid .customer-assessment-metric-card:nth-child(3n),
+.customer-assessment-control-grid .customer-assessment-metric-card:nth-child(6n) {
+  border-right: 0;
+}
+
+.customer-assessment-composition-grid .customer-assessment-metric-card:nth-child(n + 5),
+.customer-assessment-obesity-grid .customer-assessment-metric-card:nth-child(n + 1),
+.customer-assessment-control-grid .customer-assessment-metric-card:nth-child(n + 1) {
+  border-bottom: 0;
+}
+
+.customer-assessment-segment-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.customer-assessment-segment-pair .customer-assessment-detail-section {
+  min-width: 0;
+  padding-top: 0;
+}
+
+.customer-assessment-segment-map {
+  position: relative;
+  min-height: 278px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 8px;
+}
+
+.customer-assessment-body-silhouette {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 174px;
+  height: 272px;
+  transform: translateX(-50%);
+  fill: #edf3fa;
+  stroke: #c5d7eb;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.customer-assessment-segment-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 4px;
+  color: #737b87;
+  font-size: 13px;
+  line-height: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 3px;
+}
+
+.customer-assessment-segment-label strong {
+  color: #1f2329;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.customer-assessment-segment-label--right-arm {
+  top: 34px;
+  left: 14px;
+}
+
+.customer-assessment-segment-label--left-arm {
+  top: 34px;
+  right: 14px;
+  text-align: right;
+}
+
+.customer-assessment-segment-label--trunk {
+  top: 112px;
+  left: 50%;
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+.customer-assessment-segment-label--right-leg {
+  bottom: 12px;
+  left: 14px;
+}
+
+.customer-assessment-segment-label--left-leg {
+  right: 14px;
+  bottom: 12px;
+  text-align: right;
+}
+
+.customer-assessment-segment-label::before {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #b9cde6;
+  border-radius: 50%;
+  content: '';
+}
+
+.customer-assessment-segment-label::after {
+  position: absolute;
+  height: 1px;
+  background: #cbd9e8;
+  content: '';
+}
+
+.customer-assessment-segment-label--right-arm::before {
+  top: 23px;
+  left: calc(100% + 43px);
+}
+
+.customer-assessment-segment-label--right-arm::after {
+  top: 24px;
+  left: calc(100% + 7px);
+  width: 40px;
+  transform: rotate(14deg);
+  transform-origin: left center;
+}
+
+.customer-assessment-segment-label--left-arm::before {
+  top: 23px;
+  right: calc(100% + 43px);
+}
+
+.customer-assessment-segment-label--left-arm::after {
+  top: 24px;
+  right: calc(100% + 7px);
+  width: 40px;
+  transform: rotate(-14deg);
+  transform-origin: right center;
+}
+
+.customer-assessment-segment-label--trunk::before {
+  top: 50%;
+  left: calc(100% + 26px);
+}
+
+.customer-assessment-segment-label--trunk::after {
+  top: calc(50% + 2px);
+  left: calc(100% + 5px);
+  width: 22px;
+}
+
+.customer-assessment-segment-label--right-leg::before {
+  top: 13px;
+  left: calc(100% + 31px);
+}
+
+.customer-assessment-segment-label--right-leg::after {
+  top: 15px;
+  left: calc(100% + 7px);
+  width: 29px;
+  transform: rotate(-16deg);
+  transform-origin: left center;
+}
+
+.customer-assessment-segment-label--left-leg::before {
+  top: 13px;
+  right: calc(100% + 31px);
+}
+
+.customer-assessment-segment-label--left-leg::after {
+  top: 15px;
+  right: calc(100% + 7px);
+  width: 29px;
+  transform: rotate(16deg);
+  transform-origin: right center;
+}
+
+.customer-assessment-control-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 8px;
+}
+
+@media (max-width: 1300px) {
+  .customer-assessment-core-grid,
+  .customer-assessment-control-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .customer-assessment-control-grid .customer-assessment-metric-card:nth-child(6n) {
+    border-right: 1px solid #eef1f5;
+  }
+
+  .customer-assessment-control-grid .customer-assessment-metric-card:nth-child(3n) {
+    border-right: 0;
+  }
+
+  .customer-assessment-control-grid .customer-assessment-metric-card:nth-child(-n + 3) {
+    border-bottom: 1px solid #eef1f5;
+  }
+
+  .customer-assessment-control-grid .customer-assessment-metric-card:nth-child(n + 4) {
+    border-bottom: 0;
+  }
 }
 
 @media (max-width: 1100px) {
@@ -600,9 +932,40 @@
     padding-left: 18px;
   }
 
-  .customer-assessment-detail-grid,
-  .customer-assessment-segment-grid {
-    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  .customer-assessment-summary,
+  .customer-assessment-segment-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-assessment-core-grid,
+  .customer-assessment-obesity-grid,
+  .customer-assessment-control-grid,
+  .customer-assessment-composition-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .customer-assessment-composition-grid .customer-assessment-metric-card:nth-child(4n),
+  .customer-assessment-obesity-grid .customer-assessment-metric-card:nth-child(3n),
+  .customer-assessment-control-grid .customer-assessment-metric-card:nth-child(6n) {
+    border-right: 1px solid #eef1f5;
+  }
+
+  .customer-assessment-composition-grid .customer-assessment-metric-card:nth-child(2n),
+  .customer-assessment-obesity-grid .customer-assessment-metric-card:nth-child(2n),
+  .customer-assessment-control-grid .customer-assessment-metric-card:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .customer-assessment-composition-grid .customer-assessment-metric-card:nth-child(n + 5),
+  .customer-assessment-obesity-grid .customer-assessment-metric-card:nth-child(n + 3),
+  .customer-assessment-control-grid .customer-assessment-metric-card:nth-child(n + 5) {
+    border-bottom: 0;
+  }
+
+  .customer-assessment-composition-grid .customer-assessment-metric-card:nth-child(-n + 4),
+  .customer-assessment-obesity-grid .customer-assessment-metric-card:nth-child(-n + 2),
+  .customer-assessment-control-grid .customer-assessment-metric-card:nth-child(-n + 4) {
+    border-bottom: 1px solid #eef1f5;
   }
 }
 
