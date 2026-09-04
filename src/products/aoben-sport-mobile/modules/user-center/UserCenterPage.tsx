@@ -17,6 +17,7 @@ const SERVICE_ENTRIES: readonly { label: string; icon: AobenIconName }[] = [
   { label: '分享有礼', icon: 'gift' },
   { label: '券码兑换', icon: 'code' },
   { label: '体测', icon: 'assessment' },
+  { label: '美容检测', icon: 'assessment' },
   { label: '人才招聘', icon: 'recruitment' },
   { label: '我的推广', icon: 'promotion' },
   { label: '五维问卷', icon: 'survey' },
@@ -38,12 +39,17 @@ const BOTTOM_NAV: readonly { label: string; icon: AobenIconName }[] = [
 
 export interface UserCenterPageProps {
   onBodyAssessmentNavigate?: () => void;
+  onBeautyAssessmentNavigate?: () => void;
 }
 
-export function UserCenterPage({ onBodyAssessmentNavigate }: UserCenterPageProps) {
+export function UserCenterPage({ onBodyAssessmentNavigate, onBeautyAssessmentNavigate }: UserCenterPageProps) {
   const [bodyAssessmentRequested, setBodyAssessmentRequested] = useState(false);
 
   function handleServiceClick(label: string) {
+    if (label === '美容检测') {
+      onBeautyAssessmentNavigate?.();
+      return;
+    }
     if (label !== '体测') return;
     setBodyAssessmentRequested(true);
     onBodyAssessmentNavigate?.();

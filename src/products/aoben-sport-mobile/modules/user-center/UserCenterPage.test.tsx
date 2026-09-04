@@ -32,10 +32,10 @@ describe('奥本运动移动端用户中心', () => {
     expect(quickLabels).toEqual(['我的预约', '我的品项', '我的订单', '优惠券']);
 
     const serviceLabels = within(screen.getByTestId('service-entry-grid')).getAllByRole('button').map((button) => button.textContent);
-    expect(serviceLabels).toEqual(['教培报名', '奥币', '帮助中心', '分享有礼', '券码兑换', '体测', '人才招聘', '我的推广', '五维问卷']);
+    expect(serviceLabels).toEqual(['教培报名', '奥币', '帮助中心', '分享有礼', '券码兑换', '体测', '美容检测', '人才招聘', '我的推广', '五维问卷']);
   });
 
-  it('体测是唯一真实导航出口，其他入口不触发体测', async () => {
+  it('其他服务入口不触发体测，体测仍使用原导航回调', async () => {
     const user = userEvent.setup();
     const onBodyAssessmentNavigate = vi.fn();
     render(<UserCenterPage onBodyAssessmentNavigate={onBodyAssessmentNavigate} />);
@@ -55,6 +55,19 @@ describe('奥本运动移动端用户中心', () => {
     expect(onBodyAssessmentNavigate).toHaveBeenCalledTimes(1);
     expect(root).toHaveAttribute('data-body-assessment-requested', 'true');
     expect(screen.getByText('体测报告入口已触发')).toBeInTheDocument();
+  });
+
+  it('美容检测只有一个入口且不误触发体测回调', () => {
+    const onBodyAssessmentNavigate = vi.fn();
+    const onBeautyAssessmentNavigate = vi.fn();
+    render(<UserCenterPage onBodyAssessmentNavigate={onBodyAssessmentNavigate} onBeautyAssessmentNavigate={onBeautyAssessmentNavigate} />);
+    expect(screen.getAllByRole('button', { name: '美容检测' })).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: '美容检测' }));
+    expect(onBeautyAssessmentNavigate).toHaveBeenCalledTimes(1);
+    expect(onBodyAssessmentNavigate).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: '体测' }));
+    expect(onBodyAssessmentNavigate).toHaveBeenCalledTimes(1);
+    expect(onBeautyAssessmentNavigate).toHaveBeenCalledTimes(1);
   });
 
   it('呈现五项底部导航并保持我的为选中态', () => {
