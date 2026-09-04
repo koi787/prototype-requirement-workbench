@@ -157,6 +157,9 @@ describe('0016 Cycle D SCRM 体测美容记录', () => {
     expect(within(detailDrawer).getByText('+2.4kg')).toBeTruthy();
     expect(within(detailDrawer).getByText('-7.8kg')).toBeTruthy();
     expect(within(detailDrawer).getByText('-10.2kg')).toBeTruthy();
+    const calorieCard = within(detailDrawer).getByText('建议热量摄入').closest('.customer-assessment-metric-card');
+    expect(calorieCard).not.toBeNull();
+    expect(calorieCard?.querySelector('strong')?.textContent).toBe('2449');
   });
 
   it('美容记录只显示统一空状态，不生成美容字段', () => {
