@@ -193,7 +193,7 @@ export function adaptBiacn(source: BiacnReportSource = BIACN_REPORT_SOURCE): Bod
       protein: metric(valueOrNull(composition.protein), 'kg'),
       compositionScore: metric(measurement.score_constitute?.composition ?? null, null),
       fatGrade: metric(null, null),
-      waistHipRatio: metric(valueOrNull(composition.whfr), null),
+      waistHipRatio: { ...metric(valueOrNull(composition.whfr), null), precision: 2 },
       smi: metric(null, null),
     },
     fatContent: biacnSegments(composition.segmental_fat, 'kg', { ra: 2, la: 2, tr: 1, rl: 1, ll: 1 }),

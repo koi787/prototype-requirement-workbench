@@ -41,6 +41,13 @@ export const BIACN记录: Story = {
   render: () => renderAssessment({ initialAssessmentSource: 'BIACN' }),
 };
 
+export const InBody详情: Story = {
+  render: () => renderAssessment({
+    initialAssessmentSource: 'INBODY',
+    initialAssessmentRecordId: 'inbody-legacy-27311',
+  }),
+};
+
 export const BIACN详情: Story = {
   render: () => renderAssessment({
     initialAssessmentSource: 'BIACN',
