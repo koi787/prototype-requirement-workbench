@@ -50,6 +50,7 @@ export interface CustomerDetailDrawerProps {
   initialAssessmentView?: CustomerAssessmentView;
   initialAssessmentSource?: CustomerAssessmentSourceFilter;
   initialAssessmentRecordId?: string;
+  initialBeautyRecordId?: string;
 }
 
 export function CustomerDetailDrawer({
@@ -60,6 +61,7 @@ export function CustomerDetailDrawer({
   initialAssessmentView = 'assessment',
   initialAssessmentSource = 'ALL',
   initialAssessmentRecordId,
+  initialBeautyRecordId,
 }: CustomerDetailDrawerProps) {
   const [activeTab, setActiveTab] = useState<CustomerDetailTabKey>(initialTab);
 
@@ -148,6 +150,7 @@ export function CustomerDetailDrawer({
               customer={customer}
               initialView={initialAssessmentView}
               initialSource={initialAssessmentSource}
+              initialBeautyRecordId={initialBeautyRecordId}
               {...(initialAssessmentRecordId ? { initialRecordId: initialAssessmentRecordId } : {})}
             />
           </div>
