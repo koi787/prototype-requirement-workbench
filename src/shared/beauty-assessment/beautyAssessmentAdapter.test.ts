@@ -9,8 +9,8 @@ function input(): BeautyReportInput {
     vendorReportId: '0012', vendorTaskId: 1012, vendorCustomerId: 'vendor-12', customerId: 'aoben-12',
     basic: { score: '46', age: '30', testCount: '3', sex: 'female', skinType: 'DSPW', skinLabels: ['干', '敏'], detectTime: '2026-09-01T09:00:00+08:00' },
     summary: { problemAnalysis: ['原文一', '原文二'], careAdvice: ['建议一', '建议二'] },
-    itemOrder: ['oil'],
-    items: [{ type: 'oil', name: '油脂', status: '100', faceType: '2', score: '74', level: '2', levelName: 'B', careAdvice: ['第一条', '第二条'] }],
+    result: [{ Name: 'skin', Children: [{ Type: 'oil', Name: '油脂' }] }],
+    resultDetails: [{ type: 'oil', name: '油脂', status: '100', faceType: '2', score: '74', level: '2', levelName: 'B', careAdvice: ['第一条', '第二条'] }],
   };
 }
 
@@ -33,7 +33,7 @@ describe('beauty report adapter', () => {
     const numbers = {
       ...strings,
       basic: { ...strings.basic, score: 46, age: 30, testCount: 3 },
-      items: strings.items.map((item) => ({ ...item, status: 100, faceType: 2, score: 74, level: 2 })),
+      resultDetails: strings.resultDetails.map((item) => ({ ...item, status: 100, faceType: 2, score: 74, level: 2 })),
     };
     expect(adaptBeautyReport(numbers)).toEqual(adaptBeautyReport(strings));
   });
@@ -49,7 +49,7 @@ describe('beauty report adapter', () => {
     const source = input();
     const report = adaptBeautyReport({
       ...source, basic: { score: 0, age: '', testCount: 'invalid', sex: 'unknown' },
-      items: source.items.map((item) => ({ ...item, score: '', level: 'B', levelName: 'B' })),
+      resultDetails: source.resultDetails.map((item) => ({ ...item, score: '', level: 'B', levelName: 'B' })),
     });
     expect(report.basic).toMatchObject({ score: 0, scoreLevel: 'E', age: null, testCount: null, sex: null });
     expect(report.items[0]).toMatchObject({ score: null, level: null, levelName: 'B' });
@@ -58,17 +58,73 @@ describe('beauty report adapter', () => {
   it('uses source order and includes a newly configured project without a hardcoded whitelist', () => {
     const source = input();
     const report = adaptBeautyReport({
-      ...source, itemOrder: ['new-project', 'oil'],
-      items: [...source.items, { type: 'new-project', name: '新增原型项目', status: '100', faceType: '2', score: 50 }],
+      ...source, result: [{ Name: 'skin', Children: [{ Type: 'new-project', Name: '新增原型项目' }, { Type: 'oil', Name: '油脂' }] }],
+      resultDetails: [...source.resultDetails, { type: 'new-project', name: '新增原型项目', status: '100', faceType: '2', score: 50 }],
     });
     expect(report.items.map((item) => item.name)).toEqual(['新增原型项目', '油脂']);
+  });
+
+  it('follows the raw Result Children order instead of score or alphabetic order', () => {
+    const source = input();
+    const report = adaptBeautyReport({
+      ...source,
+      result: [{ Name: 'skin', Children: [{ Type: 'b', Name: '项目B' }, { Type: 'a', Name: '项目A' }, { Type: 'c', Name: '项目C' }] }],
+      resultDetails: [
+        { type: 'a', name: '项目A', status: 100, faceType: 2, score: 99 },
+        { type: 'b', name: '项目B', status: 100, faceType: 2, score: 10 },
+        { type: 'c', name: '项目C', status: 100, faceType: 2, score: 50 },
+      ],
+    });
+    expect(report.items.map((item) => item.type)).toEqual(['b', 'a', 'c']);
+  });
+
+  it('includes a new Result Child and omits a removed Child without a permanent whitelist', () => {
+    const source = input();
+    const report = adaptBeautyReport({
+      ...source,
+      result: [{ Name: 'skin', Children: [{ Type: 'new-type', Name: '新增厂家项目' }, { Type: 'oil', Name: '油脂' }] }],
+      resultDetails: [...source.resultDetails, { type: 'new-type', name: '新增厂家项目', status: '100', faceType: '2', score: 50 }],
+    });
+    expect(report.items.map((item) => item.name)).toEqual(['新增厂家项目', '油脂']);
+  });
+
+  it('skips a Child when its detail is not a valid front-face result', () => {
+    const source = input();
+    const report = adaptBeautyReport({
+      ...source,
+      result: [{ Name: 'skin', Children: [{ Type: 'pending', Name: '未完成' }, { Type: 'side', Name: '侧脸' }, { Type: 'oil', Name: '油脂' }] }],
+      resultDetails: [...source.resultDetails,
+        { type: 'pending', name: '未完成', status: 99, faceType: 2 },
+        { type: 'side', name: '侧脸', status: 100, faceType: 1 },
+      ],
+    });
+    expect(report.items.map((item) => item.type)).toEqual(['oil']);
+  });
+
+  it('does not append a valid detail that is absent from Result Children', () => {
+    const source = input();
+    const report = adaptBeautyReport({
+      ...source,
+      resultDetails: [...source.resultDetails, { type: 'unplaced', name: '未配置项目', status: 100, faceType: 2 }],
+    });
+    expect(report.items.map((item) => item.type)).toEqual(['oil']);
+  });
+
+  it('skips a Child with multiple valid matching details instead of choosing one', () => {
+    const source = input();
+    const duplicate = { ...source.resultDetails[0]!, score: 88 };
+    const report = adaptBeautyReport({
+      ...source,
+      resultDetails: [...source.resultDetails, duplicate],
+    });
+    expect(report.items).toEqual([]);
   });
 
   it('excludes invalid statuses, side faces and results not in source order', () => {
     const source = input();
     const report = adaptBeautyReport({
-      ...source, itemOrder: ['pending', 'side', 'oil'],
-      items: [...source.items,
+      ...source, result: [{ Name: 'skin', Children: [{ Type: 'pending', Name: '未完成' }, { Type: 'side', Name: '侧脸' }, { Type: 'oil', Name: '油脂' }] }],
+      resultDetails: [...source.resultDetails,
         { type: 'pending', name: '未完成', status: '99', faceType: '2' },
         { type: 'side', name: '侧脸', status: '100', faceType: '1' },
         { type: 'unconfigured', name: '未配置', status: 100, faceType: 2 }],
@@ -76,9 +132,9 @@ describe('beauty report adapter', () => {
     expect(report.items.map((item) => item.type)).toEqual(['oil']);
   });
 
-  it('refuses to silently choose between ambiguous valid results', () => {
+  it('fails closed for ambiguous valid results instead of silently choosing one', () => {
     const source = input();
-    expect(() => adaptBeautyReport({ ...source, items: [...source.items, ...source.items] })).toThrow('Ambiguous front-face');
+    expect(adaptBeautyReport({ ...source, resultDetails: [...source.resultDetails, ...source.resultDetails] }).items).toEqual([]);
   });
 
   it('does not mutate its input or copy unrelated source fields into the business model', () => {
@@ -116,7 +172,7 @@ describe('beauty report adapter', () => {
     const report = BEAUTY_REPORTS.find((item) => item.recordId === 'beauty-prototype-100');
     expect(report?.sourceId).toBe('beauty-vendor-sanitized');
 
-    const oil = report?.items.find((item) => item.type === 'oil');
+    const oil = report?.items.find((item) => item.name === '油脂');
     expect(oil?.problemAnalysis).toEqual([
       '您的皮脂腺分泌有轻微异常，T 区油脂分泌旺盛，皮肤表面略显油腻感，容易显得暗沉。',
       '成年人的平均皮脂生成速率为每3 h 1 mg/10 cm2，超过数值，就会呈现出油性皮肤的外观。油性皮肤含水量不平衡，pH值偏低，皮肤易泛油光，毛孔粗大、皮肤暗沉且无透明感，当皮脂分泌旺盛时，脂质积聚过多容易导致毛孔堵塞、黑头粉刺、痤疮等问题。',
@@ -127,13 +183,12 @@ describe('beauty report adapter', () => {
       '3.日常护理。日常生活可定期做些清洁项目，如出油过旺，可选用一定浓度的果酸或水杨酸进行化学换肤毒素。',
     ]);
 
-    for (const type of ['brown-pigment', 'uv-spots', 'porphyrin', 'blackheads', 'sensitive-heat']) {
-      const item = report?.items.find((candidate) => candidate.type === type);
+    for (const name of ['棕色色素', '紫外线斑', '卟啉', '黑头', '敏感热力图']) {
+      const item = report?.items.find((candidate) => candidate.name === name);
       expect(item?.problemAnalysis.length).toBeGreaterThan(0);
       expect(item?.careAdvice.length).toBeGreaterThan(0);
     }
-    const emptyItem = report?.items.find((item) => item.type === 'pores');
-    expect(emptyItem).toMatchObject({ problemAnalysis: [], careAdvice: [] });
+    expect(report?.items.some((item) => item.name === '毛孔')).toBe(false);
     expect(JSON.stringify(report)).not.toMatch(/images|Image_|科普知识|imageUrl/);
   });
 

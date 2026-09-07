@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import type { BeautyReport } from '../../../../shared/beauty-assessment';
 import { BeautyAssessmentOverlay } from './BeautyAssessmentOverlay';
+import type { AobenAccountDisplay } from '../../aobenAccountFixture';
 
 // Aoben beauty business copy, deliberately separate from vendor report data.
 const BEAUTY_BRAND_MESSAGE = '科学了解肌肤，更好地照顾自我。';
 export type BeautyShareSummary = Pick<BeautyReport['basic'], 'score' | 'scoreLevel' | 'skinType' | 'skinLabels'>;
 
-export function BeautyAssessmentSharePreview({ summary, onClose }: { summary: BeautyShareSummary; onClose: () => void }) {
+export function BeautyAssessmentSharePreview({ account, summary, onClose }: { account: AobenAccountDisplay; summary: BeautyShareSummary; onClose: () => void }) {
   const [feedback, setFeedback] = useState('');
   return <BeautyAssessmentOverlay title="分享报告" onClose={onClose}>
     <div className="aoben-beauty-share-card">
+      <div className="aoben-beauty-share-account"><img src={account.avatarSrc} alt="奥本账号头像" /><span>{account.username}</span></div>
       <p>晒一下我的美容检测报告</p>
       <strong>{summary.score ?? '--'}</strong><span>综合得分 · {summary.scoreLevel ? `${summary.scoreLevel}级` : '--'}</span>
       <h3>{summary.skinType ?? '--'}</h3><p>{summary.skinLabels.join(' / ') || '--'}</p>

@@ -118,6 +118,8 @@
 .aoben-beauty-history-list button > span:last-child { font-size: 13px; color: #61756d; }
 .aoben-beauty-history-list button[aria-pressed='true'] { background: #edf6f1; box-shadow: inset 3px 0 #299b87; }
 .aoben-beauty-share-card { padding: 24px 16px; border: 1px solid #edf4ef; border-radius: 16px; text-align: center; }
+.aoben-beauty-share-account { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px; color: #354c46; font-size: 15px; font-weight: 500; }
+.aoben-beauty-share-account img { width: 38px; height: 38px; border-radius: 50%; }
 .aoben-beauty-share-card strong { display: block; font-size: 44px; color: #299b87; }
 .aoben-beauty-share-card h3 { margin: 20px 0 8px; }
 .aoben-beauty-brand-message { margin-bottom: 0; font-size: 14px; color: #61756d; }

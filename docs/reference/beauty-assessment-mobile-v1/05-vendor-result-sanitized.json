@@ -30,6 +30,35 @@
       ]
     }
   ],
+  "Result": [
+    {
+      "Name": "skin",
+      "Children": [
+        {"Type": "1", "Name": "水分"},
+        {"Type": "22", "Name": "油脂"},
+        {"Type": "24", "Name": "毛孔"},
+        {"Type": "25", "Name": "黑头"},
+        {"Type": "13", "Name": "浅层色素"},
+        {"Type": "19", "Name": "混合斑"},
+        {"Type": "26", "Name": "痤疮"},
+        {"Type": "5", "Name": "屏障"},
+        {"Type": "23", "Name": "卟啉"},
+        {"Type": "27", "Name": "深层色素"},
+        {"Type": "15", "Name": "棕色色素"},
+        {"Type": "50", "Name": "紫外线斑"},
+        {"Type": "37", "Name": "敏感红素图"},
+        {"Type": "36", "Name": "敏感热力图"}
+      ]
+    },
+    {
+      "Name": "senility",
+      "Children": [
+        {"Type": "38", "Name": "皱纹"},
+        {"Type": "47", "Name": "粗糙度"},
+        {"Type": "21", "Name": "胶原"}
+      ]
+    }
+  ],
   "ResultDetail": [
     {
       "Type": "15",

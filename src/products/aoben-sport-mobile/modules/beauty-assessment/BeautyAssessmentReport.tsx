@@ -5,12 +5,15 @@ import './beautyAssessment.css';
 import { BeautyAssessmentHistorySheet } from './BeautyAssessmentHistorySheet';
 import { BeautyAssessmentSharePreview } from './BeautyAssessmentSharePreview';
 import { formatBeautyDetectTime } from './beautyAssessmentFormatters';
+import { AOBEN_ACCOUNT_FIXTURE } from '../../aobenAccountFixture';
+import type { AobenAccountDisplay } from '../../aobenAccountFixture';
 
 export interface BeautyAssessmentReportProps {
   records?: readonly BeautyReport[];
   currentRecordId?: string | null;
   loading?: boolean;
   onBack?: () => void;
+  account?: AobenAccountDisplay;
 }
 
 function ReportTextList({ entries }: { entries: readonly string[] }) {
@@ -43,7 +46,7 @@ export function BeautyAssessmentReport(props: BeautyAssessmentReportProps) {
   return <BeautyReportContent key={props.currentRecordId === undefined ? 'latest' : `record:${props.currentRecordId}`} {...props} />;
 }
 
-function BeautyReportContent({ records = BEAUTY_REPORTS, currentRecordId: initialRecordId, loading = false, onBack }: BeautyAssessmentReportProps) {
+function BeautyReportContent({ records = BEAUTY_REPORTS, currentRecordId: initialRecordId, loading = false, onBack, account = AOBEN_ACCOUNT_FIXTURE }: BeautyAssessmentReportProps) {
   const [selectedId, setSelectedId] = useState(initialRecordId);
   const { currentRecord, currentRecordId } = selectBeautyReport(records, selectedId);
   const [overlay, setOverlay] = useState<'history' | 'share' | null>(null);
@@ -108,7 +111,7 @@ function BeautyReportContent({ records = BEAUTY_REPORTS, currentRecordId: initia
         </div>
         {!loading && currentRecord && <button type="button" hidden={overlay !== null} className="aoben-beauty-share-entry" onClick={() => setOverlay('share')}>分享报告</button>}
         {overlay === 'history' && <BeautyAssessmentHistorySheet records={records} currentRecordId={currentRecordId} onClose={() => setOverlay(null)} onSelect={(id) => { setSelectedId(id); setOverlay(null); }} />}
-        {overlay === 'share' && shareSummary && <BeautyAssessmentSharePreview summary={shareSummary} onClose={() => setOverlay(null)} />}
+        {overlay === 'share' && shareSummary && <BeautyAssessmentSharePreview account={account} summary={shareSummary} onClose={() => setOverlay(null)} />}
       </main>
     </div>
   );

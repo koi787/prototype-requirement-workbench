@@ -62,7 +62,7 @@ describe('beauty report core content', () => {
   it('accepts a different normalized source and displays zero distinctly from missing fields', () => {
     const input: BeautyReportInput = {
       recordId: 'other-1', sourceId: 'other-prototype',
-      basic: { score: 0, detectTime: '2026-09-01T00:00:00Z' }, itemOrder: [], items: [],
+      basic: { score: 0, detectTime: '2026-09-01T00:00:00Z' }, result: [], resultDetails: [],
     };
     render(<BeautyAssessmentReport records={[adaptBeautyReport(input)]} />);
     const overall = within(screen.getByRole('region', { name: '整体情况' }));
@@ -153,7 +153,13 @@ describe('beauty report core content', () => {
   });
 
   it('expands sanitized vendor analysis and advice, while empty Content renders no fake copy', () => {
-    render(<BeautyAssessmentReport currentRecordId="beauty-prototype-100" />);
+    const vendorReport = BEAUTY_REPORTS.find((report) => report.recordId === 'beauty-prototype-100');
+    if (!vendorReport) throw new Error('Expected sanitized vendor report');
+    const reportWithEmptyItem = {
+      ...vendorReport,
+      items: [...vendorReport.items, { type: 'pores', name: '毛孔', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [] }],
+    };
+    render(<BeautyAssessmentReport records={[reportWithEmptyItem]} />);
     const section = within(screen.getByRole('region', { name: '详细分析' }));
     const oilToggle = section.getByRole('button', { name: /油脂/ });
     const oilRow = oilToggle.closest('li');

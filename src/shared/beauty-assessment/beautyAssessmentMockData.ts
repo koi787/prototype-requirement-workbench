@@ -26,8 +26,11 @@ function makePrototypeReport(recordId: string, date: string, score: number, sequ
     },
     // These statements are prototype examples, not manufacturer conclusions or AI output.
     summary: { problemAnalysis: ['原型示例：肌肤状态信息。'], careAdvice: ['原型示例：日常护理信息。'] },
-    itemOrder: ITEM_SAMPLES.map(([type]) => type),
-    items: ITEM_SAMPLES.map(([type, name, itemScore, levelName]) => ({
+    result: [
+      { Name: 'skin', Children: ITEM_SAMPLES.slice(0, 13).map(([Type, Name]) => ({ Type, Name })) },
+      { Name: 'senility', Children: ITEM_SAMPLES.slice(13).map(([Type, Name]) => ({ Type, Name })) },
+    ],
+    resultDetails: ITEM_SAMPLES.map(([type, name, itemScore, levelName]) => ({
       type, name, status: '100', faceType: '2', score: String(itemScore),
       // Numeric codes are prototype values only; no vendor level-code mapping is assumed.
       level: null, levelName,
@@ -36,31 +39,18 @@ function makePrototypeReport(recordId: string, date: string, score: number, sequ
   };
 }
 
-const VENDOR_TYPE_TO_ITEM_TYPE: Record<string, string> = {
-  '15': 'brown-pigment',
-  '50': 'uv-spots',
-  '23': 'porphyrin',
-  '25': 'blackheads',
-  '22': 'oil',
-  '36': 'sensitive-heat',
-};
-
 function makeSanitizedVendorReport(): BeautyReportInput {
   const prototype = makePrototypeReport('beauty-prototype-100', vendorResult.ServerCreateTime, 46, 3);
-  const vendorItems = vendorResult.ResultDetail.map((detail) => {
-    const type = VENDOR_TYPE_TO_ITEM_TYPE[detail.Type];
-    if (!type) throw new Error(`Unmapped sanitized beauty vendor item: ${detail.Type}`);
-    return {
-      type,
-      name: detail.Name,
-      status: detail.Status,
-      faceType: detail.FaceType,
-      score: detail.Score,
-      level: detail.Level,
-      levelName: detail.LevelName,
-      content: detail.Content,
-    };
-  });
+  const vendorItems = vendorResult.ResultDetail.map((detail) => ({
+    type: detail.Type,
+    name: detail.Name,
+    status: detail.Status,
+    faceType: detail.FaceType,
+    score: detail.Score,
+    level: detail.Level,
+    levelName: detail.LevelName,
+    content: detail.Content,
+  }));
 
   return {
     ...prototype,
@@ -78,7 +68,8 @@ function makeSanitizedVendorReport(): BeautyReportInput {
       testCount: vendorResult.Customer.Count,
     },
     comprehensiveProposal: vendorResult.ComprehensiveProposal,
-    items: prototype.items.map((item) => vendorItems.find((vendorItem) => vendorItem.type === item.type) ?? item),
+    result: vendorResult.Result,
+    resultDetails: vendorItems,
   };
 }
 

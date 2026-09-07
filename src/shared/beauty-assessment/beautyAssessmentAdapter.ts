@@ -9,6 +9,16 @@ export interface BeautyReportContentInput {
   }[];
 }
 
+export interface BeautyReportResultChildInput {
+  Type?: unknown;
+  Name?: unknown;
+}
+
+export interface BeautyReportResultGroupInput {
+  Name?: unknown;
+  Children?: readonly BeautyReportResultChildInput[];
+}
+
 export interface BeautyReportInput {
   recordId: string;
   sourceId: string;
@@ -30,9 +40,8 @@ export interface BeautyReportInput {
     careAdvice?: readonly string[];
   };
   comprehensiveProposal?: readonly BeautyReportContentInput[];
-  /** Source-supplied business order, never a permanent list of supported projects. */
-  itemOrder: readonly string[];
-  items: readonly {
+  result?: readonly BeautyReportResultGroupInput[];
+  resultDetails: readonly {
     type: string;
     name: string;
     status: unknown;
@@ -83,7 +92,7 @@ function extractContentTexts(content: readonly BeautyReportContentInput[], title
     .flatMap((block) => (block.content ?? []).flatMap((entry) => normalizeTexts(entry.content)));
 }
 
-function normalizeItemTexts(item: BeautyReportInput['items'][number]): Pick<BeautyReportItem, 'problemAnalysis' | 'careAdvice'> {
+function normalizeItemTexts(item: BeautyReportInput['resultDetails'][number]): Pick<BeautyReportItem, 'problemAnalysis' | 'careAdvice'> {
   if (item.content !== undefined) {
     return {
       problemAnalysis: extractContentTexts(item.content, ['问题分析']),
@@ -94,6 +103,19 @@ function normalizeItemTexts(item: BeautyReportInput['items'][number]): Pick<Beau
     problemAnalysis: normalizeTexts(item.problemAnalysis),
     careAdvice: normalizeTexts(item.careAdvice),
   };
+}
+
+function normalizeResultChildKey(value: unknown): string | null {
+  return normalizeId(value);
+}
+
+function getConfiguredChildren(input: BeautyReportInput): BeautyReportResultChildInput[] {
+  return (input.result ?? [])
+    .filter((group) => {
+      const name = normalizeText(group.Name);
+      return name === 'skin' || name === 'senility';
+    })
+    .flatMap((group) => group.Children ?? []);
 }
 
 function normalizeSummary(input: BeautyReportInput): { problemAnalysis: string[]; careAdvice: string[] } {
@@ -124,23 +146,28 @@ export const adaptBeautyReport: BeautyReportAdapter<BeautyReportInput> = (input)
   if (!recordId || !sourceId) throw new Error('Beauty report requires a stable recordId and sourceId');
 
   // Normalize first: both "100"/"2" and 100/2 must select the same front-face result.
-  const validItems = input.items.filter((item) => (
+  const validItems = input.resultDetails.filter((item) => (
     normalizeBeautyNumber(item.status) === 100 && normalizeBeautyNumber(item.faceType) === 2
   ));
   const items: BeautyReportItem[] = [];
-  const seen = new Set<string>();
-  for (const itemType of input.itemOrder) {
-    const type = itemType.trim();
-    if (!type || seen.has(type)) throw new Error('Beauty report item order must contain unique non-empty types');
-    seen.add(type);
-    const matches = validItems.filter((item) => item.type.trim() === type);
-    if (matches.length > 1) throw new Error(`Ambiguous front-face beauty result: ${type}`);
+  for (const child of getConfiguredChildren(input)) {
+    const childType = normalizeResultChildKey(child.Type);
+    const childName = normalizeText(child.Name);
+    if (!childType && !childName) continue;
+    const matchesByType = childType ? validItems.filter((item) => normalizeResultChildKey(item.type) === childType) : [];
+    const matches = matchesByType.length > 0
+      ? matchesByType
+      : validItems.filter((item) => childName !== null && normalizeText(item.name) === childName);
+    if (matches.length > 1) continue;
     const item = matches[0];
     if (!item) continue;
+    const type = childType ?? normalizeResultChildKey(item.type);
+    const name = childName ?? normalizeText(item.name);
+    if (!type || !name) continue;
     const itemTexts = normalizeItemTexts(item);
     items.push({
       type,
-      name: item.name.trim(),
+      name,
       score: normalizeBeautyNumber(item.score),
       level: normalizeBeautyNumber(item.level),
       levelName: normalizeText(item.levelName),

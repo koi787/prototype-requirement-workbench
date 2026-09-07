@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { BEAUTY_REPORTS, type BeautyReport } from '../../../../shared/beauty-assessment';
 import { AobenSportMobileRoot } from '../../shell/AobenSportMobileRoot';
 import { BeautyAssessmentReport } from './BeautyAssessmentReport';
+import { AOBEN_ACCOUNT_FIXTURE } from '../../aobenAccountFixture';
 import reportMeta, { 历史报告 as historyReport } from '../../../../stories/AobenSportBeautyReport.stories';
 import historyMeta, { 单条记录, 多条记录 } from '../../../../stories/AobenSportBeautyHistory.stories';
 import shareMeta from '../../../../stories/AobenSportBeautyShare.stories';
@@ -113,12 +114,28 @@ describe('beauty report complete interactions', () => {
     const share = within(dialog);
     expect(share.getByText('46')).toBeVisible();
     expect(share.getByText('科学了解肌肤，更好地照顾自我。')).toBeVisible();
-    expect(share.queryByText(/原型示例/)).not.toBeInTheDocument(); expect(share.queryByRole('img')).not.toBeInTheDocument();
+    expect(share.queryByText(/原型示例/)).not.toBeInTheDocument();
+    expect(share.getByRole('img', { name: '奥本账号头像' })).toHaveAttribute('src', AOBEN_ACCOUNT_FIXTURE.avatarSrc);
+    expect(share.getByText(AOBEN_ACCOUNT_FIXTURE.username)).toBeVisible();
     expect(screen.getByRole('button', { name: '查看历史记录' })).toBeDisabled(); expect(trigger).not.toBeVisible();
     fireEvent.click(share.getByRole('button', { name: '保存到相册' })); expect(share.getByRole('status')).toHaveTextContent('原型演示：暂不保存到相册');
     fireEvent.click(share.getByRole('button', { name: '微信好友' })); expect(share.getByRole('status')).toHaveTextContent('原型演示：暂不调用微信分享');
     fireEvent.click(share.getByRole('button', { name: '关闭分享报告' }));
     expect(trigger).toBeVisible(); expect(trigger).toHaveFocus(); expect(screen.getByText('46')).toBeVisible();
+  });
+
+  it('keeps the share account independent from vendor identity fields', () => {
+    const source = fixture();
+    const account = { username: '奥本用户', avatarSrc: 'data:image/svg+xml,product-account' };
+    const record = { ...source, vendorCustomerId: 'vendor-name', customerId: 'vendor-avatar-url' };
+    render(<BeautyAssessmentReport records={[record]} account={account} />);
+    fireEvent.click(screen.getByRole('button', { name: '分享报告' }));
+    const share = within(screen.getByRole('dialog', { name: '分享报告' }));
+    expect(share.getByText(account.username)).toBeVisible();
+    expect(share.getByRole('img', { name: '奥本账号头像' })).toHaveAttribute('src', account.avatarSrc);
+    expect(share.queryByText('vendor-name')).not.toBeInTheDocument();
+    expect(share.queryByText('vendor-avatar-url')).not.toBeInTheDocument();
+    expect(share.getAllByRole('img')).toHaveLength(1);
   });
 
   it('renders supplied item text in order, independently expands and omits each empty subsection', () => {
