@@ -9,6 +9,18 @@ export type {
   CustomerAssessmentView,
   CustomerBodyAssessmentPanelProps,
 } from './CustomerBodyAssessmentPanel';
+export { CustomerBeautyAssessmentPanel } from './CustomerBeautyAssessmentPanel';
+export type { CustomerBeautyAssessmentPanelProps } from './CustomerBeautyAssessmentPanel';
+export { CustomerBeautyAssessmentDetailDrawer } from './CustomerBeautyAssessmentDetailDrawer';
+export type { CustomerBeautyAssessmentDetailDrawerProps } from './CustomerBeautyAssessmentDetailDrawer';
+export {
+  CUSTOMER_BEAUTY_ASSESSMENT_RECORDS,
+  formatBeautyItemLevel,
+  formatCustomerBeautyDetectTime,
+  getCustomerBeautyAssessmentById,
+  getCustomerBeautyAssessments,
+} from './customerBeautyAssessmentViewModel';
+export type { CustomerBeautyAssessmentAdminRecord } from './customerBeautyAssessmentViewModel';
 export { CustomerAssessmentDetailDrawer } from './CustomerAssessmentDetailDrawer';
 export type { CustomerAssessmentDetailDrawerProps } from './CustomerAssessmentDetailDrawer';
 export {

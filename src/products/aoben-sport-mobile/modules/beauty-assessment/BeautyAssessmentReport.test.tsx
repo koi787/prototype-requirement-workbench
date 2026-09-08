@@ -26,6 +26,11 @@ describe('beauty report core content', () => {
     expect(screen.getByText(/您的面部皮肤出现干燥、敏感、色斑及皱纹衰老等问题/)).toBeVisible();
     expect(screen.getByText(/1\.科学护肤，修复屏障：用氨基酸洗面奶温和清洁/)).toBeVisible();
     expect(screen.queryByText(/原型示例/)).not.toBeInTheDocument();
+    const detailSection = within(screen.getByRole('region', { name: '详细分析' }));
+    for (const name of ['毛孔', '浅层色素', '混合斑', '痤疮', '屏障', '深层色素', '敏感红素图', '皱纹', '粗糙度', '胶原']) {
+      expect(detailSection.getByText(name)).toBeVisible();
+    }
+    expect(detailSection.getAllByRole('button')).toHaveLength(6);
   });
 
   it('derives the displayed report from a supplied id and updates without stale copied state', () => {
@@ -130,7 +135,7 @@ describe('beauty report core content', () => {
     const items = ['A', 'B', 'C', 'D'].map((levelName, index) => {
       const baseItem = report.items[index];
       if (!baseItem) throw new Error(`Expected grade preview item at index ${index}`);
-      return { ...baseItem, type: `grade-${levelName}`, name: `等级${levelName}`, score: 10, levelName };
+      return { ...baseItem, type: `grade-${levelName}`, name: `等级${levelName}`, score: 10, levelName, problemAnalysis: [`等级${levelName}测试正文`] };
     });
     render(<BeautyAssessmentReport records={[{ ...report, items }]} />);
     const section = within(screen.getByRole('region', { name: '详细分析' }));
@@ -144,22 +149,18 @@ describe('beauty report core content', () => {
     const report = getReportFixture();
     const { rerender } = render(<BeautyAssessmentReport records={[report]} />);
     const section = within(screen.getByRole('region', { name: '详细分析' }));
-    fireEvent.click(section.getByRole('button', { name: /油脂/ }));
-    expect(section.getByRole('button', { name: /油脂/ })).toHaveAttribute('aria-expanded', 'true');
+    expect(section.getByText('油脂')).toBeVisible();
+    expect(section.queryByRole('button', { name: /油脂/ })).not.toBeInTheDocument();
     expect(section.queryByRole('heading', { name: '问题分析' })).not.toBeInTheDocument();
     expect(section.queryByRole('heading', { name: '日常护理建议' })).not.toBeInTheDocument();
     rerender(<BeautyAssessmentReport records={[{ ...report, recordId: 'different-report' }]} />);
-    expect(within(screen.getByRole('region', { name: '详细分析' })).getByRole('button', { name: /油脂/ })).toHaveAttribute('aria-expanded', 'false');
+    expect(within(screen.getByRole('region', { name: '详细分析' })).queryByRole('button', { name: /油脂/ })).not.toBeInTheDocument();
   });
 
   it('expands sanitized vendor analysis and advice, while empty Content renders no fake copy', () => {
     const vendorReport = BEAUTY_REPORTS.find((report) => report.recordId === 'beauty-prototype-100');
     if (!vendorReport) throw new Error('Expected sanitized vendor report');
-    const reportWithEmptyItem = {
-      ...vendorReport,
-      items: [...vendorReport.items, { type: 'pores', name: '毛孔', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [] }],
-    };
-    render(<BeautyAssessmentReport records={[reportWithEmptyItem]} />);
+    render(<BeautyAssessmentReport records={[vendorReport]} />);
     const section = within(screen.getByRole('region', { name: '详细分析' }));
     const oilToggle = section.getByRole('button', { name: /油脂/ });
     const oilRow = oilToggle.closest('li');
@@ -175,12 +176,11 @@ describe('beauty report core content', () => {
     expect(within(oilRow!).queryByRole('heading', { name: '问题分析' })).not.toBeInTheDocument();
     expect(within(oilRow!).queryByRole('heading', { name: '日常护理建议' })).not.toBeInTheDocument();
 
-    const emptyToggle = section.getByRole('button', { name: /毛孔/ });
-    const emptyRow = emptyToggle.closest('li');
+    const emptyRow = section.getByText('毛孔').closest('li');
     expect(emptyRow).not.toBeNull();
-    fireEvent.click(emptyToggle);
+    expect(within(emptyRow!).queryByRole('button', { name: /毛孔/ })).not.toBeInTheDocument();
     expect(within(emptyRow!).queryByRole('heading', { name: '问题分析' })).not.toBeInTheDocument();
     expect(within(emptyRow!).queryByRole('heading', { name: '日常护理建议' })).not.toBeInTheDocument();
-    expect(within(emptyRow!).queryByText('暂无数据')).not.toBeInTheDocument();
+    expect(within(emptyRow!).queryByText('暂无详细内容')).not.toBeInTheDocument();
   });
 });

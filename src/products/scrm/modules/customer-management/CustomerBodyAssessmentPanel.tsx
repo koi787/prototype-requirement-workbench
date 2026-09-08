@@ -6,6 +6,7 @@ import {
 } from '../../../../shared/body-assessment';
 import type { CustomerRecord } from './customerTypes';
 import { CustomerAssessmentDetailDrawer } from './CustomerAssessmentDetailDrawer';
+import { CustomerBeautyAssessmentPanel } from './CustomerBeautyAssessmentPanel';
 
 export type CustomerAssessmentView = 'assessment' | 'beauty';
 export type CustomerAssessmentSourceFilter = 'ALL' | 'INBODY' | 'BIACN';
@@ -35,10 +36,6 @@ function sourceLabel(source: BodyAssessmentReport['source']): string {
 
 function metricText(report: BodyAssessmentReport, metric: keyof BodyAssessmentReport['core']): string {
   return formatAssessmentMetric(report.core[metric], { emptyValue: '--' });
-}
-
-function AssessmentEmptyState() {
-  return <div className="customer-assessment-empty-state">暂无美容记录</div>;
 }
 
 export function CustomerBodyAssessmentPanel({
@@ -136,7 +133,12 @@ export function CustomerBodyAssessmentPanel({
             </table>
           </div>
         </>
-      ) : <AssessmentEmptyState />}
+      ) : (
+        <CustomerBeautyAssessmentPanel
+          customer={customer}
+          {...(initialRecordId ? { initialRecordId } : {})}
+        />
+      )}
 
       <CustomerAssessmentDetailDrawer
         open={selectedRecord !== null}

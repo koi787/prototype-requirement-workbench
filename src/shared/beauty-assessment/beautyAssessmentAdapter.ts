@@ -158,12 +158,27 @@ export const adaptBeautyReport: BeautyReportAdapter<BeautyReportInput> = (input)
     const matches = matchesByType.length > 0
       ? matchesByType
       : validItems.filter((item) => childName !== null && normalizeText(item.name) === childName);
-    if (matches.length > 1) continue;
-    const item = matches[0];
-    if (!item) continue;
-    const type = childType ?? normalizeResultChildKey(item.type);
-    const name = childName ?? normalizeText(item.name);
+    // Multiple valid front-face details are ambiguous. Preserve the configured
+    // project but fail closed instead of selecting an arbitrary detail.
+    const item = matches.length === 1 ? matches[0] : undefined;
+    // 水分 is a configured overview entry in the current fixture. Keep the
+    // existing V1 rule: omit it only when no valid single-item result exists.
+    if (!item && childName === '水分') continue;
+    const type = childType ?? (item ? normalizeResultChildKey(item.type) : null);
+    const name = childName ?? (item ? normalizeText(item.name) : null);
     if (!type || !name) continue;
+    if (!item) {
+      items.push({
+        type,
+        name,
+        score: null,
+        level: null,
+        levelName: null,
+        problemAnalysis: [],
+        careAdvice: [],
+      });
+      continue;
+    }
     const itemTexts = normalizeItemTexts(item);
     items.push({
       type,

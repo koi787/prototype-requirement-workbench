@@ -88,7 +88,7 @@ describe('beauty report adapter', () => {
     expect(report.items.map((item) => item.name)).toEqual(['新增厂家项目', '油脂']);
   });
 
-  it('skips a Child when its detail is not a valid front-face result', () => {
+  it('keeps a Child when its detail is not a valid front-face result, without using that detail', () => {
     const source = input();
     const report = adaptBeautyReport({
       ...source,
@@ -98,7 +98,11 @@ describe('beauty report adapter', () => {
         { type: 'side', name: '侧脸', status: 100, faceType: 1 },
       ],
     });
-    expect(report.items.map((item) => item.type)).toEqual(['oil']);
+    expect(report.items.map((item) => item.type)).toEqual(['pending', 'side', 'oil']);
+    expect(report.items.slice(0, 2)).toMatchObject([
+      { score: null, levelName: null, problemAnalysis: [], careAdvice: [] },
+      { score: null, levelName: null, problemAnalysis: [], careAdvice: [] },
+    ]);
   });
 
   it('does not append a valid detail that is absent from Result Children', () => {
@@ -110,17 +114,20 @@ describe('beauty report adapter', () => {
     expect(report.items.map((item) => item.type)).toEqual(['oil']);
   });
 
-  it('skips a Child with multiple valid matching details instead of choosing one', () => {
+  it('preserves a Child with duplicate valid details but discards the ambiguous detail', () => {
     const source = input();
     const duplicate = { ...source.resultDetails[0]!, score: 88 };
     const report = adaptBeautyReport({
       ...source,
       resultDetails: [...source.resultDetails, duplicate],
     });
-    expect(report.items).toEqual([]);
+    expect(report.items).toEqual([{
+      type: 'oil', name: '油脂', score: null, level: null, levelName: null,
+      problemAnalysis: [], careAdvice: [],
+    }]);
   });
 
-  it('excludes invalid statuses, side faces and results not in source order', () => {
+  it('does not use invalid statuses or side faces, while retaining their configured Children', () => {
     const source = input();
     const report = adaptBeautyReport({
       ...source, result: [{ Name: 'skin', Children: [{ Type: 'pending', Name: '未完成' }, { Type: 'side', Name: '侧脸' }, { Type: 'oil', Name: '油脂' }] }],
@@ -129,12 +136,19 @@ describe('beauty report adapter', () => {
         { type: 'side', name: '侧脸', status: '100', faceType: '1' },
         { type: 'unconfigured', name: '未配置', status: 100, faceType: 2 }],
     });
-    expect(report.items.map((item) => item.type)).toEqual(['oil']);
+    expect(report.items.map((item) => item.type)).toEqual(['pending', 'side', 'oil']);
+    expect(report.items.slice(0, 2)).toMatchObject([
+      { score: null, levelName: null, problemAnalysis: [], careAdvice: [] },
+      { score: null, levelName: null, problemAnalysis: [], careAdvice: [] },
+    ]);
   });
 
-  it('fails closed for ambiguous valid results instead of silently choosing one', () => {
+  it('fails closed for ambiguous valid results without deleting the configured project', () => {
     const source = input();
-    expect(adaptBeautyReport({ ...source, resultDetails: [...source.resultDetails, ...source.resultDetails] }).items).toEqual([]);
+    expect(adaptBeautyReport({ ...source, resultDetails: [...source.resultDetails, ...source.resultDetails] }).items).toEqual([{
+      type: 'oil', name: '油脂', score: null, level: null, levelName: null,
+      problemAnalysis: [], careAdvice: [],
+    }]);
   });
 
   it('does not mutate its input or copy unrelated source fields into the business model', () => {
@@ -188,8 +202,42 @@ describe('beauty report adapter', () => {
       expect(item?.problemAnalysis.length).toBeGreaterThan(0);
       expect(item?.careAdvice.length).toBeGreaterThan(0);
     }
-    expect(report?.items.some((item) => item.name === '毛孔')).toBe(false);
+    expect(report?.items.some((item) => item.name === '毛孔')).toBe(true);
     expect(JSON.stringify(report)).not.toMatch(/images|Image_|科普知识|imageUrl/);
+  });
+
+  it('keeps every configured canonical project even when its valid result has no Content', () => {
+    const source = BEAUTY_REPORT_MOCK_INPUTS.find((item) => item.sourceId === 'beauty-vendor-sanitized');
+    expect(source?.resultDetails).toHaveLength(6);
+    expect(source?.resultDetails.map((item) => item.name)).toEqual(['棕色色素', '紫外线斑', '卟啉', '黑头', '油脂', '敏感热力图']);
+    expect(source?.resultDetails.some((item) => item.name === '毛孔')).toBe(false);
+    const report = BEAUTY_REPORTS.find((item) => item.sourceId === 'beauty-vendor-sanitized');
+    expect(report?.items.map((item) => item.name)).toEqual([
+      '油脂', '毛孔', '黑头', '浅层色素', '混合斑', '痤疮', '屏障', '卟啉',
+      '深层色素', '棕色色素', '紫外线斑', '敏感红素图', '敏感热力图', '皱纹', '粗糙度', '胶原',
+    ]);
+    expect(report?.items.find((item) => item.name === '毛孔')).toMatchObject({
+      score: null,
+      levelName: null,
+      problemAnalysis: [],
+      careAdvice: [],
+    });
+  });
+
+  it('keeps a Children-only project with null result values and does not call it a valid result', () => {
+    const source = input();
+    const report = adaptBeautyReport({
+      ...source,
+      result: [{ Name: 'skin', Children: [
+        { Type: 'oil', Name: '油脂' },
+        { Type: 'new-project', Name: '新增无明细项目' },
+      ] }],
+      resultDetails: source.resultDetails,
+    });
+    expect(report.items).toEqual([
+      expect.objectContaining({ type: 'oil', name: '油脂', score: 74, levelName: 'B' }),
+      { type: 'new-project', name: '新增无明细项目', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [] },
+    ]);
   });
 
   it('maps ComprehensiveProposal into the report summary and preserves its source order', () => {

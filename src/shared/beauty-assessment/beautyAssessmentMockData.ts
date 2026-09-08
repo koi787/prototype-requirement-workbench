@@ -51,7 +51,6 @@ function makeSanitizedVendorReport(): BeautyReportInput {
     levelName: detail.LevelName,
     content: detail.Content,
   }));
-
   return {
     ...prototype,
     sourceId: 'beauty-vendor-sanitized',
@@ -69,6 +68,9 @@ function makeSanitizedVendorReport(): BeautyReportInput {
     },
     comprehensiveProposal: vendorResult.ComprehensiveProposal,
     result: vendorResult.Result,
+    // Keep the sanitized vendor response factual: it contains only the six
+    // ResultDetail records returned by the source fixture. Missing configured
+    // projects are materialized by the adapter as null-valued display items.
     resultDetails: vendorItems,
   };
 }

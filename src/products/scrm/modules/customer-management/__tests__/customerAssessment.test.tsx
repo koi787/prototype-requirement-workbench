@@ -162,12 +162,12 @@ describe('0016 Cycle D SCRM 体测美容记录', () => {
     expect(calorieCard?.querySelector('strong')?.textContent).toBe('2449');
   });
 
-  it('美容记录只显示统一空状态，不生成美容字段', () => {
+  it('美容记录展示当前客户列表且可返回体测记录', () => {
     openAssessmentTab();
     fireEvent.click(screen.getByRole('tab', { name: '美容记录' }));
-    expect(screen.getByText('暂无美容记录')).toBeTruthy();
-    expect(screen.queryByText('肤质')).toBeNull();
-    expect(screen.queryByText('皮肤评分')).toBeNull();
+    expect(screen.getByRole('table', { name: '美容记录列表' })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: '查看' })).toHaveLength(2);
+    expect(screen.getByText('肤质类型')).toBeTruthy();
     expect(screen.getByRole('tab', { name: '美容记录' })).toHaveAttribute('aria-selected', 'true');
 
     fireEvent.click(screen.getByRole('tab', { name: '体测记录' }));
