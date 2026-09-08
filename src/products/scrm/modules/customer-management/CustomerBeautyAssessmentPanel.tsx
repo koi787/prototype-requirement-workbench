@@ -52,7 +52,7 @@ export function CustomerBeautyAssessmentPanel({
                 <th>等级</th>
                 <th>肤质类型</th>
                 <th>肤质标签</th>
-                <th>检测设备 IP</th>
+                <th>检测设备序列号</th>
                 <th>操作</th>
               </tr>
             </thead>
@@ -64,7 +64,7 @@ export function CustomerBeautyAssessmentPanel({
                   <td>{levelValue(record.basic.scoreLevel)}</td>
                   <td>{record.basic.skinType ?? '--'}</td>
                   <td>{labelsValue(record.basic.skinLabels)}</td>
-                  <td>--</td>
+                  <td>{record.basic.deviceSerialNumber ?? '--'}</td>
                   <td>
                     <button
                       type="button"

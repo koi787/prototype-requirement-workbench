@@ -150,8 +150,8 @@ export function CustomerDetailDrawer({
               customer={customer}
               initialView={initialAssessmentView}
               initialSource={initialAssessmentSource}
-              initialBeautyRecordId={initialBeautyRecordId}
               {...(initialAssessmentRecordId ? { initialRecordId: initialAssessmentRecordId } : {})}
+              {...(initialBeautyRecordId ? { initialBeautyRecordId } : {})}
             />
           </div>
         </div>

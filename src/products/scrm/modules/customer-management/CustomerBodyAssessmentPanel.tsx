@@ -135,7 +135,12 @@ export function CustomerBodyAssessmentPanel({
             </table>
           </div>
         </>
-      ) : <CustomerBeautyAssessmentPanel customer={customer} initialRecordId={initialBeautyRecordId} />}
+      ) : (
+        <CustomerBeautyAssessmentPanel
+          customer={customer}
+          {...(initialBeautyRecordId ? { initialRecordId: initialBeautyRecordId } : {})}
+        />
+      )}
 
       <CustomerAssessmentDetailDrawer
         open={selectedRecord !== null}

@@ -1140,7 +1140,8 @@
   border-top: 1px solid #f0f1f3;
 }
 
-.customer-beauty-report-item-toggle {
+.customer-beauty-report-item-toggle,
+.customer-beauty-report-item-static {
   display: grid;
   width: 100%;
   grid-template-columns: minmax(0, 1fr) 100px 72px 28px;
@@ -1153,6 +1154,11 @@
   background: #fff;
   border: 0;
   cursor: pointer;
+}
+
+.customer-beauty-report-item-static {
+  min-height: 46px;
+  padding: 10px 14px;
 }
 
 .customer-beauty-report-item-score,

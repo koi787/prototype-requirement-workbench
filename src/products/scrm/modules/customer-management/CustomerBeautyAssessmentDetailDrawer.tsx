@@ -51,6 +51,23 @@ function ContentBlock({ title, entries }: { title: string; entries: readonly str
 function BeautyReportItemRow({ item }: { item: BeautyReportItem }) {
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
+  const hasDetailContent = item.problemAnalysis.length > 0 || item.careAdvice.length > 0;
+  const itemSummary = (
+    <>
+      <span className="customer-beauty-report-item-name">{item.name}</span>
+      <span className="customer-beauty-report-item-score">{scoreValue(item.score)}分</span>
+      <span className="customer-beauty-report-item-level">{item.levelName ?? '--'}</span>
+    </>
+  );
+
+  if (!hasDetailContent) {
+    return (
+      <li className="customer-beauty-report-item">
+        <div className="customer-beauty-report-item-static">{itemSummary}</div>
+      </li>
+    );
+  }
+
   return (
     <li className="customer-beauty-report-item">
       <button
@@ -60,9 +77,7 @@ function BeautyReportItemRow({ item }: { item: BeautyReportItem }) {
         aria-controls={contentId}
         onClick={() => setExpanded((current) => !current)}
       >
-        <span className="customer-beauty-report-item-name">{item.name}</span>
-        <span className="customer-beauty-report-item-score">{scoreValue(item.score)}分</span>
-        <span className="customer-beauty-report-item-level">{item.levelName ?? '--'}</span>
+        {itemSummary}
         <span className="customer-beauty-report-item-chevron" aria-hidden="true">{expanded ? '⌄' : '›'}</span>
       </button>
       <div id={contentId} className="customer-beauty-report-item-details" hidden={!expanded}>
@@ -96,7 +111,7 @@ function BeautyAssessmentDetailBody({ report }: { report: BeautyReport }) {
           <DetailField label="肤质类型" value={emptyValue(report.basic.skinType)} />
           <DetailField label="肤质标签" value={labels} />
           <DetailField label="检测时间" value={formatBeautyDetectTime(report.basic.detectTime)} />
-          <DetailField label="检测设备 IP" value="--" />
+          <DetailField label="检测设备序列号" value={emptyValue(report.basic.deviceSerialNumber)} />
         </div>
       </section>
 

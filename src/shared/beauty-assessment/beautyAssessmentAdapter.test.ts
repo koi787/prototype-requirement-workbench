@@ -45,6 +45,11 @@ describe('beauty report adapter', () => {
     expect(report.vendorTaskId).toBe('1012');
   });
 
+  it('maps vendor SerialNumber to the shared deviceSerialNumber and keeps a missing value null', () => {
+    expect(adaptBeautyReport({ ...input(), serialNumber: 'K33CH123456789' }).basic.deviceSerialNumber).toBe('K33CH123456789');
+    expect(adaptBeautyReport(input()).basic.deviceSerialNumber).toBeNull();
+  });
+
   it('preserves zero while invalid values become null, including numeric Level', () => {
     const source = input();
     const report = adaptBeautyReport({
@@ -88,7 +93,7 @@ describe('beauty report adapter', () => {
     expect(report.items.map((item) => item.name)).toEqual(['新增厂家项目', '油脂']);
   });
 
-  it('skips a Child when its detail is not a valid front-face result', () => {
+  it('keeps Children with no valid front-face detail fail-closed', () => {
     const source = input();
     const report = adaptBeautyReport({
       ...source,
@@ -98,7 +103,11 @@ describe('beauty report adapter', () => {
         { type: 'side', name: '侧脸', status: 100, faceType: 1 },
       ],
     });
-    expect(report.items.map((item) => item.type)).toEqual(['oil']);
+    expect(report.items.map((item) => item.type)).toEqual(['pending', 'side', 'oil']);
+    expect(report.items.slice(0, 2)).toEqual([
+      { type: 'pending', name: '未完成', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [] },
+      { type: 'side', name: '侧脸', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [] },
+    ]);
   });
 
   it('does not append a valid detail that is absent from Result Children', () => {
@@ -110,14 +119,16 @@ describe('beauty report adapter', () => {
     expect(report.items.map((item) => item.type)).toEqual(['oil']);
   });
 
-  it('skips a Child with multiple valid matching details instead of choosing one', () => {
+  it('keeps a Child with duplicate valid details but discards ambiguous detail data', () => {
     const source = input();
     const duplicate = { ...source.resultDetails[0]!, score: 88 };
     const report = adaptBeautyReport({
       ...source,
       resultDetails: [...source.resultDetails, duplicate],
     });
-    expect(report.items).toEqual([]);
+    expect(report.items).toEqual([{
+      type: 'oil', name: '油脂', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [],
+    }]);
   });
 
   it('excludes invalid statuses, side faces and results not in source order', () => {
@@ -129,12 +140,14 @@ describe('beauty report adapter', () => {
         { type: 'side', name: '侧脸', status: '100', faceType: '1' },
         { type: 'unconfigured', name: '未配置', status: 100, faceType: 2 }],
     });
-    expect(report.items.map((item) => item.type)).toEqual(['oil']);
+    expect(report.items.map((item) => item.type)).toEqual(['pending', 'side', 'oil']);
   });
 
-  it('fails closed for ambiguous valid results instead of silently choosing one', () => {
+  it('fails closed for ambiguous valid results without dropping the configured project', () => {
     const source = input();
-    expect(adaptBeautyReport({ ...source, resultDetails: [...source.resultDetails, ...source.resultDetails] }).items).toEqual([]);
+    expect(adaptBeautyReport({ ...source, resultDetails: [...source.resultDetails, ...source.resultDetails] }).items).toEqual([{
+      type: 'oil', name: '油脂', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [],
+    }]);
   });
 
   it('does not mutate its input or copy unrelated source fields into the business model', () => {
@@ -158,14 +171,16 @@ describe('beauty report adapter', () => {
     expect(() => adaptBeautyRecords([input(), input()], adaptBeautyReport)).toThrow('unique non-empty recordIds');
   });
 
-  it('provides stable mock data that exercises record identity and the current configured order', () => {
+  it('provides stable canonical data with the configured 16-item V1 order', () => {
     const reports = adaptBeautyRecords(BEAUTY_REPORT_MOCK_INPUTS, adaptBeautyReport);
     expect(reports).toHaveLength(3);
-    expect(reports.map((report) => report.basic.score)).toEqual([62, 46, 55]);
+    expect(reports.map((report) => report.basic.score)).toEqual([46, 46, 46]);
     expect(reports[0]?.items.map((item) => item.name)).toEqual([
       '油脂', '毛孔', '黑头', '浅层色素', '混合斑', '痤疮', '屏障', '卟啉',
       '深层色素', '棕色色素', '紫外线斑', '敏感红素图', '敏感热力图', '皱纹', '粗糙度', '胶原',
     ]);
+    expect(reports[0]?.items.find((item) => item.name === '毛孔')).toMatchObject({ score: null, levelName: null });
+    expect(reports[0]?.items.some((item) => item.name === '水分')).toBe(false);
   });
 
   it('maps the sanitized vendor Content into item analysis and care advice without copying unrelated fields', () => {
@@ -188,7 +203,7 @@ describe('beauty report adapter', () => {
       expect(item?.problemAnalysis.length).toBeGreaterThan(0);
       expect(item?.careAdvice.length).toBeGreaterThan(0);
     }
-    expect(report?.items.some((item) => item.name === '毛孔')).toBe(false);
+    expect(report?.items.find((item) => item.name === '毛孔')).toMatchObject({ score: null, levelName: null, problemAnalysis: [], careAdvice: [] });
     expect(JSON.stringify(report)).not.toMatch(/images|Image_|科普知识|imageUrl/);
   });
 

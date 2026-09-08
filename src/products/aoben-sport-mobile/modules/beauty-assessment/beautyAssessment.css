@@ -78,7 +78,9 @@
 .aoben-beauty-items-body { padding: 0 16px; }
 .aoben-beauty-items { margin: 0; padding: 0; list-style: none; }
 .aoben-beauty-item + .aoben-beauty-item { border-top: 1px solid #f0f3f0; }
-.aoben-beauty-item-toggle { display: grid; grid-template-columns: minmax(0, 1fr) auto auto 16px; align-items: center; gap: 12px; width: 100%; min-height: 46px; padding: 8px 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.aoben-beauty-item-toggle,
+.aoben-beauty-item-static { display: grid; grid-template-columns: minmax(0, 1fr) auto auto 16px; align-items: center; gap: 12px; width: 100%; min-height: 46px; padding: 8px 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
+.aoben-beauty-item-toggle { cursor: pointer; }
 .aoben-beauty-item-name { display: flex; align-items: center; gap: 10px; min-width: 0; overflow-wrap: anywhere; }
 .aoben-beauty-item-icon { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #faf6f2; color: #c2b3a7; }
 .aoben-beauty-item-icon svg { width: 17px; height: 17px; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
