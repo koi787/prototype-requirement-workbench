@@ -21,6 +21,23 @@ export interface RequirementHistoryRecord {
 
 export const REQUIREMENT_HISTORY_RECORDS = [
   {
+    id: '0021',
+    name: '美容检测报告接入与后台管理 V1',
+    type: 'mixed',
+    module: '奥本运动 / SCRM',
+    status: '已发布',
+    completedAt: '2026-09-09',
+    summary: '完成美容检测厂家数据接入原型，统一移动端与 SCRM 后台的美容检测报告模型。',
+    implementedItems: [
+      '奥本运动移动端支持综合检测结果、16 项单项报告、历史记录与分享；SCRM 客户详情支持多次美容检测记录、报告详情及设备序列号展示。',
+      '基于真实厂家报告完成数据结构校准，16 项检测项目均展示真实分数、等级、问题分析及护理建议；水分暂不纳入 V1 单项报告。',
+    ],
+    storyLinks: [
+      { label: '奥本运动美容检测移动端报告', storyId: '移动端｜奥本运动-美容检测-移动端报告--进入报告' },
+      { label: 'SCRM客户详情美容记录', storyId: 'scrm-客户-客户详情-体测美容记录-美容记录--正常列表' },
+    ],
+  },
+  {
     id: '0017',
     name: '拜访记录重点字段前置与下次拜访时间筛选',
     type: 'change',

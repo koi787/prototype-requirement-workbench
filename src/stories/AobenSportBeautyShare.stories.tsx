@@ -3,7 +3,7 @@ import { within, userEvent } from 'storybook/test';
 import { AobenSportMobileRoot } from '../products/aoben-sport-mobile';
 
 const meta = {
-  title: '移动端｜奥本运动/我的/美容检测/分享报告',
+  title: '移动端｜奥本运动/美容检测/分享报告',
   component: AobenSportMobileRoot,
   args: { initialView: 'beauty-assessment' },
   parameters: { layout: 'fullscreen', controls: { disable: true } },

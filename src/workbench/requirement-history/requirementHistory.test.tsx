@@ -7,11 +7,12 @@ import { REQUIREMENT_HISTORY_RECORDS } from './requirementHistoryData';
 describe('requirement history list', () => {
   afterEach(() => cleanup());
 
-  it('keeps the six confirmed records and sorts them by completed date descending', () => {
+  it('keeps the seven confirmed records and sorts them by completed date descending', () => {
     render(<RequirementHistoryListPage />);
 
-    expect(REQUIREMENT_HISTORY_RECORDS.map((record) => record.id)).toEqual(['0017', '0016', '0015', '0014', '0013', '0012']);
+    expect(REQUIREMENT_HISTORY_RECORDS.map((record) => record.id)).toEqual(['0021', '0017', '0016', '0015', '0014', '0013', '0012']);
     expect(screen.getAllByTestId(/requirement-history-row-/).map((row) => row.getAttribute('data-testid'))).toEqual([
+      'requirement-history-row-0021',
       'requirement-history-row-0017',
       'requirement-history-row-0016',
       'requirement-history-row-0015',
@@ -64,6 +65,11 @@ describe('requirement history list', () => {
     await user.type(input, '未来7天');
     expect(screen.getByTestId('requirement-history-row-0017')).toBeInTheDocument();
     expect(screen.queryByTestId('requirement-history-row-0016')).toBeNull();
+
+    await user.clear(input);
+    await user.type(input, '0021');
+    expect(screen.getByTestId('requirement-history-row-0021')).toBeInTheDocument();
+    expect(screen.queryByTestId('requirement-history-row-0017')).toBeNull();
   });
 
   it('shows the required empty state when there is no match', async () => {
@@ -98,5 +104,16 @@ describe('requirement history list', () => {
     expect(link).toHaveAttribute('href', expect.stringContaining('/?path=/story/'));
     expect(link).toHaveAttribute('href', expect.stringContaining('scrm-%E5%91%98%E5%B7%A5-%E8%A7%92%E8%89%B2%E5%88%97%E8%A1%A8'));
     expect(screen.queryByText('查看详情')).toBeNull();
+
+    const beautyRecordRow = screen.getByTestId('requirement-history-row-0021');
+    expect(within(beautyRecordRow).getByText('混合')).toBeInTheDocument();
+    expect(within(beautyRecordRow).getByRole('link', { name: '奥本运动美容检测移动端报告' })).toHaveAttribute(
+      'href',
+      expect.stringContaining(encodeURIComponent('移动端｜奥本运动-美容检测-移动端报告--进入报告')),
+    );
+    expect(within(beautyRecordRow).getByRole('link', { name: 'SCRM客户详情美容记录' })).toHaveAttribute(
+      'href',
+      expect.stringContaining(encodeURIComponent('scrm-客户-客户详情-体测美容记录-美容记录--正常列表')),
+    );
   });
 });

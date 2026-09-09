@@ -43,8 +43,8 @@ describe('AobenSportMobileRoot', () => {
     expect(screen.getByTestId('aoben-report-root')).toHaveAttribute('data-report-source', 'BIACN');
   });
 
-  it('奥本中台 Story 通过真实 Root 打开报告和返回，不是独立报告 Demo', () => {
-    expect(beautyStory.title).toBe('奥本中台/美容检测/移动端报告');
+  it('移动端美容检测 Story 通过真实 Root 打开报告和返回，不是独立报告 Demo', () => {
+    expect(beautyStory.title).toBe('移动端｜奥本运动/美容检测/移动端报告');
     expect(beautyStory.component).toBe(AobenSportMobileRoot);
     const StoryRoot = beautyStory.component;
     render(<StoryRoot {...进入报告.args} />);
