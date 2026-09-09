@@ -9,7 +9,7 @@ const sixRecords = BEAUTY_REPORTS.flatMap((record, index) => [record, {
   basic: { ...record.basic, detectTime: `2026-07-0${index + 1}T09:00:00+08:00` },
 }]);
 const meta = {
-  title: '移动端｜奥本运动/我的/美容检测/历史记录',
+  title: '移动端｜奥本运动/美容检测/历史记录',
   component: AobenSportMobileRoot,
   args: { initialView: 'beauty-assessment' },
   parameters: { layout: 'fullscreen', controls: { disable: true } },

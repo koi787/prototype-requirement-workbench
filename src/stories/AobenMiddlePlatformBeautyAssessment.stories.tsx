@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { AobenSportMobileRoot } from '../products/aoben-sport-mobile';
 
 const meta = {
-  title: '奥本中台/美容检测/移动端报告',
+  title: '移动端｜奥本运动/美容检测/移动端报告',
   component: AobenSportMobileRoot,
   parameters: { layout: 'fullscreen', controls: { disable: true } },
 } satisfies Meta<typeof AobenSportMobileRoot>;

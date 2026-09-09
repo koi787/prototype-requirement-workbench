@@ -164,9 +164,9 @@ describe('beauty report complete interactions', () => {
 
   it('keeps all seven product Stories on the real Root and passes their selection/data to the page', () => {
     for (const meta of [reportMeta, historyMeta, shareMeta]) expect(meta.component).toBe(AobenSportMobileRoot);
-    expect(reportMeta.title).toBe('移动端｜奥本运动/我的/美容检测/报告详情');
-    expect(historyMeta.title).toBe('移动端｜奥本运动/我的/美容检测/历史记录');
-    expect(shareMeta.title).toBe('移动端｜奥本运动/我的/美容检测/分享报告');
+    expect(reportMeta.title).toBe('移动端｜奥本运动/美容检测/报告详情');
+    expect(historyMeta.title).toBe('移动端｜奥本运动/美容检测/历史记录');
+    expect(shareMeta.title).toBe('移动端｜奥本运动/美容检测/分享报告');
     const { unmount } = render(<AobenSportMobileRoot {...reportMeta.args} {...historyReport.args} />);
     expect(screen.getByText('48')).toBeVisible(); unmount();
     const single = render(<AobenSportMobileRoot {...historyMeta.args} {...单条记录.args} />);
