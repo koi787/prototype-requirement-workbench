@@ -162,7 +162,7 @@ describe('0016 Cycle D SCRM 体测美容记录', () => {
     expect(calorieCard?.querySelector('strong')?.textContent).toBe('2449');
   });
 
-  it('美容记录按当前 customerId 显示16项真实报告、空明细和正确的记录绑定', () => {
+  it('美容记录按当前 customerId 显示16项完整真实报告和正确的记录绑定', () => {
     openAssessmentTab();
     fireEvent.click(screen.getByRole('tab', { name: '美容记录' }));
     const table = screen.getByRole('table', { name: '美容记录列表' });
@@ -179,13 +179,13 @@ describe('0016 Cycle D SCRM 体测美容记录', () => {
     let detailDrawer = screen.getAllByRole('dialog')[1]!;
     expect(detailDrawer.querySelector('[data-beauty-record-id="beauty-prototype-100"]')).toBeTruthy();
     expect(detailDrawer.querySelectorAll('.customer-beauty-report-item')).toHaveLength(16);
-    expect(detailDrawer.querySelectorAll('.customer-beauty-report-item-static')).toHaveLength(10);
-    expect(within(detailDrawer).getByText('检测设备序列号').parentElement).toHaveTextContent('--');
+    expect(detailDrawer.querySelectorAll('.customer-beauty-report-item-static')).toHaveLength(0);
+    expect(within(detailDrawer).getByText('检测设备序列号').parentElement).toHaveTextContent('K33CH**********');
     expect(within(detailDrawer).queryByText('暂无详细内容')).toBeNull();
-    expect(within(detailDrawer).queryByRole('button', { name: /毛孔/ })).toBeNull();
+    expect(within(detailDrawer).getByRole('button', { name: /毛孔/ })).toBeTruthy();
     const oilToggle = within(detailDrawer).getByRole('button', { name: /油脂/ });
     fireEvent.click(oilToggle);
-    expect(within(detailDrawer).getByText('您的皮脂腺分泌有轻微异常，T 区油脂分泌旺盛，皮肤表面略显油腻感，容易显得暗沉。')).toBeTruthy();
+    expect(within(detailDrawer).getByText('您的皮脂腺分泌稍有异常，T 区、U区油脂分泌较多，皮肤外观略显油腻，容易暗沉。')).toBeTruthy();
 
     fireEvent.click(within(detailDrawer).getByRole('button', { name: 'Close' }));
     expect(screen.getByRole('tab', { name: '美容记录' })).toHaveAttribute('aria-selected', 'true');

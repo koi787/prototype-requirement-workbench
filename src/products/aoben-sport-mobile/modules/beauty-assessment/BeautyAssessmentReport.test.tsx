@@ -19,21 +19,21 @@ describe('beauty report core content', () => {
       '整体情况', '问题分析', '护理建议', '详细分析',
     ]);
     const overall = within(screen.getByRole('region', { name: '整体情况' }));
-    expect(overall.getByText('46')).toBeInTheDocument();
+    expect(overall.getByText('48')).toBeInTheDocument();
     expect(overall.getByText('C级')).toBeInTheDocument();
-    expect(overall.getByText('DSPW')).toBeInTheDocument();
-    expect(overall.getByText('干 / 敏 / 色 / 衰')).toBeInTheDocument();
-    expect(screen.getByText(/您的面部皮肤出现干燥、敏感、色斑及皱纹衰老等问题/)).toBeVisible();
-    expect(screen.getByText(/1\.科学护肤，修复屏障：用氨基酸洗面奶温和清洁/)).toBeVisible();
+    expect(overall.getByText('OSPW')).toBeInTheDocument();
+    expect(overall.getByText('油 / 敏 / 色 / 衰')).toBeInTheDocument();
+    expect(screen.getByText(/油脂分泌旺盛会为其他皮肤问题埋下隐患/)).toBeVisible();
+    expect(screen.getByText(/1\.温和清洁与舒缓修护/)).toBeVisible();
     expect(screen.queryByText(/原型示例/)).not.toBeInTheDocument();
   });
 
   it('derives the displayed report from a supplied id and updates without stale copied state', () => {
     const { rerender } = render(<BeautyAssessmentReport currentRecordId="beauty-prototype-900" />);
-    expect(within(screen.getByRole('region', { name: '整体情况' })).getByText('46')).toBeInTheDocument();
+    expect(within(screen.getByRole('region', { name: '整体情况' })).getByText('48')).toBeInTheDocument();
     rerender(<BeautyAssessmentReport currentRecordId="beauty-prototype-100" />);
     const overall = within(screen.getByRole('region', { name: '整体情况' }));
-    expect(overall.getByText('46')).toBeInTheDocument();
+    expect(overall.getByText('48')).toBeInTheDocument();
     expect(overall.queryByText('62')).not.toBeInTheDocument();
   });
 
@@ -56,7 +56,7 @@ describe('beauty report core content', () => {
   it('does not display an unrelated latest report when the requested id is missing', () => {
     render(<BeautyAssessmentReport currentRecordId="missing" />);
     expect(screen.getByRole('status')).toHaveTextContent('未找到可展示的美容检测报告');
-    expect(screen.queryByText('46')).not.toBeInTheDocument();
+    expect(screen.queryByText('48')).not.toBeInTheDocument();
   });
 
   it('accepts a different normalized source and displays zero distinctly from missing fields', () => {
@@ -141,12 +141,12 @@ describe('beauty report core content', () => {
 
   it('does not offer empty items as expandable and resets real-content expansion when the report changes', () => {
     const report = getReportFixture();
-    const emptyItem = report.items.find((item) => item.name === '毛孔');
+    const emptyItem = { ...report.items[0]!, type: 'empty', name: '空内容项目', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [] };
     const oil = report.items.find((item) => item.name === '油脂');
-    if (!emptyItem || !oil) throw new Error('Expected canonical empty and content items');
+    if (!oil) throw new Error('Expected canonical content item');
     const { rerender } = render(<BeautyAssessmentReport records={[{ ...report, items: [emptyItem] }]} />);
     const section = within(screen.getByRole('region', { name: '详细分析' }));
-    expect(section.queryByRole('button', { name: /毛孔/ })).not.toBeInTheDocument();
+    expect(section.queryByRole('button', { name: /空内容项目/ })).not.toBeInTheDocument();
     rerender(<BeautyAssessmentReport records={[{ ...report, items: [oil] }]} />);
     const contentSection = within(screen.getByRole('region', { name: '详细分析' }));
     fireEvent.click(contentSection.getByRole('button', { name: /油脂/ }));
@@ -167,7 +167,7 @@ describe('beauty report core content', () => {
 
     fireEvent.click(oilToggle);
     expect(within(oilRow!).getByRole('heading', { name: '问题分析' })).toBeVisible();
-    expect(within(oilRow!).getByText('您的皮脂腺分泌有轻微异常，T 区油脂分泌旺盛，皮肤表面略显油腻感，容易显得暗沉。')).toBeVisible();
+    expect(within(oilRow!).getByText('您的皮脂腺分泌稍有异常，T 区、U区油脂分泌较多，皮肤外观略显油腻，容易暗沉。')).toBeVisible();
     expect(within(oilRow!).getByRole('heading', { name: '日常护理建议' })).toBeVisible();
     expect(within(oilRow!).getByText('1.正确清洁。控制洁面频率，最多早晚两次，可使用氨基酸类洁面产品，禁用皂基类产品，同时避免过度使用去角质产品。')).toBeVisible();
 
@@ -175,7 +175,7 @@ describe('beauty report core content', () => {
     expect(within(oilRow!).queryByRole('heading', { name: '问题分析' })).not.toBeInTheDocument();
     expect(within(oilRow!).queryByRole('heading', { name: '日常护理建议' })).not.toBeInTheDocument();
 
-    expect(section.queryByRole('button', { name: /毛孔/ })).not.toBeInTheDocument();
-    expect(sectionElement.querySelectorAll('.aoben-beauty-item-static')).toHaveLength(10);
+    expect(section.getByRole('button', { name: /毛孔/ })).toBeInTheDocument();
+    expect(sectionElement.querySelectorAll('.aoben-beauty-item-static')).toHaveLength(0);
   });
 });

@@ -20,7 +20,7 @@ function makeSanitizedVendorReport(recordId: string, detectTime: string): Beauty
     recordId,
     sourceId: 'beauty-vendor-sanitized',
     vendorReportId: null,
-    vendorTaskId: null,
+    vendorTaskId: vendorResult.TaskId,
     vendorCustomerId: null,
     serialNumber: sanitizedVendorResult.SerialNumber,
     basic: {

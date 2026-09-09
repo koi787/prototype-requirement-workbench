@@ -99,7 +99,7 @@ describe('beauty report complete interactions', () => {
     dialog = openHistory();
     const backdrop = dialog.parentElement;
     expect(backdrop).not.toBeNull(); fireEvent.click(backdrop!);
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument(); expect(screen.getByText('46')).toBeVisible();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument(); expect(screen.getByText('48')).toBeVisible();
     unmount(); render(<BeautyAssessmentReport records={[]} />);
     dialog = openHistory(); expect(within(dialog).getByText('暂无美容检测记录')).toBeVisible();
     expect(within(dialog).queryByRole('listitem')).not.toBeInTheDocument();
@@ -112,7 +112,7 @@ describe('beauty report complete interactions', () => {
     fireEvent.click(trigger);
     const dialog = screen.getByRole('dialog', { name: '分享报告' });
     const share = within(dialog);
-    expect(share.getByText('46')).toBeVisible();
+    expect(share.getByText('48')).toBeVisible();
     expect(share.getByText('科学了解肌肤，更好地照顾自我。')).toBeVisible();
     expect(share.queryByText(/原型示例/)).not.toBeInTheDocument();
     expect(share.getByRole('img', { name: '奥本账号头像' })).toHaveAttribute('src', AOBEN_ACCOUNT_FIXTURE.avatarSrc);
@@ -121,7 +121,7 @@ describe('beauty report complete interactions', () => {
     fireEvent.click(share.getByRole('button', { name: '保存到相册' })); expect(share.getByRole('status')).toHaveTextContent('原型演示：暂不保存到相册');
     fireEvent.click(share.getByRole('button', { name: '微信好友' })); expect(share.getByRole('status')).toHaveTextContent('原型演示：暂不调用微信分享');
     fireEvent.click(share.getByRole('button', { name: '关闭分享报告' }));
-    expect(trigger).toBeVisible(); expect(trigger).toHaveFocus(); expect(screen.getByText('46')).toBeVisible();
+    expect(trigger).toBeVisible(); expect(trigger).toHaveFocus(); expect(screen.getByText('48')).toBeVisible();
   });
 
   it('keeps the share account independent from vendor identity fields', () => {
@@ -168,7 +168,7 @@ describe('beauty report complete interactions', () => {
     expect(historyMeta.title).toBe('移动端｜奥本运动/我的/美容检测/历史记录');
     expect(shareMeta.title).toBe('移动端｜奥本运动/我的/美容检测/分享报告');
     const { unmount } = render(<AobenSportMobileRoot {...reportMeta.args} {...historyReport.args} />);
-    expect(screen.getByText('46')).toBeVisible(); unmount();
+    expect(screen.getByText('48')).toBeVisible(); unmount();
     const single = render(<AobenSportMobileRoot {...historyMeta.args} {...单条记录.args} />);
     expect(within(openHistory()).getAllByRole('listitem')).toHaveLength(1); single.unmount();
     render(<AobenSportMobileRoot {...historyMeta.args} {...多条记录.args} />);
