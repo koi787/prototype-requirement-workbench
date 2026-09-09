@@ -162,12 +162,53 @@ describe('0016 Cycle D SCRM 体测美容记录', () => {
     expect(calorieCard?.querySelector('strong')?.textContent).toBe('2449');
   });
 
-  it('美容记录只显示统一空状态，不生成美容字段', () => {
+  it('美容记录按当前 customerId 显示16项完整真实报告和正确的记录绑定', () => {
     openAssessmentTab();
     fireEvent.click(screen.getByRole('tab', { name: '美容记录' }));
+    const table = screen.getByRole('table', { name: '美容记录列表' });
+    expect(within(table).getAllByRole('columnheader').map((header) => header.textContent)).toEqual([
+      '检测时间', '综合得分', '等级', '肤质类型', '肤质标签', '检测设备序列号', '操作',
+    ]);
+    const rows = within(table).getAllByRole('row');
+    expect(rows).toHaveLength(4);
+    expect(rows.slice(1).map((row) => row.getAttribute('data-beauty-record-id'))).toEqual([
+      'beauty-prototype-100', 'beauty-prototype-500', 'beauty-prototype-900',
+    ]);
+
+    fireEvent.click(within(rows[1]!).getByRole('button', { name: '查看' }));
+    let detailDrawer = screen.getAllByRole('dialog')[1]!;
+    expect(detailDrawer.querySelector('[data-beauty-record-id="beauty-prototype-100"]')).toBeTruthy();
+    expect(detailDrawer.querySelectorAll('.customer-beauty-report-item')).toHaveLength(16);
+    expect(detailDrawer.querySelectorAll('.customer-beauty-report-item-static')).toHaveLength(0);
+    expect(within(detailDrawer).getByText('检测设备序列号').parentElement).toHaveTextContent('K33CH**********');
+    expect(within(detailDrawer).queryByText('暂无详细内容')).toBeNull();
+    expect(within(detailDrawer).getByRole('button', { name: /毛孔/ })).toBeTruthy();
+    const oilToggle = within(detailDrawer).getByRole('button', { name: /油脂/ });
+    fireEvent.click(oilToggle);
+    expect(within(detailDrawer).getByText('您的皮脂腺分泌稍有异常，T 区、U区油脂分泌较多，皮肤外观略显油腻，容易暗沉。')).toBeTruthy();
+
+    fireEvent.click(within(detailDrawer).getByRole('button', { name: 'Close' }));
+    expect(screen.getByRole('tab', { name: '美容记录' })).toHaveAttribute('aria-selected', 'true');
+    fireEvent.click(within(rows[2]!).getByRole('button', { name: '查看' }));
+    detailDrawer = screen.getAllByRole('dialog')[1]!;
+    expect(detailDrawer.querySelector('[data-beauty-record-id="beauty-prototype-500"]')).toBeTruthy();
+  });
+
+  it('美容记录不会回退展示其他 customerId 的报告', () => {
+    render(
+      <CustomerListPage
+        initialDetailCustomerId="customer-53394"
+        initialDetailTab="assessment"
+        initialAssessmentView="beauty"
+      />,
+    );
     expect(screen.getByText('暂无美容记录')).toBeTruthy();
-    expect(screen.queryByText('肤质')).toBeNull();
-    expect(screen.queryByText('皮肤评分')).toBeNull();
+    expect(screen.queryByRole('table', { name: '美容记录列表' })).toBeNull();
+  });
+
+  it('切换回体测记录仍保留既有体测表格', () => {
+    openAssessmentTab();
+    fireEvent.click(screen.getByRole('tab', { name: '美容记录' }));
     expect(screen.getByRole('tab', { name: '美容记录' })).toHaveAttribute('aria-selected', 'true');
 
     fireEvent.click(screen.getByRole('tab', { name: '体测记录' }));

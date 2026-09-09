@@ -23,12 +23,23 @@ function ReportTextList({ entries }: { entries: readonly string[] }) {
 function ReportItem({ item }: { item: BeautyReportItem }) {
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
+  const hasDetailContent = item.problemAnalysis.length > 0 || item.careAdvice.length > 0;
+  const itemSummary = (
+    <>
+      <span className="aoben-beauty-item-name"><span className="aoben-beauty-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3c-2.4 3.4-6 7.1-6 11a6 6 0 0 0 12 0c0-3.9-3.6-7.6-6-11Z" /><path d="M9 14a3 3 0 0 0 3 3" /></svg></span>{item.name}</span>
+      <span className="aoben-beauty-item-score">{item.score === null ? '--' : `${item.score}分`}</span>
+      <span className="aoben-beauty-item-level" data-grade={item.levelName ?? undefined}>{item.levelName ?? '--'}</span>
+    </>
+  );
+
+  if (!hasDetailContent) {
+    return <li className="aoben-beauty-item"><div className="aoben-beauty-item-static">{itemSummary}</div></li>;
+  }
+
   return (
     <li className="aoben-beauty-item">
       <button type="button" className="aoben-beauty-item-toggle" aria-expanded={expanded} aria-controls={contentId} onClick={() => setExpanded(!expanded)}>
-        <span className="aoben-beauty-item-name"><span className="aoben-beauty-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3c-2.4 3.4-6 7.1-6 11a6 6 0 0 0 12 0c0-3.9-3.6-7.6-6-11Z" /><path d="M9 14a3 3 0 0 0 3 3" /></svg></span>{item.name}</span>
-        <span className="aoben-beauty-item-score">{item.score === null ? '--' : `${item.score}分`}</span>
-        <span className="aoben-beauty-item-level" data-grade={item.levelName ?? undefined}>{item.levelName ?? '--'}</span>
+        {itemSummary}
         <span className="aoben-beauty-chevron" aria-hidden="true">{expanded ? '⌄' : '›'}</span>
       </button>
       <div id={contentId} hidden={!expanded}>

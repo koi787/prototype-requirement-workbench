@@ -994,3 +994,216 @@
     grid-template-columns: repeat(2, minmax(200px, 1fr));
   }
 }
+
+/* ---------- 美容记录：客户详情内的后台只读列表与三级报告 Drawer ---------- */
+.customer-beauty-assessment-table {
+  min-width: 980px;
+}
+
+.customer-beauty-assessment-table th:nth-child(1),
+.customer-beauty-assessment-table td:nth-child(1) {
+  width: 170px;
+}
+
+.customer-beauty-assessment-table th:nth-child(2),
+.customer-beauty-assessment-table td:nth-child(2),
+.customer-beauty-assessment-table th:nth-child(3),
+.customer-beauty-assessment-table td:nth-child(3) {
+  width: 110px;
+}
+
+.customer-beauty-assessment-table th:nth-child(4),
+.customer-beauty-assessment-table td:nth-child(4) {
+  width: 140px;
+}
+
+.customer-beauty-assessment-table th:nth-child(5),
+.customer-beauty-assessment-table td:nth-child(5) {
+  width: 190px;
+}
+
+.customer-beauty-assessment-table th:nth-child(6),
+.customer-beauty-assessment-table td:nth-child(6) {
+  width: 150px;
+}
+
+.customer-beauty-assessment-table th:nth-child(7),
+.customer-beauty-assessment-table td:nth-child(7) {
+  width: 90px;
+}
+
+.customer-beauty-assessment-detail-drawer .ant-drawer-body {
+  padding: 0;
+  overflow: hidden;
+}
+
+.customer-beauty-assessment-detail-body {
+  height: 100%;
+  padding: 24px 30px 48px;
+  overflow-y: auto;
+  background: #f7f8fa;
+}
+
+.customer-beauty-detail-section {
+  padding: 0 0 24px;
+}
+
+.customer-beauty-detail-section h3 {
+  margin: 0 0 12px;
+  color: #1f2329;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.customer-beauty-detail-fields,
+.customer-beauty-detail-card {
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 6px;
+}
+
+.customer-beauty-detail-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.customer-beauty-detail-field {
+  display: flex;
+  min-width: 0;
+  min-height: 48px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f1f3;
+}
+
+.customer-beauty-detail-field:nth-child(odd) {
+  border-right: 1px solid #f0f1f3;
+}
+
+.customer-beauty-detail-field:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.customer-beauty-detail-label {
+  flex: 0 0 112px;
+  color: #737b87;
+  font-size: 13px;
+}
+
+.customer-beauty-detail-value {
+  min-width: 0;
+  overflow: hidden;
+  color: #1f2329;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-beauty-detail-content-block {
+  padding: 16px 18px;
+}
+
+.customer-beauty-detail-content-block + .customer-beauty-detail-content-block {
+  border-top: 1px solid #f0f1f3;
+}
+
+.customer-beauty-detail-content-block h4 {
+  margin: 0 0 8px;
+  color: #1f2329;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.customer-beauty-detail-text-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #595959;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.customer-beauty-detail-empty {
+  padding: 28px 18px;
+  color: #8c8c8c;
+  font-size: 14px;
+  text-align: center;
+}
+
+.customer-beauty-report-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.customer-beauty-report-item + .customer-beauty-report-item {
+  border-top: 1px solid #f0f1f3;
+}
+
+.customer-beauty-report-item-toggle,
+.customer-beauty-report-item-static {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) 100px 72px 28px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 18px;
+  color: #1f2329;
+  font-size: 14px;
+  text-align: left;
+  background: #fff;
+  border: 0;
+  cursor: pointer;
+}
+
+.customer-beauty-report-item-static {
+  min-height: 46px;
+  padding: 10px 14px;
+}
+
+.customer-beauty-report-item-score,
+.customer-beauty-report-item-level {
+  color: #595959;
+  text-align: right;
+}
+
+.customer-beauty-report-item-level {
+  color: #1677ff;
+}
+
+.customer-beauty-report-item-chevron {
+  color: #8c8c8c;
+  font-size: 18px;
+  text-align: right;
+}
+
+.customer-beauty-report-item-details {
+  padding: 0 18px 14px 30px;
+  background: #fafbfc;
+}
+
+.customer-beauty-report-item-details[hidden] {
+  display: none;
+}
+
+.customer-beauty-report-item-details .customer-beauty-detail-content-block {
+  padding: 12px 0 0;
+}
+
+@media (max-width: 900px) {
+  .customer-beauty-assessment-detail-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-beauty-detail-field:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .customer-beauty-detail-field:nth-last-child(-n + 2) {
+    border-bottom: 1px solid #f0f1f3;
+  }
+
+  .customer-beauty-detail-field:last-child {
+    border-bottom: 0;
+  }
+}

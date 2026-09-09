@@ -24,8 +24,7 @@ describe('beauty report complete interactions', () => {
     render(<BeautyAssessmentReport records={[record]} />);
     const overall = within(screen.getByRole('region', { name: '整体情况' }));
     for (const value of ['女', '45岁', '第1次', '2026-08-29 17:21']) expect(overall.getByText(value)).toBeVisible();
-    expect(screen.queryByText(source.vendorCustomerId!)).not.toBeInTheDocument();
-    expect(screen.queryByText(source.customerId!)).not.toBeInTheDocument();
+    expect(screen.queryByText('beauty-vendor-sanitized')).not.toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
@@ -54,7 +53,8 @@ describe('beauty report complete interactions', () => {
   it('sorts history, marks selection and switches the entire report through the real Root', () => {
     const source = fixture();
     const older = { ...source, recordId: 'older', basic: { ...source.basic, score: 12, scoreLevel: 'E' as const, skinType: 'OLD', skinLabels: ['旧标签'] }, summary: { problemAnalysis: ['历史问题测试文本'], careAdvice: ['历史护理测试文本'] }, items: [{ ...source.items[0]!, name: '历史项目' }] };
-    render(<AobenSportMobileRoot initialView="beauty-assessment" beautyRecords={[older, ...BEAUTY_REPORTS.slice(1)]} />);
+    const current = { ...source, recordId: 'current', basic: { ...source.basic, detectTime: '2026-08-29 17:21:02' } };
+    render(<AobenSportMobileRoot initialView="beauty-assessment" beautyRecords={[older, current]} />);
     const dialog = openHistory();
     const buttons = within(dialog).getAllByRole('button', { pressed: false });
     expect(within(dialog).getByRole('button', { pressed: true })).toHaveTextContent('2026-08-29');
@@ -99,7 +99,7 @@ describe('beauty report complete interactions', () => {
     dialog = openHistory();
     const backdrop = dialog.parentElement;
     expect(backdrop).not.toBeNull(); fireEvent.click(backdrop!);
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument(); expect(screen.getByText('62')).toBeVisible();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument(); expect(screen.getByText('48')).toBeVisible();
     unmount(); render(<BeautyAssessmentReport records={[]} />);
     dialog = openHistory(); expect(within(dialog).getByText('暂无美容检测记录')).toBeVisible();
     expect(within(dialog).queryByRole('listitem')).not.toBeInTheDocument();
@@ -112,7 +112,7 @@ describe('beauty report complete interactions', () => {
     fireEvent.click(trigger);
     const dialog = screen.getByRole('dialog', { name: '分享报告' });
     const share = within(dialog);
-    expect(share.getByText('46')).toBeVisible();
+    expect(share.getByText('48')).toBeVisible();
     expect(share.getByText('科学了解肌肤，更好地照顾自我。')).toBeVisible();
     expect(share.queryByText(/原型示例/)).not.toBeInTheDocument();
     expect(share.getByRole('img', { name: '奥本账号头像' })).toHaveAttribute('src', AOBEN_ACCOUNT_FIXTURE.avatarSrc);
@@ -121,7 +121,7 @@ describe('beauty report complete interactions', () => {
     fireEvent.click(share.getByRole('button', { name: '保存到相册' })); expect(share.getByRole('status')).toHaveTextContent('原型演示：暂不保存到相册');
     fireEvent.click(share.getByRole('button', { name: '微信好友' })); expect(share.getByRole('status')).toHaveTextContent('原型演示：暂不调用微信分享');
     fireEvent.click(share.getByRole('button', { name: '关闭分享报告' }));
-    expect(trigger).toBeVisible(); expect(trigger).toHaveFocus(); expect(screen.getByText('46')).toBeVisible();
+    expect(trigger).toBeVisible(); expect(trigger).toHaveFocus(); expect(screen.getByText('48')).toBeVisible();
   });
 
   it('keeps the share account independent from vendor identity fields', () => {
@@ -151,6 +151,7 @@ describe('beauty report complete interactions', () => {
     const section = within(screen.getByRole('region', { name: '详细分析' }));
     const toggles = section.getAllByRole('button');
     for (const toggle of toggles) expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(section.queryByRole('button', { name: /空内容项/ })).not.toBeInTheDocument();
     expect(screen.queryByText('原文测试甲')).not.toBeInTheDocument();
     for (const toggle of toggles) fireEvent.click(toggle);
     expect(section.getAllByRole('heading', { name: '问题分析' })).toHaveLength(2);
@@ -167,7 +168,7 @@ describe('beauty report complete interactions', () => {
     expect(historyMeta.title).toBe('移动端｜奥本运动/我的/美容检测/历史记录');
     expect(shareMeta.title).toBe('移动端｜奥本运动/我的/美容检测/分享报告');
     const { unmount } = render(<AobenSportMobileRoot {...reportMeta.args} {...historyReport.args} />);
-    expect(screen.getByText('62')).toBeVisible(); unmount();
+    expect(screen.getByText('48')).toBeVisible(); unmount();
     const single = render(<AobenSportMobileRoot {...historyMeta.args} {...单条记录.args} />);
     expect(within(openHistory()).getAllByRole('listitem')).toHaveLength(1); single.unmount();
     render(<AobenSportMobileRoot {...historyMeta.args} {...多条记录.args} />);

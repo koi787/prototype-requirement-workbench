@@ -45,6 +45,11 @@ describe('beauty report adapter', () => {
     expect(report.vendorTaskId).toBe('1012');
   });
 
+  it('maps vendor SerialNumber to the shared deviceSerialNumber and keeps a missing value null', () => {
+    expect(adaptBeautyReport({ ...input(), serialNumber: 'K33CH123456789' }).basic.deviceSerialNumber).toBe('K33CH123456789');
+    expect(adaptBeautyReport(input()).basic.deviceSerialNumber).toBeNull();
+  });
+
   it('preserves zero while invalid values become null, including numeric Level', () => {
     const source = input();
     const report = adaptBeautyReport({
@@ -88,7 +93,7 @@ describe('beauty report adapter', () => {
     expect(report.items.map((item) => item.name)).toEqual(['新增厂家项目', '油脂']);
   });
 
-  it('skips a Child when its detail is not a valid front-face result', () => {
+  it('keeps Children with no valid front-face detail fail-closed', () => {
     const source = input();
     const report = adaptBeautyReport({
       ...source,
@@ -98,7 +103,11 @@ describe('beauty report adapter', () => {
         { type: 'side', name: '侧脸', status: 100, faceType: 1 },
       ],
     });
-    expect(report.items.map((item) => item.type)).toEqual(['oil']);
+    expect(report.items.map((item) => item.type)).toEqual(['pending', 'side', 'oil']);
+    expect(report.items.slice(0, 2)).toEqual([
+      { type: 'pending', name: '未完成', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [] },
+      { type: 'side', name: '侧脸', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [] },
+    ]);
   });
 
   it('does not append a valid detail that is absent from Result Children', () => {
@@ -110,14 +119,16 @@ describe('beauty report adapter', () => {
     expect(report.items.map((item) => item.type)).toEqual(['oil']);
   });
 
-  it('skips a Child with multiple valid matching details instead of choosing one', () => {
+  it('keeps a Child with duplicate valid details but discards ambiguous detail data', () => {
     const source = input();
     const duplicate = { ...source.resultDetails[0]!, score: 88 };
     const report = adaptBeautyReport({
       ...source,
       resultDetails: [...source.resultDetails, duplicate],
     });
-    expect(report.items).toEqual([]);
+    expect(report.items).toEqual([{
+      type: 'oil', name: '油脂', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [],
+    }]);
   });
 
   it('excludes invalid statuses, side faces and results not in source order', () => {
@@ -129,12 +140,14 @@ describe('beauty report adapter', () => {
         { type: 'side', name: '侧脸', status: '100', faceType: '1' },
         { type: 'unconfigured', name: '未配置', status: 100, faceType: 2 }],
     });
-    expect(report.items.map((item) => item.type)).toEqual(['oil']);
+    expect(report.items.map((item) => item.type)).toEqual(['pending', 'side', 'oil']);
   });
 
-  it('fails closed for ambiguous valid results instead of silently choosing one', () => {
+  it('fails closed for ambiguous valid results without dropping the configured project', () => {
     const source = input();
-    expect(adaptBeautyReport({ ...source, resultDetails: [...source.resultDetails, ...source.resultDetails] }).items).toEqual([]);
+    expect(adaptBeautyReport({ ...source, resultDetails: [...source.resultDetails, ...source.resultDetails] }).items).toEqual([{
+      type: 'oil', name: '油脂', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [],
+    }]);
   });
 
   it('does not mutate its input or copy unrelated source fields into the business model', () => {
@@ -158,14 +171,16 @@ describe('beauty report adapter', () => {
     expect(() => adaptBeautyRecords([input(), input()], adaptBeautyReport)).toThrow('unique non-empty recordIds');
   });
 
-  it('provides stable mock data that exercises record identity and the current configured order', () => {
+  it('provides stable canonical data with the configured 16-item V1 order', () => {
     const reports = adaptBeautyRecords(BEAUTY_REPORT_MOCK_INPUTS, adaptBeautyReport);
     expect(reports).toHaveLength(3);
-    expect(reports.map((report) => report.basic.score)).toEqual([62, 46, 55]);
+    expect(reports.map((report) => report.basic.score)).toEqual([48, 48, 48]);
     expect(reports[0]?.items.map((item) => item.name)).toEqual([
       '油脂', '毛孔', '黑头', '浅层色素', '混合斑', '痤疮', '屏障', '卟啉',
       '深层色素', '棕色色素', '紫外线斑', '敏感红素图', '敏感热力图', '皱纹', '粗糙度', '胶原',
     ]);
+    expect(reports[0]?.items.every((item) => item.score !== null && item.levelName !== null && (item.problemAnalysis.length > 0 || item.careAdvice.length > 0))).toBe(true);
+    expect(reports[0]?.items.some((item) => item.name === '水分')).toBe(false);
   });
 
   it('maps the sanitized vendor Content into item analysis and care advice without copying unrelated fields', () => {
@@ -174,8 +189,8 @@ describe('beauty report adapter', () => {
 
     const oil = report?.items.find((item) => item.name === '油脂');
     expect(oil?.problemAnalysis).toEqual([
-      '您的皮脂腺分泌有轻微异常，T 区油脂分泌旺盛，皮肤表面略显油腻感，容易显得暗沉。',
-      '成年人的平均皮脂生成速率为每3 h 1 mg/10 cm2，超过数值，就会呈现出油性皮肤的外观。油性皮肤含水量不平衡，pH值偏低，皮肤易泛油光，毛孔粗大、皮肤暗沉且无透明感，当皮脂分泌旺盛时，脂质积聚过多容易导致毛孔堵塞、黑头粉刺、痤疮等问题。',
+      '您的皮脂腺分泌稍有异常，T 区、U区油脂分泌较多，皮肤外观略显油腻，容易暗沉。',
+      '皮脂腺功能受到多种因素的影响，包括人种、年龄、性别、部位、温度、湿度、紫外线、饮食习惯和内分泌等，其中内分泌是影响皮脂腺功能的根本内源性因素.青年人由于皮脂腺分泌旺盛，生活、工作压力大，因此，这一年龄段油性皮肤的人群所占比重较大。',
     ]);
     expect(oil?.careAdvice).toEqual([
       '1.正确清洁。控制洁面频率，最多早晚两次，可使用氨基酸类洁面产品，禁用皂基类产品，同时避免过度使用去角质产品。',
@@ -188,7 +203,13 @@ describe('beauty report adapter', () => {
       expect(item?.problemAnalysis.length).toBeGreaterThan(0);
       expect(item?.careAdvice.length).toBeGreaterThan(0);
     }
-    expect(report?.items.some((item) => item.name === '毛孔')).toBe(false);
+    expect(report?.items).toHaveLength(16);
+    for (const item of report?.items ?? []) {
+      expect(item.score).not.toBeNull();
+      expect(item.levelName).not.toBeNull();
+      expect(item.problemAnalysis.length).toBeGreaterThan(0);
+      expect(item.careAdvice.length).toBeGreaterThan(0);
+    }
     expect(JSON.stringify(report)).not.toMatch(/images|Image_|科普知识|imageUrl/);
   });
 
@@ -205,6 +226,27 @@ describe('beauty report adapter', () => {
     expect(report.summary).toEqual({ problemAnalysis: ['厂家综合问题一', '厂家综合问题二'], careAdvice: ['厂家综合建议一', '厂家综合建议二'] });
     expect(adaptBeautyReport({ ...source, summary: { problemAnalysis: ['legacy placeholder'], careAdvice: ['legacy placeholder'] }, comprehensiveProposal: [] }).summary)
       .toEqual({ problemAnalysis: [], careAdvice: [] });
+  });
+
+  it('trims Content titles before mapping the formal adapter output', () => {
+    const source = input();
+    const report = adaptBeautyReport({
+      ...source,
+      resultDetails: [
+        {
+          ...source.resultDetails[0]!,
+          content: [
+            { title: ' 问题分析', content: [{ title: '', content: ['前置空格问题一', '前置空格问题二'] }] },
+            { title: ' 日常护理建议', content: [{ title: '', content: ['前置空格建议一', '前置空格建议二'] }] },
+          ],
+        },
+      ],
+    });
+
+    expect(report.items[0]).toMatchObject({
+      problemAnalysis: ['前置空格问题一', '前置空格问题二'],
+      careAdvice: ['前置空格建议一', '前置空格建议二'],
+    });
   });
 });
 

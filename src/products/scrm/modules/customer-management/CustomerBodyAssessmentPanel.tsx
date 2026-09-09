@@ -6,6 +6,7 @@ import {
 } from '../../../../shared/body-assessment';
 import type { CustomerRecord } from './customerTypes';
 import { CustomerAssessmentDetailDrawer } from './CustomerAssessmentDetailDrawer';
+import { CustomerBeautyAssessmentPanel } from './CustomerBeautyAssessmentPanel';
 
 export type CustomerAssessmentView = 'assessment' | 'beauty';
 export type CustomerAssessmentSourceFilter = 'ALL' | 'INBODY' | 'BIACN';
@@ -15,6 +16,7 @@ export interface CustomerBodyAssessmentPanelProps {
   initialView?: CustomerAssessmentView;
   initialSource?: CustomerAssessmentSourceFilter;
   initialRecordId?: string;
+  initialBeautyRecordId?: string;
 }
 
 const SOURCE_FILTERS: readonly { value: CustomerAssessmentSourceFilter; label: string }[] = [
@@ -37,15 +39,12 @@ function metricText(report: BodyAssessmentReport, metric: keyof BodyAssessmentRe
   return formatAssessmentMetric(report.core[metric], { emptyValue: '--' });
 }
 
-function AssessmentEmptyState() {
-  return <div className="customer-assessment-empty-state">暂无美容记录</div>;
-}
-
 export function CustomerBodyAssessmentPanel({
   customer,
   initialView = 'assessment',
   initialSource = 'ALL',
   initialRecordId,
+  initialBeautyRecordId,
 }: CustomerBodyAssessmentPanelProps) {
   const [view, setView] = useState<CustomerAssessmentView>(initialView);
   const [source, setSource] = useState<CustomerAssessmentSourceFilter>(initialSource);
@@ -136,7 +135,12 @@ export function CustomerBodyAssessmentPanel({
             </table>
           </div>
         </>
-      ) : <AssessmentEmptyState />}
+      ) : (
+        <CustomerBeautyAssessmentPanel
+          customer={customer}
+          {...(initialBeautyRecordId ? { initialRecordId: initialBeautyRecordId } : {})}
+        />
+      )}
 
       <CustomerAssessmentDetailDrawer
         open={selectedRecord !== null}

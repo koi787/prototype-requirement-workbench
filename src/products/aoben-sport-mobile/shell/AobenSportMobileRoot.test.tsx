@@ -19,7 +19,7 @@ describe('AobenSportMobileRoot', () => {
     render(<AobenSportMobileRoot />);
     fireEvent.click(screen.getByRole('button', { name: '美容检测' }));
     expect(screen.getByRole('main', { name: '美容检测报告' })).toBeInTheDocument();
-    expect(screen.getByText('46')).toBeInTheDocument();
+    expect(screen.getByText('48')).toBeInTheDocument();
     expect(screen.queryByTestId('aoben-mobile-root')).not.toBeInTheDocument();
     expect(screen.queryByTestId('aoben-report-root')).not.toBeInTheDocument();
     expect(screen.queryByTestId('bottom-nav')).not.toBeInTheDocument();

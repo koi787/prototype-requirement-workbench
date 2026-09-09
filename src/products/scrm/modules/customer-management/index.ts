@@ -11,6 +11,10 @@ export type {
 } from './CustomerBodyAssessmentPanel';
 export { CustomerAssessmentDetailDrawer } from './CustomerAssessmentDetailDrawer';
 export type { CustomerAssessmentDetailDrawerProps } from './CustomerAssessmentDetailDrawer';
+export { CustomerBeautyAssessmentPanel } from './CustomerBeautyAssessmentPanel';
+export type { CustomerBeautyAssessmentPanelProps } from './CustomerBeautyAssessmentPanel';
+export { CustomerBeautyAssessmentDetailDrawer } from './CustomerBeautyAssessmentDetailDrawer';
+export type { CustomerBeautyAssessmentDetailDrawerProps } from './CustomerBeautyAssessmentDetailDrawer';
 export {
   CUSTOMER_FILTER_OPTIONS,
   CUSTOMER_MOCK,

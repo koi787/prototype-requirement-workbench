@@ -19,21 +19,21 @@ describe('beauty report core content', () => {
       '整体情况', '问题分析', '护理建议', '详细分析',
     ]);
     const overall = within(screen.getByRole('region', { name: '整体情况' }));
-    expect(overall.getByText('46')).toBeInTheDocument();
+    expect(overall.getByText('48')).toBeInTheDocument();
     expect(overall.getByText('C级')).toBeInTheDocument();
-    expect(overall.getByText('DSPW')).toBeInTheDocument();
-    expect(overall.getByText('干 / 敏 / 色 / 衰')).toBeInTheDocument();
-    expect(screen.getByText(/您的面部皮肤出现干燥、敏感、色斑及皱纹衰老等问题/)).toBeVisible();
-    expect(screen.getByText(/1\.科学护肤，修复屏障：用氨基酸洗面奶温和清洁/)).toBeVisible();
+    expect(overall.getByText('OSPW')).toBeInTheDocument();
+    expect(overall.getByText('油 / 敏 / 色 / 衰')).toBeInTheDocument();
+    expect(screen.getByText(/油脂分泌旺盛会为其他皮肤问题埋下隐患/)).toBeVisible();
+    expect(screen.getByText(/1\.温和清洁与舒缓修护/)).toBeVisible();
     expect(screen.queryByText(/原型示例/)).not.toBeInTheDocument();
   });
 
   it('derives the displayed report from a supplied id and updates without stale copied state', () => {
     const { rerender } = render(<BeautyAssessmentReport currentRecordId="beauty-prototype-900" />);
-    expect(within(screen.getByRole('region', { name: '整体情况' })).getByText('62')).toBeInTheDocument();
+    expect(within(screen.getByRole('region', { name: '整体情况' })).getByText('48')).toBeInTheDocument();
     rerender(<BeautyAssessmentReport currentRecordId="beauty-prototype-100" />);
     const overall = within(screen.getByRole('region', { name: '整体情况' }));
-    expect(overall.getByText('46')).toBeInTheDocument();
+    expect(overall.getByText('48')).toBeInTheDocument();
     expect(overall.queryByText('62')).not.toBeInTheDocument();
   });
 
@@ -56,7 +56,7 @@ describe('beauty report core content', () => {
   it('does not display an unrelated latest report when the requested id is missing', () => {
     render(<BeautyAssessmentReport currentRecordId="missing" />);
     expect(screen.getByRole('status')).toHaveTextContent('未找到可展示的美容检测报告');
-    expect(screen.queryByText('46')).not.toBeInTheDocument();
+    expect(screen.queryByText('48')).not.toBeInTheDocument();
   });
 
   it('accepts a different normalized source and displays zero distinctly from missing fields', () => {
@@ -108,7 +108,8 @@ describe('beauty report core content', () => {
       { type: 'second-item', name: '另一项', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: ['仅护理'] },
     ];
     render(<BeautyAssessmentReport records={[{ ...getReportFixture(), items }]} />);
-    const section = within(screen.getByRole('region', { name: '详细分析' }));
+    const sectionElement = screen.getByRole('region', { name: '详细分析' });
+    const section = within(sectionElement);
     const toggles = section.getAllByRole('button');
     expect(toggles.map((el) => el.textContent)).toEqual(['新增检测项0分厂家等级›', '另一项----›']);
     for (const toggle of toggles) expect(toggle).toHaveAttribute('aria-expanded', 'false');
@@ -133,41 +134,40 @@ describe('beauty report core content', () => {
       return { ...baseItem, type: `grade-${levelName}`, name: `等级${levelName}`, score: 10, levelName };
     });
     render(<BeautyAssessmentReport records={[{ ...report, items }]} />);
-    const section = within(screen.getByRole('region', { name: '详细分析' }));
-    const badges = section.getAllByRole('button')
-      .map((button) => button.querySelector('.aoben-beauty-item-level'))
-      .filter((badge): badge is HTMLElement => badge !== null);
+    const sectionElement = screen.getByRole('region', { name: '详细分析' });
+    const badges = Array.from(sectionElement.querySelectorAll<HTMLElement>('.aoben-beauty-item-level'));
     expect(badges.map((badge) => badge.getAttribute('data-grade'))).toEqual(['A', 'B', 'C', 'D']);
   });
 
-  it('does not invent empty item sections and resets expansion when the report changes', () => {
+  it('does not offer empty items as expandable and resets real-content expansion when the report changes', () => {
     const report = getReportFixture();
-    const { rerender } = render(<BeautyAssessmentReport records={[report]} />);
+    const emptyItem = { ...report.items[0]!, type: 'empty', name: '空内容项目', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [] };
+    const oil = report.items.find((item) => item.name === '油脂');
+    if (!oil) throw new Error('Expected canonical content item');
+    const { rerender } = render(<BeautyAssessmentReport records={[{ ...report, items: [emptyItem] }]} />);
     const section = within(screen.getByRole('region', { name: '详细分析' }));
-    fireEvent.click(section.getByRole('button', { name: /油脂/ }));
-    expect(section.getByRole('button', { name: /油脂/ })).toHaveAttribute('aria-expanded', 'true');
-    expect(section.queryByRole('heading', { name: '问题分析' })).not.toBeInTheDocument();
-    expect(section.queryByRole('heading', { name: '日常护理建议' })).not.toBeInTheDocument();
-    rerender(<BeautyAssessmentReport records={[{ ...report, recordId: 'different-report' }]} />);
+    expect(section.queryByRole('button', { name: /空内容项目/ })).not.toBeInTheDocument();
+    rerender(<BeautyAssessmentReport records={[{ ...report, items: [oil] }]} />);
+    const contentSection = within(screen.getByRole('region', { name: '详细分析' }));
+    fireEvent.click(contentSection.getByRole('button', { name: /油脂/ }));
+    expect(contentSection.getByRole('button', { name: /油脂/ })).toHaveAttribute('aria-expanded', 'true');
+    rerender(<BeautyAssessmentReport records={[{ ...report, recordId: 'different-report', items: [oil] }]} />);
     expect(within(screen.getByRole('region', { name: '详细分析' })).getByRole('button', { name: /油脂/ })).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('expands sanitized vendor analysis and advice, while empty Content renders no fake copy', () => {
     const vendorReport = BEAUTY_REPORTS.find((report) => report.recordId === 'beauty-prototype-100');
     if (!vendorReport) throw new Error('Expected sanitized vendor report');
-    const reportWithEmptyItem = {
-      ...vendorReport,
-      items: [...vendorReport.items, { type: 'pores', name: '毛孔', score: null, level: null, levelName: null, problemAnalysis: [], careAdvice: [] }],
-    };
-    render(<BeautyAssessmentReport records={[reportWithEmptyItem]} />);
-    const section = within(screen.getByRole('region', { name: '详细分析' }));
+    render(<BeautyAssessmentReport records={[vendorReport]} />);
+    const sectionElement = screen.getByRole('region', { name: '详细分析' });
+    const section = within(sectionElement);
     const oilToggle = section.getByRole('button', { name: /油脂/ });
     const oilRow = oilToggle.closest('li');
     expect(oilRow).not.toBeNull();
 
     fireEvent.click(oilToggle);
     expect(within(oilRow!).getByRole('heading', { name: '问题分析' })).toBeVisible();
-    expect(within(oilRow!).getByText('您的皮脂腺分泌有轻微异常，T 区油脂分泌旺盛，皮肤表面略显油腻感，容易显得暗沉。')).toBeVisible();
+    expect(within(oilRow!).getByText('您的皮脂腺分泌稍有异常，T 区、U区油脂分泌较多，皮肤外观略显油腻，容易暗沉。')).toBeVisible();
     expect(within(oilRow!).getByRole('heading', { name: '日常护理建议' })).toBeVisible();
     expect(within(oilRow!).getByText('1.正确清洁。控制洁面频率，最多早晚两次，可使用氨基酸类洁面产品，禁用皂基类产品，同时避免过度使用去角质产品。')).toBeVisible();
 
@@ -175,12 +175,7 @@ describe('beauty report core content', () => {
     expect(within(oilRow!).queryByRole('heading', { name: '问题分析' })).not.toBeInTheDocument();
     expect(within(oilRow!).queryByRole('heading', { name: '日常护理建议' })).not.toBeInTheDocument();
 
-    const emptyToggle = section.getByRole('button', { name: /毛孔/ });
-    const emptyRow = emptyToggle.closest('li');
-    expect(emptyRow).not.toBeNull();
-    fireEvent.click(emptyToggle);
-    expect(within(emptyRow!).queryByRole('heading', { name: '问题分析' })).not.toBeInTheDocument();
-    expect(within(emptyRow!).queryByRole('heading', { name: '日常护理建议' })).not.toBeInTheDocument();
-    expect(within(emptyRow!).queryByText('暂无数据')).not.toBeInTheDocument();
+    expect(section.getByRole('button', { name: /毛孔/ })).toBeInTheDocument();
+    expect(sectionElement.querySelectorAll('.aoben-beauty-item-static')).toHaveLength(0);
   });
 });

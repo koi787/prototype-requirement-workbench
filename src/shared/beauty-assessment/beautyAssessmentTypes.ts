@@ -27,6 +27,8 @@ export interface BeautyReport {
     age: number | null;
     detectTime: string | null;
     testCount: number | null;
+    /** Read-only vendor value. Missing source data remains null. */
+    deviceSerialNumber: string | null;
   };
   summary: {
     problemAnalysis: readonly string[];

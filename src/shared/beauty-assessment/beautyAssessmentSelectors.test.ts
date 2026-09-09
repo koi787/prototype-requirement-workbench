@@ -6,7 +6,7 @@ import type { BeautyReport } from './beautyAssessmentTypes';
 function record(recordId: string, detectTime: string | null): BeautyReport {
   return {
     recordId, sourceId: 'test', vendorReportId: null, vendorTaskId: null, vendorCustomerId: null, customerId: null,
-    basic: { detectTime, score: null, scoreLevel: null, skinType: null, skinLabels: [], sex: null, age: null, testCount: null },
+    basic: { detectTime, score: null, scoreLevel: null, skinType: null, skinLabels: [], sex: null, age: null, testCount: null, deviceSerialNumber: null },
     summary: { problemAnalysis: [], careAdvice: [] }, items: [],
   };
 }
@@ -15,13 +15,13 @@ describe('beauty report selection', () => {
   it('defaults to latest valid time instead of first input or largest id', () => {
     const selection = selectBeautyReport(BEAUTY_REPORTS);
     expect(selection.currentRecordId).toBe('beauty-prototype-100');
-    expect(selection.currentRecord?.basic.score).toBe(46);
+    expect(selection.currentRecord?.basic.score).toBe(48);
     expect(selection.records).toBe(BEAUTY_REPORTS);
   });
 
   it('selects historical reports by stable local recordId, not vendorTaskId', () => {
     const selection = selectBeautyReport(BEAUTY_REPORTS, 'beauty-prototype-900');
-    expect(selection.currentRecord?.basic.score).toBe(62);
+    expect(selection.currentRecord?.basic.score).toBe(48);
     expect(selection.currentRecordId).toBe('beauty-prototype-900');
     expect(getBeautyReportById(BEAUTY_REPORTS, 'prototype-task-101')).toBeNull();
   });

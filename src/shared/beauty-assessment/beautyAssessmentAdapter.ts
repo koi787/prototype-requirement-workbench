@@ -26,6 +26,8 @@ export interface BeautyReportInput {
   vendorTaskId?: unknown;
   vendorCustomerId?: unknown;
   customerId?: unknown;
+  /** Vendor result.json.SerialNumber. Kept at the adapter boundary. */
+  serialNumber?: unknown;
   basic: {
     score?: unknown;
     skinType?: unknown;
@@ -118,6 +120,23 @@ function getConfiguredChildren(input: BeautyReportInput): BeautyReportResultChil
     .flatMap((group) => group.Children ?? []);
 }
 
+/** “水分” is outside the confirmed V1 report, not a general no-detail filter. */
+function isExcludedV1Child(type: string | null, name: string | null): boolean {
+  return type === '1' && name === '水分';
+}
+
+function emptyReportItem(type: string, name: string): BeautyReportItem {
+  return {
+    type,
+    name,
+    score: null,
+    level: null,
+    levelName: null,
+    problemAnalysis: [],
+    careAdvice: [],
+  };
+}
+
 function normalizeSummary(input: BeautyReportInput): { problemAnalysis: string[]; careAdvice: string[] } {
   if (input.comprehensiveProposal !== undefined) {
     return {
@@ -154,13 +173,23 @@ export const adaptBeautyReport: BeautyReportAdapter<BeautyReportInput> = (input)
     const childType = normalizeResultChildKey(child.Type);
     const childName = normalizeText(child.Name);
     if (!childType && !childName) continue;
+    if (isExcludedV1Child(childType, childName)) continue;
     const matchesByType = childType ? validItems.filter((item) => normalizeResultChildKey(item.type) === childType) : [];
     const matches = matchesByType.length > 0
       ? matchesByType
       : validItems.filter((item) => childName !== null && normalizeText(item.name) === childName);
-    if (matches.length > 1) continue;
+    const fallbackType = childType ?? (childName === null ? null : childName);
+    const fallbackName = childName ?? fallbackType;
+    if (!fallbackType || !fallbackName) continue;
+    if (matches.length !== 1) {
+      items.push(emptyReportItem(fallbackType, fallbackName));
+      continue;
+    }
     const item = matches[0];
-    if (!item) continue;
+    if (!item) {
+      items.push(emptyReportItem(fallbackType, fallbackName));
+      continue;
+    }
     const type = childType ?? normalizeResultChildKey(item.type);
     const name = childName ?? normalizeText(item.name);
     if (!type || !name) continue;
@@ -194,6 +223,7 @@ export const adaptBeautyReport: BeautyReportAdapter<BeautyReportInput> = (input)
       age: normalizeCount(input.basic.age),
       detectTime: normalizeText(input.basic.detectTime),
       testCount: normalizeCount(input.basic.testCount),
+      deviceSerialNumber: normalizeText(input.serialNumber),
     },
     summary,
     items,

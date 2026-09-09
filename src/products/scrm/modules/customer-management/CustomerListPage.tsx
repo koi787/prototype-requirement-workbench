@@ -36,6 +36,8 @@ export interface CustomerListPageProps {
   initialAssessmentSource?: CustomerAssessmentSourceFilter;
   /** Story/测试专用：直接打开某条体测记录详情。 */
   initialAssessmentRecordId?: string;
+  /** Story/测试专用：直接打开某条美容记录详情。 */
+  initialBeautyRecordId?: string;
   /** Story/测试专用：初始应用筛选状态。 */
   initialAppliedFilter?: CustomerFilter;
 }
@@ -133,6 +135,7 @@ export function CustomerListPage({
   initialAssessmentView,
   initialAssessmentSource,
   initialAssessmentRecordId,
+  initialBeautyRecordId,
   initialAppliedFilter,
 }: CustomerListPageProps) {
   const initialFilter = initialAppliedFilter ?? EMPTY_CUSTOMER_FILTER;
@@ -375,6 +378,7 @@ export function CustomerListPage({
         initialAssessmentView={initialAssessmentView ?? 'assessment'}
         initialAssessmentSource={initialAssessmentSource ?? 'ALL'}
         {...(initialAssessmentRecordId ? { initialAssessmentRecordId } : {})}
+        {...(initialBeautyRecordId ? { initialBeautyRecordId } : {})}
         onClose={() => setDetailCustomer(null)}
       />
       {modalContextHolder}

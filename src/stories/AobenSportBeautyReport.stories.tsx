@@ -15,11 +15,11 @@ type Story = StoryObj<typeof meta>;
 export const 最近一次报告: Story = {};
 export const 历史报告: Story = { args: { initialBeautyRecordId: 'beauty-prototype-900' } };
 export const 单项报告展开: Story = {
-  parameters: { docs: { description: { story: '真实 Root 中展开油脂与毛孔。当前仓库没有可归属到单项的厂家原文，因此不填造问题或护理建议；空项保持无内容展示。' } } },
+  parameters: { docs: { description: { story: '真实 Root 中展开有厂家原文的油脂与黑头；空明细项目保留数值槽位，但不提供展开入口。' } } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole('button', { name: '油脂 74分 B' }));
-    await userEvent.click(canvas.getByRole('button', { name: '毛孔 41分 C' }));
+    await userEvent.click(canvas.getByRole('button', { name: '黑头 61分 B' }));
   },
 };
 
